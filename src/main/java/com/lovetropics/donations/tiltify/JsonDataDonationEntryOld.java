@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.tiltify;
 
 public class JsonDataDonationEntryOld {
 

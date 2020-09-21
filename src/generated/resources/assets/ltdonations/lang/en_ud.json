@@ -1,0 +1,8 @@
+{
+  "block.ltdonations.donation": "uo\u0131\u0287\u0250uo\u15E1",
+  "command.ltdonations.donation.reset": "\u02D9\u0250\u0287\u0250p uo\u0131\u0287\u0250uop bu\u0131\u0287\u0287\u01DDs\u01DD\u1D1A",
+  "command.ltdonations.donation.setid": "\u02D9%d o\u0287 \u15E1I uo\u0131\u0287\u0250uop u\u01DD\u01DDs \u0287s\u0250\u05DF \u0287\u01DDs\u01DD\u1D1A",
+  "command.ltdonations.donation.simulate": "%s \u0287uno\u026F\u0250 pu\u0250 %s \u01DD\u026F\u0250u \u0279o\u025F uo\u0131\u0287\u0250uop bu\u0131\u0287\u0250\u05DFn\u026F\u0131S",
+  "itemGroup.ltdonations": "suo\u0131\u0287\u0250uo\u15E1\u27D8\uA780",
+  "notification.ltdonations.donation.new": "\u00A1%s p\u01DD\u0287\u0250uop %s"
+}

@@ -1,10 +1,14 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.command;
 
 import static net.minecraft.command.Commands.argument;
 import static net.minecraft.command.Commands.literal;
 
 import java.text.NumberFormat;
 
+import com.lovetropics.donations.DonationData;
+import com.lovetropics.donations.DonationLangKeys;
+import com.lovetropics.donations.ThreadWorkerDonations;
+import com.lovetropics.donations.TickerDonation;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -13,6 +17,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 
 import net.minecraft.command.CommandSource;
+import net.minecraft.util.SharedConstants;
 import net.minecraft.util.text.StringTextComponent;
 
 public class CommandDonation {
@@ -65,6 +70,7 @@ public class CommandDonation {
     }
     
     public static int simulate(CommandContext<CommandSource> ctx, String name, double amount) {
+    	SharedConstants.developmentMode = true;
         if (!name.isEmpty()) {
             ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
         }

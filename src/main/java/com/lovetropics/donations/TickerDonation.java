@@ -8,7 +8,11 @@ import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.donations.command.CommandUser;
+import com.lovetropics.donations.tiltify.JsonDataDonation;
+import com.lovetropics.donations.tiltify.JsonDataDonationEntry;
+import com.lovetropics.donations.tiltify.JsonDeserializerDonation;
+import com.lovetropics.donations.tiltify.JsonDeserializerDonationTotal;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
@@ -41,7 +45,7 @@ public class TickerDonation {
     public static void tick(ServerTickEvent event) {
         if (event.phase != Phase.END) return;
         if (!ThreadWorkerDonations.getInstance().running 
-                && !ConfigLT.TILTIFY.appToken.get().isEmpty() && ConfigLT.TILTIFY.campaignId.get() != 0 
+                && !DonationConfigs.TILTIFY.appToken.get().isEmpty() && DonationConfigs.TILTIFY.campaignId.get() != 0 
                 && ServerLifecycleHooks.getCurrentServer().getPlayerList().getCurrentPlayerCount() > 0) {
             donationData = getSavedData();
             ThreadWorkerDonations.getInstance().startThread(donationData);
@@ -99,13 +103,13 @@ public class TickerDonation {
             donationData.setLastSeenDate(Math.max(donationData.getLastSeenDate(), lastSeenDate));
             donationData.setLastSeenId(Math.max(donationData.getLastSeenId(), lastSeenId));
 
-            int amountPerMonument = ConfigLT.TILTIFY.donationAmountPerMonument.get();
+            int amountPerMonument = DonationConfigs.TILTIFY.donationAmountPerMonument.get();
             if (amountPerMonument > 0) {
                 while (donationData.getMonumentsPlaced() < data.totalDonated / amountPerMonument) {
                     donationData.setMonumentsPlaced(donationData.getMonumentsPlaced() + 1);
                     server.getCommandManager().handleCommand(
                             new CommandSource(new CommandUser(), new Vec3d(world.getSpawnPoint()), Vec2f.ZERO, world, 4, "LTDonations", new StringTextComponent("Tiltify Donation Tracker"), server, null),
-                            ConfigLT.TILTIFY.tiltifyCommandRun.get());
+                            DonationConfigs.TILTIFY.tiltifyCommandRun.get());
                 }
             }
         }

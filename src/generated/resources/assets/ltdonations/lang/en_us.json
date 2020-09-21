@@ -1,0 +1,8 @@
+{
+  "block.ltdonations.donation": "Donation",
+  "command.ltdonations.donation.reset": "Resetting donation data.",
+  "command.ltdonations.donation.setid": "Reset last seen donation ID to %d.",
+  "command.ltdonations.donation.simulate": "Simulating donation for name %s and amount %s",
+  "itemGroup.ltdonations": "LTDonations",
+  "notification.ltdonations.donation.new": "%s donated %s!"
+}

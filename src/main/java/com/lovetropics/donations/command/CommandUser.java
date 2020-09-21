@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.command;
 
 import org.apache.logging.log4j.LogManager;
 

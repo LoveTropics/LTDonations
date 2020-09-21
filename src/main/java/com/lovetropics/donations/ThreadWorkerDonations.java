@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 
-import com.lovetropics.minigames.common.config.ConfigLT;
+import com.lovetropics.donations.tiltify.JsonDataDonation;
 
 public class ThreadWorkerDonations implements Runnable {
 
@@ -48,7 +48,7 @@ public class ThreadWorkerDonations implements Runnable {
         try {
             while (running) {
                 checkDonations();
-                Thread.sleep(TimeUnit.SECONDS.toMillis(ConfigLT.TILTIFY.donationTrackerRefreshRate.get()));
+                Thread.sleep(TimeUnit.SECONDS.toMillis(DonationConfigs.TILTIFY.donationTrackerRefreshRate.get()));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -62,7 +62,7 @@ public class ThreadWorkerDonations implements Runnable {
         try {
 
             //check if we decided to shut off donation querying after it started
-            if (ConfigLT.TILTIFY.appToken.get().isEmpty() || ConfigLT.TILTIFY.campaignId.get() == 0) {
+            if (DonationConfigs.TILTIFY.appToken.get().isEmpty() || DonationConfigs.TILTIFY.campaignId.get() == 0) {
                 stopThread();
                 return;
             }
@@ -92,7 +92,7 @@ public class ThreadWorkerDonations implements Runnable {
         con.setRequestMethod(method);
         con.setRequestProperty("User-Agent", "Tropicraft 1.0 (tropicraft.net)");
         con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("Authorization", "Bearer " + ConfigLT.TILTIFY.appToken.get());
+        con.setRequestProperty("Authorization", "Bearer " + DonationConfigs.TILTIFY.appToken.get());
         return con;
     }
     
@@ -114,7 +114,7 @@ public class ThreadWorkerDonations implements Runnable {
         try {
             String uri;
             synchronized (donationData) {
-                uri = "https://tiltify.com/api/v3/campaigns/" + ConfigLT.TILTIFY.campaignId.get() + "/donations?count=100" + (donationData.getLastSeenId() == 0 ? "" : "&after=" + donationData.getLastSeenId());
+                uri = "https://tiltify.com/api/v3/campaigns/" + DonationConfigs.TILTIFY.campaignId.get() + "/donations?count=100" + (donationData.getLastSeenId() == 0 ? "" : "&after=" + donationData.getLastSeenId());
             }
             
             HttpURLConnection con = getAuthorizedConnection("GET", uri);
@@ -134,7 +134,7 @@ public class ThreadWorkerDonations implements Runnable {
 
     public String getData_TotalDonations() {
         try {
-            String uri = "https://tiltify.com/api/v3/campaigns/" + ConfigLT.TILTIFY.campaignId.get();
+            String uri = "https://tiltify.com/api/v3/campaigns/" + DonationConfigs.TILTIFY.campaignId.get();
             HttpURLConnection con = getAuthorizedConnection("GET", uri);
             try {
                 return readInput(con.getInputStream(), false);
