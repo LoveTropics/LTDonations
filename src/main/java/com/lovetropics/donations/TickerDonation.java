@@ -85,7 +85,7 @@ public class TickerDonation {
                     server.getPlayerList().getPlayers().stream()
                             .forEach(p -> p.sendMessage(msg));
 
-                    callbacks.forEach(DonationTileEntity::triggerDonation); 
+                    triggerDonation();
                 });
 
         long lastSeenDate = data.new_donations.stream()
@@ -129,11 +129,15 @@ public class TickerDonation {
                     		TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + TextFormatting.RESET)));
         }
 
-        callbacks.forEach(DonationTileEntity::triggerDonation);
+        triggerDonation();
     }
     
     private static ServerWorld getOverworld() {
         return DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.OVERWORLD, false, true);
+    }
+
+    public static void triggerDonation() {
+        callbacks.forEach(DonationTileEntity::triggerDonation);
     }
 
     public static void addCallback(DonationTileEntity tile) {

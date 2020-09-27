@@ -35,8 +35,7 @@ minecraft {
         	
             workingDirectory project.file('run')
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 
             mods {
                 ltdonations {
@@ -50,8 +49,7 @@ minecraft {
         
             workingDirectory project.file('run')
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
+            property 'forge.logging.console.level', 'info'
 
             mods {
                 ltdonations {
@@ -112,6 +110,8 @@ dependencies {
     def ltlib = "com.lovetropics.lib:LTLib:${ltlib_version}"
     implementation fg.deobf(ltlib)
     shade ltlib
+
+    compile 'com.rabbitmq:amqp-client:5.9.0'
 }
 
 shadowJar {
