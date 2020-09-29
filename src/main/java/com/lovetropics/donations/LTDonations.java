@@ -1,13 +1,10 @@
 package com.lovetropics.donations;
 
-import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
 import com.lovetropics.donations.command.CommandDonation;
-import com.lovetropics.donations.rabbitmq.Bunny;
+import com.lovetropics.donations.websockets.WebSocketHelper;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
@@ -17,12 +14,8 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
 
-import java.util.Queue;
-
 @Mod(LTDonations.MODID)
 public class LTDonations {
-
-	public static final Queue<Donation> DONATION_QUEUE = Queues.newPriorityBlockingQueue();
 
 	public static final String MODID = "ltdonations";
 
@@ -56,24 +49,10 @@ public class LTDonations {
 	private void serverStartingEvent(FMLServerStartingEvent event) {
         CommandDonation.register(event.getCommandDispatcher());
 
-		System.out.println("Opening connection to bunny");
-        Bunny.openConnection();
+        WebSocketHelper.open();
 	}
 
 	private void serverStoppingEvent(final FMLServerStoppingEvent event) {
-		System.out.println("Closing connection to Bunny");
-		Bunny.closeConnection();
-	}
-
-	public static void queueDonation(final Donation donation) {
-		DONATION_QUEUE.offer(donation);
-	}
-
-	public static Donation getDonation() {
-		return DONATION_QUEUE.poll();
-	}
-
-	public static boolean donationsPending() {
-		return DONATION_QUEUE.peek() != null;
+		WebSocketHelper.close();
 	}
 }

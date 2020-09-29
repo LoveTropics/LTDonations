@@ -9,6 +9,7 @@ import com.lovetropics.donations.DonationData;
 import com.lovetropics.donations.DonationLangKeys;
 import com.lovetropics.donations.ThreadWorkerDonations;
 import com.lovetropics.donations.TickerDonation;
+import com.lovetropics.donations.websockets.WebSocketHelper;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -38,7 +39,18 @@ public class CommandDonation {
                                     .executes(ctx -> simulate(ctx, StringArgumentType.getString(ctx, "name"), DoubleArgumentType.getDouble(ctx, "amount"))))))
             .then(literal("fireworks")
                     .executes(CommandDonation::fireworks))
+            .then(literal("cycleconnection").executes(CommandDonation::cycleConnection))
         );
+    }
+
+    private static int cycleConnection(CommandContext<CommandSource> ctx) {
+        final boolean openConnection = WebSocketHelper.cycleConnection();
+        if (!openConnection) {
+            ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_COULDNT_ESTABLISH_CONNECTION.getComponent(), true);
+            return 0;
+        }
+        ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_ESTABLISHED_CONNECTION.getComponent(), true);
+        return Command.SINGLE_SUCCESS;
     }
 
     public static int dumpResponse(CommandContext<CommandSource> ctx) {

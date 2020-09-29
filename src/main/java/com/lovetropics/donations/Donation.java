@@ -1,10 +1,8 @@
 package com.lovetropics.donations;
 
 import com.google.gson.JsonObject;
-import com.lovetropics.donations.rabbitmq.Bunny;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -40,15 +38,13 @@ public class Donation implements Comparable {
     @Nullable
     private LocalDateTime getDate(String dateStr) {
         dateStr = dateStr.split("\\.")[0];
-        LocalDateTime date = null;
+        LocalDateTime date;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             date = LocalDateTime.parse(dateStr, formatter);
-            System.out.printf("%s%n", date);
         }
-        catch (DateTimeParseException exc) {
+        catch (final DateTimeParseException exc) {
             System.out.printf("%s is not parsable!%n", dateStr);
-            // TODO throw exc;      // Rethrow the exception.
             return null;
         }
         return date;

@@ -11,6 +11,8 @@ public enum DonationLangKeys {
     COMMAND_RESET_DONATION("command", "donation.reset", "Resetting donation data."),
     COMMAND_RESET_LAST_DONATION("command", "donation.setid", "Reset last seen donation ID to %d."),
     COMMAND_SIMULATE_DONATION("command", "donation.simulate", "Simulating donation for name %s and amount %s"),
+    COMMAND_COULDNT_ESTABLISH_CONNECTION("command", "donation.connection_failed", "Couldn't establish a connection to the donation servers"),
+    COMMAND_ESTABLISHED_CONNECTION("command", "donation.connection_established", "Re-established a connection to the donation servers!"),
 
     NEW_DONATION("notification", "donation.new", "%s donated %s!"),
     ;

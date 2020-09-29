@@ -111,7 +111,7 @@ dependencies {
     implementation fg.deobf(ltlib)
     shade ltlib
 
-    compile 'com.rabbitmq:amqp-client:5.9.0'
+    compile group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1'
 }
 
 shadowJar {
