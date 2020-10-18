@@ -2,6 +2,7 @@ package com.lovetropics.donations.websockets;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.lovetropics.donations.DonationConfigs;
 import org.asynchttpclient.AsyncHttpClient;
 import org.asynchttpclient.Dsl;
 import org.asynchttpclient.ws.WebSocket;
@@ -15,7 +16,6 @@ public class WebSocketHelper {
 
     public static final JsonParser JSON_PARSER = new JsonParser();
 
-    private static final String LOCALHOST_URI = "ws://localhost:5566/ws";
     private static final int REQUEST_TIMEOUT = 3000;
 
     private static AsyncHttpClient ASYNC_HTTP_CLIENT;
@@ -50,7 +50,7 @@ public class WebSocketHelper {
             ASYNC_HTTP_CLIENT = Dsl.asyncHttpClient();
         }
         try {
-            WebSocket websocket = ASYNC_HTTP_CLIENT.prepareGet(LOCALHOST_URI).setRequestTimeout(REQUEST_TIMEOUT)
+            WebSocket websocket = ASYNC_HTTP_CLIENT.prepareGet(getUrl()).setRequestTimeout(REQUEST_TIMEOUT)
                 .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
                     new WebSocketListener() {
                         @Override
@@ -90,5 +90,11 @@ public class WebSocketHelper {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static String getUrl() {
+        final int configPort = DonationConfigs.TECH_STACK.port.get();
+        final String port = configPort == 0 ? "" : ":" + configPort;
+        return "ws://" + DonationConfigs.TECH_STACK.url.get() + port + "/ws";
     }
 }

@@ -10,6 +10,7 @@ public class DonationConfigs {
     private static final Builder COMMON_BUILDER = new Builder();
     
     public static final CategoryTiltify TILTIFY = new CategoryTiltify();
+    public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
     
     public static final class CategoryTiltify {
         
@@ -39,6 +40,28 @@ public class DonationConfigs {
                     .define("tiltifyCOmmandRun", "function internaluseonly:addmonument");
             
             COMMON_BUILDER.pop();
+        }
+    }
+
+    public static final class CategoryTechStack {
+        public final ConfigValue<String> authKey;
+        public final ConfigValue<String> url;
+        public final IntValue port;
+
+        private CategoryTechStack() {
+            COMMON_BUILDER.comment("Connection to the tech stack").push("techStack");
+
+            authKey = COMMON_BUILDER
+                    .comment("API Key used to allow authentication with the tech stack")
+                    .define("authKey", "");
+
+            url = COMMON_BUILDER
+                    .comment("Websocket url to post to")
+                    .define("url", "localhost");
+
+            port = COMMON_BUILDER
+                    .comment("Port number the websocket runs on")
+                    .defineInRange("port", 0, 0, 99999);
         }
     }
 

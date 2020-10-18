@@ -67,10 +67,12 @@ public class DonationHandler {
         final JsonObject obj = WebSocketHelper.parse(payload);
         final String type = obj.get("type").getAsString();
         final String crud = obj.get("crud").getAsString();
+        System.out.println("PAYLOAD");
         if (type.equals("state")) {
             System.out.println("state");
         } else if (type.equals("donation")) {
             if (crud.equals("create")) {
+                System.out.println("Donation created");
                 final Donation donation = Donation.fromJson(obj);
                 queueDonation(donation);
             }
