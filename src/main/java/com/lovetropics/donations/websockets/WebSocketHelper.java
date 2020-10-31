@@ -46,6 +46,9 @@ public class WebSocketHelper {
     }
 
     public static boolean open() {
+    	if (DonationConfigs.TECH_STACK.authKey.get().isEmpty()) {
+    		return false;
+    	}
         if (ASYNC_HTTP_CLIENT == null || ASYNC_HTTP_CLIENT.isClosed()) {
             ASYNC_HTTP_CLIENT = Dsl.asyncHttpClient();
         }
