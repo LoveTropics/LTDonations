@@ -1,4 +1,4 @@
-package com.lovetropics.donations.tiltify;
+package com.lovetropics.donations.backend.tiltify.json;
 
 public class JsonDataDonationEntryOld {
 

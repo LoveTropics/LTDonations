@@ -1,5 +1,6 @@
 package com.lovetropics.donations;
 
+import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.lovetropics.lib.entity.FireworkUtil;
 
 import net.minecraft.nbt.CompoundNBT;

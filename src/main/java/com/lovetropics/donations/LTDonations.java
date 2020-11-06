@@ -1,7 +1,7 @@
 package com.lovetropics.donations;
 
+import com.lovetropics.donations.backend.ltts.WebSocketHelper;
 import com.lovetropics.donations.command.CommandDonation;
-import com.lovetropics.donations.websockets.WebSocketHelper;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;

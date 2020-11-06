@@ -1,20 +1,18 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.backend.tiltify;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 
-import com.lovetropics.donations.tiltify.JsonDataDonation;
+import com.lovetropics.donations.DonationConfigs;
+import com.lovetropics.donations.RequestHelper;
+import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
 
-public class ThreadWorkerDonations implements Runnable {
+public class ThreadWorkerDonations extends RequestHelper implements Runnable {
 
-    private static ThreadWorkerDonations instance;
+	private static ThreadWorkerDonations instance;
     private static Thread thread;
 
     public volatile boolean running = false;
@@ -27,6 +25,10 @@ public class ThreadWorkerDonations implements Runnable {
         }
         return instance;
     }
+
+    public ThreadWorkerDonations() {
+		super(DonationConfigs.TILTIFY.appToken::get);
+	}
 
     public void startThread(DonationData donationData) {
         this.donationData = donationData;
@@ -86,30 +88,6 @@ public class ThreadWorkerDonations implements Runnable {
         }
     }
     
-    private HttpURLConnection getAuthorizedConnection(String method, String address) throws IOException {
-        URL url = new URL(address);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod(method);
-        con.setRequestProperty("User-Agent", "Tropicraft 1.0 (tropicraft.net)");
-        con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("Authorization", "Bearer " + DonationConfigs.TILTIFY.appToken.get());
-        return con;
-    }
-    
-    private String readInput(InputStream is, boolean newlines) throws IOException {
-        BufferedReader in = new BufferedReader(new InputStreamReader(is));
-        String inputLine;
-        StringBuffer content = new StringBuffer();
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-            if (newlines) {
-                content.append("\n");
-            }
-        }
-        in.close();
-        return content.toString();
-    }
-
     public String getData_Real() {
         try {
             String uri;

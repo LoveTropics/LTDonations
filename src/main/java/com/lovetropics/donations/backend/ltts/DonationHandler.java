@@ -1,10 +1,11 @@
-package com.lovetropics.donations.websockets;
+package com.lovetropics.donations.backend.ltts;
 
 import com.google.common.collect.Queues;
 import com.google.gson.JsonObject;
-import com.lovetropics.donations.Donation;
 import com.lovetropics.donations.LTDonations;
-import com.lovetropics.donations.TickerDonation;
+import com.lovetropics.donations.backend.ltts.json.Donation;
+import com.lovetropics.donations.backend.tiltify.TickerDonation;
+
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

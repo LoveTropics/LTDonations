@@ -1,4 +1,4 @@
-package com.lovetropics.donations.websockets;
+package com.lovetropics.donations.backend.ltts;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;

@@ -1,12 +1,23 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.backend.tiltify;
+
+import java.text.NumberFormat;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lovetropics.donations.DonationConfigs;
+import com.lovetropics.donations.DonationLangKeys;
+import com.lovetropics.donations.DonationTileEntity;
+import com.lovetropics.donations.LTDonations;
+import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
+import com.lovetropics.donations.backend.tiltify.json.JsonDataDonationEntry;
+import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonation;
+import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonationTotal;
 import com.lovetropics.donations.command.CommandUser;
-import com.lovetropics.donations.tiltify.JsonDataDonation;
-import com.lovetropics.donations.tiltify.JsonDataDonationEntry;
-import com.lovetropics.donations.tiltify.JsonDeserializerDonation;
-import com.lovetropics.donations.tiltify.JsonDeserializerDonationTotal;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.Vec2f;
@@ -23,12 +34,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-
-import java.text.NumberFormat;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
 
 @EventBusSubscriber(modid = LTDonations.MODID, bus = Bus.FORGE)
 public class TickerDonation {

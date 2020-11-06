@@ -5,11 +5,11 @@ import static net.minecraft.command.Commands.literal;
 
 import java.text.NumberFormat;
 
-import com.lovetropics.donations.DonationData;
 import com.lovetropics.donations.DonationLangKeys;
-import com.lovetropics.donations.ThreadWorkerDonations;
-import com.lovetropics.donations.TickerDonation;
-import com.lovetropics.donations.websockets.WebSocketHelper;
+import com.lovetropics.donations.backend.ltts.WebSocketHelper;
+import com.lovetropics.donations.backend.tiltify.DonationData;
+import com.lovetropics.donations.backend.tiltify.ThreadWorkerDonations;
+import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;

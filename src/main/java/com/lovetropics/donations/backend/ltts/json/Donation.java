@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.backend.ltts.json;
 
 import com.google.gson.JsonObject;
 
@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-public class Donation implements Comparable {
+public class Donation implements Comparable<Donation> {
     private final String name;
     private final UUID uuid;
     private final double amount;
@@ -24,9 +24,7 @@ public class Donation implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        final Donation other = (Donation) o;
-
+    public int compareTo(Donation other) {
         final LocalDateTime thisDate = getDate(paymentTime);
         final LocalDateTime thatDate = getDate(other.paymentTime);
         if (thisDate != null && thatDate != null) {

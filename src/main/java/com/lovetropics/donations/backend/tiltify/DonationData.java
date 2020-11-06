@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.backend.tiltify;
 
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.world.storage.WorldSavedData;
