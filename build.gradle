@@ -113,7 +113,9 @@ dependencies {
     implementation fg.deobf(ltlib)
     shade ltlib
 
-    shadelib group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1'
+    shadelib(group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1') {
+        exclude group: 'io.netty'
+    }
 }
 
 shadowJar {

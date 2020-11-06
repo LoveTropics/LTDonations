@@ -1,18 +1,20 @@
 package com.lovetropics.donations.backend.ltts.json;
 
-import com.google.gson.JsonObject;
-
-import javax.annotation.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
+
+import com.google.gson.annotations.SerializedName;
 
 public class Donation implements Comparable<Donation> {
     private final String name;
     private final UUID uuid;
     private final double amount;
     private final String comments;
+    @SerializedName("payment_time")
     private final String paymentTime;
 
     public Donation(String name, UUID uuid, double amount, String comments, String paymentTime) {
@@ -46,26 +48,6 @@ public class Donation implements Comparable<Donation> {
             return null;
         }
         return date;
-    }
-
-    public static Donation fromJson(final JsonObject obj) {
-        // TODO UUID needs to be received
-        final JsonObject payload = obj.getAsJsonObject("payload");
-        return new Donation(
-                getString(payload, "name"),
-                UUID.randomUUID(),
-                getDouble(payload, "amount"),
-                getString(payload, "comments"),
-                getString(payload, "payment_time")
-        );
-    }
-
-    private static String getString(final JsonObject obj, final String name) {
-        return obj.get(name).getAsString();
-    }
-
-    private static double getDouble(final JsonObject obj, final String value) {
-        return obj.get(value).getAsDouble();
     }
 
     public String getName() {

@@ -6,6 +6,8 @@ import static net.minecraft.command.Commands.literal;
 import java.text.NumberFormat;
 
 import com.lovetropics.donations.DonationLangKeys;
+import com.lovetropics.donations.LTDonations;
+import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.WebSocketHelper;
 import com.lovetropics.donations.backend.tiltify.DonationData;
 import com.lovetropics.donations.backend.tiltify.ThreadWorkerDonations;
@@ -40,11 +42,26 @@ public class CommandDonation {
             .then(literal("fireworks")
                     .executes(CommandDonation::fireworks))
             .then(literal("cycleconnection").executes(CommandDonation::cycleConnection))
+            .then(literal("pendingevents").executes(ctx -> {
+            	try {
+            		ctx.getSource().sendFeedback(new StringTextComponent(new DonationRequests().getUnprocessedEvents().toString()), true);
+            	} catch (Exception e) {
+            		return 0;
+            	}
+            	return Command.SINGLE_SUCCESS;
+            }))
+            .then(literal("test").then(literal("whitelist").executes(ctx -> {
+            	new DonationRequests().fakeWhitelist();
+            	return Command.SINGLE_SUCCESS;
+            })).then(literal("blacklist").executes(ctx -> {
+            	new DonationRequests().fakeBlacklist();
+            	return Command.SINGLE_SUCCESS;
+            })))
         );
     }
 
     private static int cycleConnection(CommandContext<CommandSource> ctx) {
-        final boolean openConnection = WebSocketHelper.cycleConnection();
+        final boolean openConnection = LTDonations.WEBSOCKET.cycleConnection();
         if (!openConnection) {
             ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_COULDNT_ESTABLISH_CONNECTION.getComponent(), true);
             return 0;

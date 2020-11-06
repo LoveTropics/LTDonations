@@ -46,13 +46,15 @@ public class LTDonations {
 		registrate().addDataGenerator(ProviderType.LANG, p -> p.add(ITEM_GROUP, "LTDonations"));
 	}
 
+	public static final WebSocketHelper WEBSOCKET = new WebSocketHelper();
+	
 	private void serverStartingEvent(FMLServerStartingEvent event) {
         CommandDonation.register(event.getCommandDispatcher());
 
-        WebSocketHelper.open();
+        WEBSOCKET.open();
 	}
 
 	private void serverStoppingEvent(final FMLServerStoppingEvent event) {
-		WebSocketHelper.close();
+		WEBSOCKET.close();
 	}
 }

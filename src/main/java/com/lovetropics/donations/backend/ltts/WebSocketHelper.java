@@ -14,21 +14,20 @@ import java.util.concurrent.ExecutionException;
 
 public class WebSocketHelper {
 
-    public static final JsonParser JSON_PARSER = new JsonParser();
-
+    private static final JsonParser JSON_PARSER = new JsonParser();
     private static final int REQUEST_TIMEOUT = 3000;
 
-    private static AsyncHttpClient ASYNC_HTTP_CLIENT;
+    private AsyncHttpClient client = null;
 
     public static JsonObject parse(final String body) {
         // TODO once we know our data model, create an actual Gson object for it
         return JSON_PARSER.parse(body).getAsJsonObject();
     }
 
-    public static boolean cycleConnection() {
+    public boolean cycleConnection() {
         try {
-            if (ASYNC_HTTP_CLIENT != null && !ASYNC_HTTP_CLIENT.isClosed()) {
-                ASYNC_HTTP_CLIENT.close();
+            if (client != null && !client.isClosed()) {
+                client.close();
             }
 
             return open();
@@ -39,21 +38,21 @@ public class WebSocketHelper {
         return false;
     }
 
-    public static void checkAndCycleConnection() {
-        if (ASYNC_HTTP_CLIENT == null || ASYNC_HTTP_CLIENT.isClosed()) {
+    public void checkAndCycleConnection() {
+        if (client == null || client.isClosed()) {
             cycleConnection();
         }
     }
 
-    public static boolean open() {
+    public boolean open() {
     	if (DonationConfigs.TECH_STACK.authKey.get().isEmpty()) {
     		return false;
     	}
-        if (ASYNC_HTTP_CLIENT == null || ASYNC_HTTP_CLIENT.isClosed()) {
-            ASYNC_HTTP_CLIENT = Dsl.asyncHttpClient();
+        if (client == null || client.isClosed()) {
+            client = Dsl.asyncHttpClient();
         }
         try {
-            WebSocket websocket = ASYNC_HTTP_CLIENT.prepareGet(getUrl()).setRequestTimeout(REQUEST_TIMEOUT)
+            WebSocket websocket = client.prepareGet(getUrl()).setRequestTimeout(REQUEST_TIMEOUT)
                 .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
                     new WebSocketListener() {
                         @Override
@@ -63,12 +62,12 @@ public class WebSocketHelper {
 
                         @Override
                         public void onClose(WebSocket websocket, int code, String reason) {
-                            System.out.println("Web socket closed");
+                            System.out.println("Web socket closed: " + reason + " (" + code + ")");
                         }
 
                         @Override
                         public void onTextFrame(String payload, boolean finalFragment, int rsv) {
-                            DonationHandler.handlePayload(payload);
+                            WebSocketEvent.handleEvent(payload);
                         }
 
                         @Override
@@ -82,13 +81,13 @@ public class WebSocketHelper {
             e.printStackTrace();
         }
 
-        return ASYNC_HTTP_CLIENT != null && !ASYNC_HTTP_CLIENT.isClosed();
+        return client != null && !client.isClosed();
     }
 
-    public static void close() {
-        if (ASYNC_HTTP_CLIENT != null && !ASYNC_HTTP_CLIENT.isClosed()) {
+    public void close() {
+        if (client != null && !client.isClosed()) {
             try {
-                ASYNC_HTTP_CLIENT.close();
+                client.close();
             } catch (final IOException e) {
                 e.printStackTrace();
             }
@@ -98,6 +97,6 @@ public class WebSocketHelper {
     private static String getUrl() {
         final int configPort = DonationConfigs.TECH_STACK.port.get();
         final String port = configPort == 0 ? "" : ":" + configPort;
-        return "ws://" + DonationConfigs.TECH_STACK.url.get() + port + "/ws";
+        return "wss://" + DonationConfigs.TECH_STACK.url.get() + port + "/ws";
     }
 }
