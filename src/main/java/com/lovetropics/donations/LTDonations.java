@@ -1,10 +1,16 @@
 package com.lovetropics.donations;
 
+import java.util.concurrent.CompletableFuture;
+
+import com.lovetropics.donations.backend.ltts.DonationRequests;
+import com.lovetropics.donations.backend.ltts.WebSocketEvent;
 import com.lovetropics.donations.backend.ltts.WebSocketHelper;
+import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.command.CommandDonation;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
+
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
@@ -52,6 +58,9 @@ public class LTDonations {
         CommandDonation.register(event.getCommandDispatcher());
 
         WEBSOCKET.open();
+
+        CompletableFuture.supplyAsync(() -> new DonationRequests().getUnprocessedEvents())
+        	.thenAccept(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)));
 	}
 
 	private void serverStoppingEvent(final FMLServerStoppingEvent event) {

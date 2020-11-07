@@ -29,6 +29,7 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 public class WebSocketEvent<T> {
 
 	private static final Gson GSON = new Gson();
+	private static final DonationRequests REQUESTS = new DonationRequests();
 
 	private static final Map<String, WebSocketEvent<?>> EVENTS = new HashMap<>();
 
@@ -43,11 +44,15 @@ public class WebSocketEvent<T> {
 				WhiteList whitelist = server.getPlayerList().getWhitelistedPlayers();
 				WhitelistEntry entry = new WhitelistEntry(profile);
 				if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhitelisted(profile)) {
+					System.out.println("Whitelisting user: " + profile);
 					whitelist.addEntry(entry);
 				} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhitelisted(profile)) {
+					System.out.println("Un-whitelisting user: " + profile);
 					whitelist.removeEntry(entry);
 					server.kickPlayersNotWhitelisted(DUMMY_SOURCE.apply(server));
 				}
+				// TODO
+//				REQUESTS.ackWhitelist(e.name, e.type == WhitelistEvent.Type.whitelist);
 			});
 
 	private static <T> WebSocketEvent<T> register(String key, Class<T> type) {
@@ -79,12 +84,15 @@ public class WebSocketEvent<T> {
 	}
 
 	private void act(EventAction action, JsonObject payload) {
-		T parsed = parse(payload);
+		act(action, parse(payload));
+	}
+	
+	public void act(EventAction action, T payload) {
 		Consumer<T> callback = actions.get(action);
 		if (callback == null) {
 			throw new IllegalArgumentException("Unhandled event action " + action + " on event " + type);
 		}
-		callback.accept(parsed);
+		callback.accept(payload);
 	}
 
 	public static void handleEvent(String dataStr) {

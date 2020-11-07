@@ -10,6 +10,8 @@ import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.RequestHelper;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
 
+import io.netty.handler.codec.http.HttpMethod;
+
 public class ThreadWorkerDonations extends RequestHelper implements Runnable {
 
 	private static ThreadWorkerDonations instance;
@@ -27,7 +29,7 @@ public class ThreadWorkerDonations extends RequestHelper implements Runnable {
     }
 
     public ThreadWorkerDonations() {
-		super(DonationConfigs.TILTIFY.appToken::get);
+		super("https://tiltify.com/api/v3/", DonationConfigs.TILTIFY.appToken::get);
 	}
 
     public void startThread(DonationData donationData) {
@@ -90,12 +92,12 @@ public class ThreadWorkerDonations extends RequestHelper implements Runnable {
     
     public String getData_Real() {
         try {
-            String uri;
+            String endpoint;
             synchronized (donationData) {
-                uri = "https://tiltify.com/api/v3/campaigns/" + DonationConfigs.TILTIFY.campaignId.get() + "/donations?count=100" + (donationData.getLastSeenId() == 0 ? "" : "&after=" + donationData.getLastSeenId());
+                endpoint = "campaigns/" + DonationConfigs.TILTIFY.campaignId.get() + "/donations?count=100" + (donationData.getLastSeenId() == 0 ? "" : "&after=" + donationData.getLastSeenId());
             }
             
-            HttpURLConnection con = getAuthorizedConnection("GET", uri);
+            HttpURLConnection con = getAuthorizedConnection(HttpMethod.GET, endpoint);
             try {
                 return readInput(con.getInputStream(), false);
             } catch (IOException ex) {
@@ -112,8 +114,8 @@ public class ThreadWorkerDonations extends RequestHelper implements Runnable {
 
     public String getData_TotalDonations() {
         try {
-            String uri = "https://tiltify.com/api/v3/campaigns/" + DonationConfigs.TILTIFY.campaignId.get();
-            HttpURLConnection con = getAuthorizedConnection("GET", uri);
+            String endpoint = "campaigns/" + DonationConfigs.TILTIFY.campaignId.get();
+            HttpURLConnection con = getAuthorizedConnection(HttpMethod.GET, endpoint);
             try {
                 return readInput(con.getInputStream(), false);
             } catch (IOException ex) {
