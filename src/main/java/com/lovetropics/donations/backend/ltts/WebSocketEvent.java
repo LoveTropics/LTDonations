@@ -51,8 +51,7 @@ public class WebSocketEvent<T> {
 					whitelist.removeEntry(entry);
 					server.kickPlayersNotWhitelisted(DUMMY_SOURCE.apply(server));
 				}
-				// TODO
-//				REQUESTS.ackWhitelist(e.name, e.type == WhitelistEvent.Type.whitelist);
+				REQUESTS.ackWhitelist(e.name, e.type);
 			});
 
 	private static <T> WebSocketEvent<T> register(String key, Class<T> type) {

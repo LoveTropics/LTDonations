@@ -3,8 +3,6 @@ package com.lovetropics.donations.backend.ltts;
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.List;
 
 import com.google.gson.reflect.TypeToken;
@@ -25,20 +23,9 @@ public class DonationRequests extends RequestHelper {
 				.events;
 	}
 
-	public List<String> ackWhitelist(boolean add) {
-		try {
-			HttpURLConnection con = getAuthorizedConnection(POST, "players/ack/whitlitterrag" + (int) (Math.random() * 10000));
-			String payload;
-			try {
-				payload = readInput(con.getInputStream(), false);
-			} catch (IOException e) {
-				payload = readInput(con.getErrorStream(), true);
-			}
-			System.out.println(payload);
-			return null;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+	public void ackWhitelist(String name, WhitelistEvent.Type type) {
+		request(POST, "players/ack/" + type.name() + "/" + name)
+			.orThrow();
 	}
 
 	private static int id = 0;

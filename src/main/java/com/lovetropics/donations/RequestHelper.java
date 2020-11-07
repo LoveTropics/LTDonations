@@ -26,7 +26,6 @@ public abstract class RequestHelper {
 		this.token = token;
 	}
 
-
 	protected HttpURLConnection getAuthorizedConnection(HttpMethod method, String endpoint) throws IOException {
 		if (endpoint.startsWith("/")) {
 			endpoint = endpoint.substring(1);
