@@ -16,13 +16,15 @@ public class Donation implements Comparable<Donation> {
     private final String comments;
     @SerializedName("payment_time")
     private final String paymentTime;
+    private final boolean anonymous;
 
-    public Donation(String name, UUID uuid, double amount, String comments, String paymentTime) {
+    public Donation(String name, UUID uuid, double amount, String comments, String paymentTime, boolean anonymous) {
         this.name = name;
         this.uuid = uuid;
         this.amount = amount;
         this.comments = comments;
         this.paymentTime = paymentTime;
+        this.anonymous = anonymous;
     }
 
     @Override
@@ -68,5 +70,13 @@ public class Donation implements Comparable<Donation> {
 
     public String getPaymentTime() {
         return paymentTime;
+    }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public String getNameShown() {
+        return isAnonymous() ? "Anonymous" : getName();
     }
 }

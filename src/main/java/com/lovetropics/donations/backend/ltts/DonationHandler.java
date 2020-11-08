@@ -43,7 +43,7 @@ public class DonationHandler {
             }
 
             // TODO decide whether we want to phase out this class entirely or not
-            TickerDonation.sendDonationMessage(donation.getName(), donation.getAmount());
+            TickerDonation.sendDonationMessage(donation.getNameShown(), donation.getAmount());
             TickerDonation.triggerDonation();
 
             donationLastPolledTick = tick;
