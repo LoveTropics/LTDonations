@@ -9,6 +9,8 @@ import java.net.URL;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.apache.logging.log4j.LogManager;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mojang.datafixers.util.Either;
@@ -17,6 +19,9 @@ import io.netty.handler.codec.http.HttpMethod;
 import net.minecraft.util.Unit;
 
 public abstract class RequestHelper {
+	static {
+		LogManager.getLogger().info("Classloading RequestHelper", new Throwable());
+	}
 
 	private final String baseURL;
 	private final Supplier<String> token;
