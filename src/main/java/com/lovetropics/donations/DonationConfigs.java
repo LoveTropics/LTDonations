@@ -1,17 +1,25 @@
 package com.lovetropics.donations;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.fml.config.ModConfig;
 
+@EventBusSubscriber(modid = LTDonations.MODID, bus = Bus.MOD)
 public class DonationConfigs {
 
     private static final Builder COMMON_BUILDER = new Builder();
     
     public static final CategoryTiltify TILTIFY = new CategoryTiltify();
     public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
-    
+    public static final CategoryMonument MONUMENT = new CategoryMonument();
+
     public static final class CategoryTiltify {
         
         public final ConfigValue<String> appToken;
@@ -62,8 +70,63 @@ public class DonationConfigs {
             port = COMMON_BUILDER
                     .comment("Port number the websocket runs on")
                     .defineInRange("port", 0, 0, 99999);
+            
+            COMMON_BUILDER.pop();
         }
     }
 
+    public static final class CategoryMonument {
+    	public final BooleanValue active;
+
+        public final ConfigValue<String> posConfig;
+        public BlockPos pos = BlockPos.ZERO;
+        
+        public final ConfigValue<String> dimension;
+        
+        private CategoryMonument() {
+            COMMON_BUILDER.comment("Monument Settings").push("monument");
+
+            active = COMMON_BUILDER
+            		.comment("Activate the monument manager, defaults to false so you get a chance to configure the position/dimension first")
+            		.define("active", false);
+
+            posConfig = COMMON_BUILDER
+                    .comment("Position of the monument, given as the center position comma separated, e.g. 42,60,-99")
+                    .define("pos", "0,64,0", s -> s instanceof String && tryParse((String) s) != null);
+            
+            dimension = COMMON_BUILDER
+            		.comment("Dimension the monument is in")
+            		.define("dimension", "tropicraft:tropics");
+            
+            COMMON_BUILDER.pop();
+        }
+
+		BlockPos tryParse(String cfg) {
+			String[] coords = cfg.split(",");
+			if (coords.length != 3) {
+				return null;
+			}
+			try {
+				return new BlockPos(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]), Integer.parseInt(coords[2]));
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+    }
+
     public static final ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
+
+    @SubscribeEvent
+	public static void configLoad(ModConfig.Loading event) {
+		parseConfigs();
+	}
+
+	@SubscribeEvent
+	public static void configReload(ModConfig.Reloading event) {
+		parseConfigs();
+	}
+
+	public static void parseConfigs() {
+		MONUMENT.pos = MONUMENT.tryParse(MONUMENT.posConfig.get());
+	}
 }

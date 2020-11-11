@@ -2,11 +2,13 @@ package com.lovetropics.donations;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.WebSocketEvent;
 import com.lovetropics.donations.backend.ltts.WebSocketHelper;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.command.CommandDonation;
+import com.lovetropics.donations.monument.MonumentManager;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
@@ -59,11 +61,19 @@ public class LTDonations {
 
         WEBSOCKET.open();
 
-        CompletableFuture.supplyAsync(() -> new DonationRequests().getUnprocessedEvents())
+        final DonationRequests startupRequests = new DonationRequests();
+        CompletableFuture.supplyAsync(() -> startupRequests.getUnprocessedEvents())
         	.thenAccept(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)));
+        CompletableFuture.supplyAsync(() -> startupRequests.getTotalDonations())
+        	.thenAcceptAsync(t -> {
+        		// Make sure no monument updates run before the initial one
+        		DonationHandler.monument = new MonumentManager();
+        		// Run a forced update (no particles)
+        		DonationHandler.monument.updateMonument(t, true);
+        	}, event.getServer());
 	}
 
 	private void serverStoppingEvent(final FMLServerStoppingEvent event) {
-		WEBSOCKET.close();
+		DonationHandler.close();
 	}
 }

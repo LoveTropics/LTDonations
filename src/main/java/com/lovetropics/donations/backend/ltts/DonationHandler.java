@@ -6,6 +6,7 @@ import com.google.common.collect.Queues;
 import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.tiltify.TickerDonation;
+import com.lovetropics.donations.monument.MonumentManager;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
@@ -21,6 +22,8 @@ public class DonationHandler {
     // 3 seconds between fireworks
     private static final int TICKS_BEFORE_POLL = 60;
     private static int donationLastPolledTick;
+
+    public static MonumentManager monument;
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
@@ -45,10 +48,22 @@ public class DonationHandler {
             // TODO decide whether we want to phase out this class entirely or not
             TickerDonation.sendDonationMessage(donation.getNameShown(), donation.getAmount());
             TickerDonation.triggerDonation();
+            
+            if (monument != null) {
+            	monument.updateMonument(donation.getTotal(), false);
+            }
 
             donationLastPolledTick = tick;
         }
+        
+        if (monument != null) {
+        	monument.tick(server);
+        }
+    }
 
+    public static void close() {
+    	LTDonations.WEBSOCKET.close();
+    	monument = null;
     }
 
     public static void queueDonation(final Donation donation) {
