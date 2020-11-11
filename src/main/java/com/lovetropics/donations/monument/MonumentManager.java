@@ -203,11 +203,11 @@ public class MonumentManager {
 							.applyTextStyles(TextFormatting.BOLD, COLORS[queued.color])
 							.appendSibling(new StringTextComponent(" has grown to ")
 								.setStyle(new Style().setBold(false).setColor(TextFormatting.WHITE))
-								.appendSibling(new StringTextComponent("LEVEL " + queued.layer + "!")
+								.appendSibling(new StringTextComponent("LEVEL " + (queued.layer + 1) + "!")
 									.setStyle(new Style().setUnderlined(true))));
 
 					world.getPlayers().forEach(p -> p.sendMessage(message));
-					sendToDiscord(message.getUnformattedComponentText());
+					sendToDiscord(message.getString());
 				} else if (queued.step == 0 && queued.layer % LAYERS_PER_COLOR == 0) {
 					// A new layer has begun, update the glass
 					updateGlassToColor = queued.color;
