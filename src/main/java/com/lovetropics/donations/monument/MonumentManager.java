@@ -90,11 +90,11 @@ public class MonumentManager {
 					Vec3d cross = v1.crossProduct(v2);
 					double dot = v1.dotProduct(v2);
 
-				    double angle = Math.atan2(cross.length(), dot);
+					double angle = Math.atan2(cross.length(), dot);
 
-				    double test = new Vec3d(Vector3f.YP).dotProduct(cross);
-				    if (test < 0.0) angle = -angle + (Math.PI * 2);
-				    return angle;
+					double test = new Vec3d(Vector3f.YP).dotProduct(cross);
+					if (test < 0.0) angle = -angle + (Math.PI * 2);
+					return angle;
 				}));
 
 		LAYER_POSITIONS = ImmutableList.copyOf(allPositions);
@@ -220,8 +220,8 @@ public class MonumentManager {
 						Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.byHorizontalIndex(rand.nextInt(4));
 						Vec3d spawnPos = center.add(new Vec3d(dir.getDirectionVec()).scale(0.6f))
 								.add((rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getXOffset())),
-								     (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getYOffset())),
-								     (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getZOffset())));
+									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getYOffset())),
+									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getZOffset())));
 						Vec3d speed = spawnPos.subtract(center);
 						world.spawnParticle(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
 					}
@@ -255,11 +255,12 @@ public class MonumentManager {
 	private static Object discord;
 	private static Method _sendMessage;
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static void sendToDiscord(String content) {
 		if (skipDiscord) return;
 		if (discord == null) {
 			try {
-				Class<?> dcintegration = Class.forName("de.erdbeerbaerlp.dcintegration.DiscordIntegration");
+				Class dcintegration = Class.forName("de.erdbeerbaerlp.dcintegration.DiscordIntegration");
 				discord = ObfuscationReflectionHelper.getPrivateValue(dcintegration, null, "discord_instance");
 				_sendMessage = ObfuscationReflectionHelper.findMethod(discord.getClass(), "sendMessage", String.class);
 			} catch (Exception e) {
