@@ -207,7 +207,7 @@ public class MonumentManager {
 									.setStyle(new Style().setUnderlined(true))));
 
 					world.getPlayers().forEach(p -> p.sendMessage(message));
-					sendToDiscord(message.getFormattedText());
+					sendToDiscord(message.getUnformattedComponentText());
 				} else if (queued.step == 0 && queued.layer % LAYERS_PER_COLOR == 0) {
 					// A new layer has begun, update the glass
 					updateGlassToColor = queued.color;
