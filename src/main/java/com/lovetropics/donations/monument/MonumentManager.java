@@ -1,5 +1,7 @@
 package com.lovetropics.donations.monument;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -37,6 +39,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.Tags;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class MonumentManager {
@@ -204,6 +207,7 @@ public class MonumentManager {
 									.setStyle(new Style().setUnderlined(true))));
 
 					world.getPlayers().forEach(p -> p.sendMessage(message));
+					sendToDiscord(message.getFormattedText());
 				} else if (queued.step == 0 && queued.layer % LAYERS_PER_COLOR == 0) {
 					// A new layer has begun, update the glass
 					updateGlassToColor = queued.color;
@@ -245,5 +249,29 @@ public class MonumentManager {
 				nearbyGlass.add(pos.toImmutable());
 			}
 		});
+	}
+
+	private static boolean skipDiscord = false;
+	private static Object discord;
+	private static Method _sendMessage;
+
+	private static void sendToDiscord(String content) {
+		if (skipDiscord) return;
+		if (discord == null) {
+			try {
+				Class<?> dcintegration = Class.forName("de.erdbeerbaerlp.dcintegration.DiscordIntegration");
+				discord = ObfuscationReflectionHelper.getPrivateValue(dcintegration, null, "discord_instance");
+				_sendMessage = ObfuscationReflectionHelper.findMethod(discord.getClass(), "sendMessage", String.class);
+			} catch (Exception e) {
+				LOGGER.warn("Failed to setup dcintegration sender:", e);
+				skipDiscord = true;
+			}
+		}
+		try {
+			_sendMessage.invoke(discord, content);
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+			LOGGER.error("Failed to send to dcintegration:", e);
+			skipDiscord = true;
+		}
 	}
 }
