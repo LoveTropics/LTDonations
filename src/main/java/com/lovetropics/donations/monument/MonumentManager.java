@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.lovetropics.donations.DonationBlock;
 import com.lovetropics.donations.DonationConfigs;
 
 import net.minecraft.block.Block;
@@ -131,6 +132,7 @@ public class MonumentManager {
 	private final Deque<QueuedBlock> blockQueue = new ArrayDeque<>();
 
 	public void updateMonument(double amount, boolean fast) {
+		amount = 1000;
 		if (!DonationConfigs.MONUMENT.active.get()) return;
 		LOGGER.info("Total: " + amount);
 		if (amount == prevAmount) return;
@@ -224,6 +226,15 @@ public class MonumentManager {
 									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getZOffset())));
 						Vec3d speed = spawnPos.subtract(center);
 						world.spawnParticle(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
+					}
+				}
+			}
+			for (Direction dir : Direction.values()) {
+				if (dir != Direction.DOWN) {
+					BlockPos airPos = pos.offset(dir);
+					BlockState atPos = world.getBlockState(airPos);
+					if ((atPos.isAir(world, airPos) || atPos.getBlock() == Blocks.WATER) && world.setBlockState(airPos, DonationBlock.AIR_LIGHT.getDefaultState())) {
+						world.getChunkProvider().markBlockChanged(airPos);
 					}
 				}
 			}

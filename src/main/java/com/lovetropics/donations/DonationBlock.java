@@ -5,6 +5,7 @@ import java.util.List;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.TileEntityEntry;
 
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -27,9 +28,16 @@ public class DonationBlock extends Block {
             .simpleTileEntity(DonationTileEntity::new)
             .simpleItem()
             .register();
-    
+
     public static final TileEntityEntry<DonationTileEntity> TILE = TileEntityEntry.cast(LTDonations.registrate().get("donation", TileEntityType.class));
-    
+
+    // TODO move this somewhere else
+	public static final BlockEntry<AirBlock> AIR_LIGHT = LTDonations.registrate()
+			.block("air_light", p -> (AirBlock) new AirBlock(p) {})
+			.initialProperties(() -> Blocks.AIR)
+			.properties(p -> p.lightValue(15))
+			.register();
+
     public static final void register() {}
 
 	public DonationBlock(Block.Properties properties) {
