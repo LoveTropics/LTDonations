@@ -132,7 +132,6 @@ public class MonumentManager {
 	private final Deque<QueuedBlock> blockQueue = new ArrayDeque<>();
 
 	public void updateMonument(double amount, boolean fast) {
-		amount = 1000;
 		if (!DonationConfigs.MONUMENT.active.get()) return;
 		LOGGER.info("Total: " + amount);
 		if (amount == prevAmount) return;
