@@ -60,7 +60,8 @@ public class DonationRequests extends RequestHelper {
 		for (JsonElement element : topDonorArray) {
 			JsonObject donorRoot = element.getAsJsonObject();
 			UUID uuid = UUID.fromString(donorRoot.get("uuid").getAsString());
-			String minecraftName = donorRoot.get("minecraft_name").getAsString();
+			JsonElement nameElement = donorRoot.get("minecraft_name");
+			String minecraftName = nameElement.isJsonNull() ? null : nameElement.getAsString();
 			double total = donorRoot.get("total").getAsDouble();
 			topDonors.add(new TopDonor(uuid, minecraftName, total));
 		}

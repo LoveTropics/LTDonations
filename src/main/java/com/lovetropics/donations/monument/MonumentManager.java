@@ -276,6 +276,7 @@ public class MonumentManager {
 			} catch (Exception e) {
 				LOGGER.warn("Failed to setup dcintegration sender:", e);
 				skipDiscord = true;
+				return;
 			}
 		}
 		try {

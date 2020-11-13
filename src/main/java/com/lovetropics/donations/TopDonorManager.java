@@ -61,13 +61,17 @@ public final class TopDonorManager {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 
-        ITextComponent suffix = new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
-                .appendSibling(new StringTextComponent(String.format(" - $%.2f", total)).applyTextStyle(TextFormatting.GREEN));
-
         CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
-        data.putString("ProfileName", minecraftName);
+        if (minecraftName != null) {
+        	data.remove("CustomName");
+        	data.putString("ProfileName", minecraftName);
+        } else {
+        	data.putString("ProfileName", "");
+        	data.putString("CustomName", "{\"text\":\"Anonymous\"}");
+        }
+        ITextComponent suffix = new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
+                .appendSibling(new StringTextComponent(String.format("$%.2f", total)).applyTextStyle(TextFormatting.GREEN));
         data.putString("NameSuffix", ITextComponent.Serializer.toJson(suffix));
-
         entity.read(data);
     }
 
@@ -76,7 +80,7 @@ public final class TopDonorManager {
         if (entity == null) return;
 
         CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
-        data.putString("CustomName", "A Future Donator");
+        data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
         data.putString("ProfileName", "");
         data.remove("NameSuffix");
 
