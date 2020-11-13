@@ -1,6 +1,9 @@
 package com.lovetropics.donations;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
@@ -16,6 +19,8 @@ import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -43,6 +48,9 @@ public class LTDonations {
 	}
 
 	public LTDonations() {
+    	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
+    	ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
+
 		DonationBlock.register();
 		DonationLangKeys.init(registrate());
 
@@ -53,6 +61,17 @@ public class LTDonations {
 
 		registrate().addDataGenerator(ProviderType.LANG, p -> p.add(ITEM_GROUP, "LTDonations"));
 	}
+
+    private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
+    public static String getCompatVersion() {
+    	return getCompatVersion(ModList.get().getModContainerById(MODID).orElseThrow(IllegalStateException::new).getModInfo().getVersion().toString());
+    }
+    private static String getCompatVersion(String fullVersion) {
+    	return QUALIFIER.matcher(fullVersion).replaceAll("");
+    }
+    public static boolean isCompatibleVersion(String version) {
+    	return getCompatVersion().equals(getCompatVersion(version));
+    }
 
 	public static final WebSocketHelper WEBSOCKET = new WebSocketHelper();
 	
