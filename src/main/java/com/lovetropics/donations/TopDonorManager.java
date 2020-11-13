@@ -30,7 +30,7 @@ public final class TopDonorManager {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.topDonorUuids;
 
         CompletableFuture.supplyAsync(() -> REQUESTS.getTopDonors(topDonorUuids.length))
-                .thenAccept(this::applyTopDonors);
+                .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer());
     }
 
     private void applyTopDonors(List<TopDonor> topDonors) {
@@ -62,7 +62,7 @@ public final class TopDonorManager {
         if (entity == null) return;
 
         ITextComponent suffix = new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
-                .appendSibling(new StringTextComponent(String.format(" - $%.2f", total)).applyTextStyle(TextFormatting.AQUA));
+                .appendSibling(new StringTextComponent(String.format(" - $%.2f", total)).applyTextStyle(TextFormatting.GREEN));
 
         CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
         data.putString("ProfileName", minecraftName);
@@ -76,7 +76,8 @@ public final class TopDonorManager {
         if (entity == null) return;
 
         CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
-        data.putString("ProfileName", "A Future Donator");
+        data.putString("CustomName", "A Future Donator");
+        data.putString("ProfileName", "");
         data.remove("NameSuffix");
 
         entity.read(data);
