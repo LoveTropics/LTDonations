@@ -1,10 +1,5 @@
 package com.lovetropics.donations;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.WebSocketEvent;
@@ -15,7 +10,6 @@ import com.lovetropics.donations.monument.MonumentManager;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
@@ -26,6 +20,10 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 @Mod(LTDonations.MODID)
 public class LTDonations {
@@ -89,6 +87,9 @@ public class LTDonations {
         		DonationHandler.monument = new MonumentManager();
         		// Run a forced update (no particles)
         		DonationHandler.monument.updateMonument(t, true);
+
+        		DonationHandler.topDonors = new TopDonorManager();
+        		DonationHandler.topDonors.pollTopDonors();
         	}, event.getServer());
 	}
 

@@ -1,16 +1,22 @@
 package com.lovetropics.donations.backend.ltts;
 
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.POST;
-
-import java.util.List;
-
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.RequestHelper;
 import com.lovetropics.donations.backend.ltts.json.PendingEventList;
+import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
+import static io.netty.handler.codec.http.HttpMethod.GET;
+import static io.netty.handler.codec.http.HttpMethod.POST;
 
 public class DonationRequests extends RequestHelper {
 
@@ -42,5 +48,25 @@ public class DonationRequests extends RequestHelper {
 				.orThrow()
 				.get("total")
 				.getAsDouble();
+	}
+
+	public List<TopDonor> getTopDonors(int count) {
+		JsonArray topDonorArray = request(GET, "donors/top/" + count, JsonObject.class)
+				.orThrow()
+				.getAsJsonArray("donors");
+
+		List<TopDonor> topDonors = new ArrayList<>(topDonorArray.size());
+
+		for (JsonElement element : topDonorArray) {
+			JsonObject donorRoot = element.getAsJsonObject();
+			UUID uuid = UUID.fromString(donorRoot.get("uuid").getAsString());
+			String minecraftName = donorRoot.get("minecraft_name").getAsString();
+			double total = donorRoot.get("total").getAsDouble();
+			topDonors.add(new TopDonor(uuid, minecraftName, total));
+		}
+
+		topDonors.sort(Comparator.<TopDonor>comparingDouble(value -> value.total).reversed());
+
+		return topDonors;
 	}
 }

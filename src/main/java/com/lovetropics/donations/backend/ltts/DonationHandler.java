@@ -1,18 +1,18 @@
 package com.lovetropics.donations.backend.ltts;
 
-import java.util.Queue;
-
 import com.google.common.collect.Queues;
 import com.lovetropics.donations.LTDonations;
+import com.lovetropics.donations.TopDonorManager;
 import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.lovetropics.donations.monument.MonumentManager;
-
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+
+import java.util.Queue;
 
 @Mod.EventBusSubscriber(modid = LTDonations.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DonationHandler {
@@ -23,7 +23,13 @@ public class DonationHandler {
     private static final int TICKS_BEFORE_POLL = 60;
     private static int donationLastPolledTick;
 
+    private static final int TOP_DONOR_POLL_INTERVAL = 20 * 60;
+    private static int nextTopDonorPollTick;
+
+    private static boolean donatorsDirty = true;
+
     public static MonumentManager monument;
+    public static TopDonorManager topDonors;
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
@@ -54,8 +60,16 @@ public class DonationHandler {
             }
 
             donationLastPolledTick = tick;
+            donatorsDirty = true;
         }
-        
+
+        if (tick >= nextTopDonorPollTick && donatorsDirty && topDonors != null) {
+            topDonors.pollTopDonors();
+
+            nextTopDonorPollTick = tick + TOP_DONOR_POLL_INTERVAL;
+            donatorsDirty = false;
+        }
+
         if (monument != null) {
         	monument.tick(server);
         }
@@ -64,6 +78,7 @@ public class DonationHandler {
     public static void close() {
     	LTDonations.WEBSOCKET.close();
     	monument = null;
+    	topDonors = null;
     }
 
     public static void queueDonation(final Donation donation) {

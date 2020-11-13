@@ -11,6 +11,10 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.config.ModConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 @EventBusSubscriber(modid = LTDonations.MODID, bus = Bus.MOD)
 public class DonationConfigs {
 
@@ -19,6 +23,7 @@ public class DonationConfigs {
     public static final CategoryTiltify TILTIFY = new CategoryTiltify();
     public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
     public static final CategoryMonument MONUMENT = new CategoryMonument();
+    public static final CategoryTopDonors TOP_DONORS = new CategoryTopDonors();
 
     public static final class CategoryTiltify {
         
@@ -114,6 +119,33 @@ public class DonationConfigs {
 		}
     }
 
+    public static final class CategoryTopDonors {
+        public final BooleanValue active;
+
+        public final ConfigValue<String> dimension;
+        public final ConfigValue<List<? extends String>> topDonorUuidsConfig;
+
+        public UUID[] topDonorUuids;
+
+        private CategoryTopDonors() {
+            COMMON_BUILDER.comment("Top Donor Settings").push("top_donor");
+
+            active = COMMON_BUILDER
+                    .comment("Activate the top donator manager, defaults to false so you get a chance to configure the position/entities first")
+                    .define("active", false);
+
+            dimension = COMMON_BUILDER
+                    .comment("Dimension the top donor display is in")
+                    .define("dimension", "tropicraft:tropics");
+
+            topDonorUuidsConfig = COMMON_BUILDER
+                    .comment("The list of top donator entities to use")
+                    .defineList("top_donor_uuids", new ArrayList<>(), o -> true);
+
+            COMMON_BUILDER.pop();
+        }
+    }
+
     public static final ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
 
     @SubscribeEvent
@@ -128,5 +160,20 @@ public class DonationConfigs {
 
 	public static void parseConfigs() {
 		MONUMENT.pos = MONUMENT.tryParse(MONUMENT.posConfig.get());
+
+		if(TOP_DONORS.active.get()) {
+            List<? extends String> topDonorUuidsConfig = TOP_DONORS.topDonorUuidsConfig.get();
+            List<UUID> uuids = new ArrayList<>(topDonorUuidsConfig.size());
+            for (String s : topDonorUuidsConfig) {
+                try {
+                    uuids.add(UUID.fromString(s));
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                }
+            }
+            TOP_DONORS.topDonorUuids = uuids.toArray(new UUID[0]);
+        } else {
+		    TOP_DONORS.topDonorUuids = new UUID[0];
+        }
 	}
 }
