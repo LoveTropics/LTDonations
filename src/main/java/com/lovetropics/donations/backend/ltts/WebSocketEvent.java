@@ -41,6 +41,7 @@ public class WebSocketEvent<T> {
 			.on(EventAction.create, e -> {
 				MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 				GameProfile profile = server.getPlayerProfileCache().getGameProfileForUsername(e.name);
+				if (profile == null) return;
 				WhiteList whitelist = server.getPlayerList().getWhitelistedPlayers();
 				WhitelistEntry entry = new WhitelistEntry(profile);
 				if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhitelisted(profile)) {

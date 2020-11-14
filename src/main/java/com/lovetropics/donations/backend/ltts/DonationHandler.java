@@ -4,6 +4,7 @@ import com.google.common.collect.Queues;
 import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.TopDonorManager;
 import com.lovetropics.donations.backend.ltts.json.Donation;
+import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.lovetropics.donations.monument.MonumentManager;
 import net.minecraft.server.MinecraftServer;
@@ -13,6 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = LTDonations.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DonationHandler {
@@ -30,6 +32,7 @@ public class DonationHandler {
 
     public static MonumentManager monument;
     public static TopDonorManager topDonors;
+    private static final DonationRequests requests = new DonationRequests();
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
@@ -72,6 +75,12 @@ public class DonationHandler {
 
         if (monument != null) {
         	monument.tick(server);
+        }
+
+        // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
+        if (tick % (20 * 60 * 5) == 0) {
+			CompletableFuture.supplyAsync(() -> requests.getUnprocessedEvents())
+				.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
         }
     }
 

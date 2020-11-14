@@ -80,7 +80,7 @@ public class LTDonations {
 
         final DonationRequests startupRequests = new DonationRequests();
         CompletableFuture.supplyAsync(() -> startupRequests.getUnprocessedEvents())
-        	.thenAccept(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)));
+        	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
         CompletableFuture.supplyAsync(() -> startupRequests.getTotalDonations())
         	.thenAcceptAsync(t -> {
         		// Make sure no monument updates run before the initial one
