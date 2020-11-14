@@ -63,7 +63,7 @@ public final class TopDonorManager {
 
         CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
         if (minecraftName != null) {
-        	data.remove("CustomName");
+        	data.putString("CustomName", null);
         	data.putString("ProfileName", minecraftName);
         } else {
         	data.putString("ProfileName", "");
