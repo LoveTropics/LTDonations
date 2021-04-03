@@ -13,6 +13,7 @@ import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -54,6 +55,7 @@ public class LTDonations {
 
 		MinecraftForge.EVENT_BUS.addListener(this::serverStartingEvent);
 		MinecraftForge.EVENT_BUS.addListener(this::serverStoppingEvent);
+		MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
 
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, DonationConfigs.COMMON_CONFIG);
 
@@ -72,12 +74,12 @@ public class LTDonations {
     }
 
 	public static final WebSocketHelper WEBSOCKET = new WebSocketHelper();
-	
+
+	private void registerCommands(RegisterCommandsEvent event) {
+		CommandDonation.register(event.getDispatcher());
+	}
+
 	private void serverStartingEvent(FMLServerStartingEvent event) {
-        CommandDonation.register(event.getCommandDispatcher());
-
-        WEBSOCKET.open();
-
         final DonationRequests startupRequests = new DonationRequests();
         CompletableFuture.supplyAsync(() -> startupRequests.getUnprocessedEvents())
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());

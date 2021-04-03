@@ -1,15 +1,15 @@
-modLoader="javafml" #mandatory
-loaderVersion="[25,)" #mandatory (24 is current forge version)
+modLoader="javafml"
+loaderVersion="[36,)"
 issueTrackerURL="https://github.com/LoveTropics/LTDonations/issues"
+license = "All Rights Reserved"
 
 [[mods]]
 modId="ltdonations"
 version="${file.jarVersion}"
-displayName="LTDonations" #mandatory
+displayName="LTDonations"
 displayURL="https://lovetropics.com"
-#logoFile="examplemod.png" #optional
-credits="" #optional
-authors="tterrag, Corosus" #optional
+credits=""
+authors="tterrag, Corosus"
 description='''
 Donation event manager for the LoveTropics livestream.
 '''

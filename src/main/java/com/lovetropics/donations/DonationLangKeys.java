@@ -40,7 +40,7 @@ public enum DonationLangKeys {
     }
     
     public String getLocalizedText() {
-        return getComponent().getFormattedText();
+        return getComponent().getString();
     }
     
     public static void init(Registrate registrate) {

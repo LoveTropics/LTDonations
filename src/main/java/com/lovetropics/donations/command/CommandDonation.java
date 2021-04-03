@@ -1,14 +1,7 @@
 package com.lovetropics.donations.command;
 
-import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
-
-import java.text.NumberFormat;
-
 import com.lovetropics.donations.DonationLangKeys;
-import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
-import com.lovetropics.donations.backend.ltts.WebSocketHelper;
 import com.lovetropics.donations.backend.tiltify.DonationData;
 import com.lovetropics.donations.backend.tiltify.ThreadWorkerDonations;
 import com.lovetropics.donations.backend.tiltify.TickerDonation;
@@ -18,10 +11,14 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.util.SharedConstants;
 import net.minecraft.util.text.StringTextComponent;
+
+import java.text.NumberFormat;
+
+import static net.minecraft.command.Commands.argument;
+import static net.minecraft.command.Commands.literal;
 
 public class CommandDonation {
     
@@ -41,7 +38,6 @@ public class CommandDonation {
                                     .executes(ctx -> simulate(ctx, StringArgumentType.getString(ctx, "name"), DoubleArgumentType.getDouble(ctx, "amount"))))))
             .then(literal("fireworks")
                     .executes(CommandDonation::fireworks))
-            .then(literal("cycleconnection").executes(CommandDonation::cycleConnection))
             .then(literal("pendingevents").executes(ctx -> {
             	try {
             		ctx.getSource().sendFeedback(new StringTextComponent(new DonationRequests().getUnprocessedEvents().toString()), true);
@@ -58,16 +54,6 @@ public class CommandDonation {
             	return Command.SINGLE_SUCCESS;
             })))
         );
-    }
-
-    private static int cycleConnection(CommandContext<CommandSource> ctx) {
-        final boolean openConnection = LTDonations.WEBSOCKET.cycleConnection();
-        if (!openConnection) {
-            ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_COULDNT_ESTABLISH_CONNECTION.getComponent(), true);
-            return 0;
-        }
-        ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_ESTABLISHED_CONNECTION.getComponent(), true);
-        return Command.SINGLE_SUCCESS;
     }
 
     public static int dumpResponse(CommandContext<CommandSource> ctx) {

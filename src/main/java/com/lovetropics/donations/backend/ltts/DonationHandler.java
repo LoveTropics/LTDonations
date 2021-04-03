@@ -44,8 +44,7 @@ public class DonationHandler {
         }
         final int tick = server.getTickCounter();
 
-        // This is good to have...but we shouldn't need it hopefully
-        LTDonations.WEBSOCKET.checkAndCycleConnection();
+        LTDonations.WEBSOCKET.tick();
 
         // TODO check and make sure we are in web socket mode
         if (tick >= donationLastPolledTick + TICKS_BEFORE_POLL && donationsPending()) {
@@ -85,7 +84,6 @@ public class DonationHandler {
     }
 
     public static void close() {
-    	LTDonations.WEBSOCKET.close();
     	monument = null;
     	topDonors = null;
     }

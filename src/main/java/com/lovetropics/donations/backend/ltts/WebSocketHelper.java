@@ -1,102 +1,63 @@
 package com.lovetropics.donations.backend.ltts;
 
+import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.lovetropics.donations.DonationConfigs;
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.Dsl;
-import org.asynchttpclient.ws.WebSocket;
-import org.asynchttpclient.ws.WebSocketListener;
-import org.asynchttpclient.ws.WebSocketUpgradeHandler;
+import com.lovetropics.lib.backend.BackendConnection;
+import com.lovetropics.lib.backend.BackendProxy;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
+import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.function.Supplier;
 
 public class WebSocketHelper {
+    private static final Logger LOGGER = LogManager.getLogger(WebSocketHelper.class);
 
-    private static final JsonParser JSON_PARSER = new JsonParser();
-    private static final int REQUEST_TIMEOUT = 3000;
+    private final BackendProxy proxy;
 
-    private AsyncHttpClient client = null;
+    public WebSocketHelper() {
+        Supplier<URI> address = () -> {
+            if (!Strings.isNullOrEmpty(DonationConfigs.TECH_STACK.authKey.get())) {
+                try {
+                    return new URI(getUrl());
+                } catch (URISyntaxException ignored) {
+                }
+            }
+            return null;
+        };
 
-    public static JsonObject parse(final String body) {
-        // TODO once we know our data model, create an actual Gson object for it
-        return JSON_PARSER.parse(body).getAsJsonObject();
-    }
-
-    public boolean cycleConnection() {
-        try {
-            if (client != null && !client.isClosed()) {
-                client.close();
+        this.proxy = new BackendProxy(address, new BackendConnection.Handler() {
+            @Override
+            public void acceptOpened() {
             }
 
-            return open();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return false;
-    }
-
-    public void checkAndCycleConnection() {
-        if (client == null || client.isClosed()) {
-            cycleConnection();
-        }
-    }
-
-    public boolean open() {
-    	if (DonationConfigs.TECH_STACK.authKey.get().isEmpty()) {
-    		return false;
-    	}
-        if (client == null || client.isClosed()) {
-            client = Dsl.asyncHttpClient();
-        }
-        try {
-            WebSocket websocket = client.prepareGet(getUrl()).setRequestTimeout(REQUEST_TIMEOUT)
-                .execute(new WebSocketUpgradeHandler.Builder().addWebSocketListener(
-                    new WebSocketListener() {
-                        @Override
-                        public void onOpen(WebSocket websocket) {
-                            System.out.println("Web socket opened");
-                        }
-
-                        @Override
-                        public void onClose(WebSocket websocket, int code, String reason) {
-                            System.out.println("Web socket closed: " + reason + " (" + code + ")");
-                        }
-
-                        @Override
-                        public void onTextFrame(String payload, boolean finalFragment, int rsv) {
-                            WebSocketEvent.handleEvent(payload);
-                        }
-
-                        @Override
-                        public void onError(Throwable t) {
-                            System.out.println("Error occurred in web socket!");
-                            t.printStackTrace();
-                        }
-                    }).build()).get();
-        } catch (InterruptedException | ExecutionException e) {
-            System.out.println("Error connecting to web socket. It's probably not running?");
-            e.printStackTrace();
-        }
-
-        return client != null && !client.isClosed();
-    }
-
-    public void close() {
-        if (client != null && !client.isClosed()) {
-            try {
-                client.close();
-            } catch (final IOException e) {
-                e.printStackTrace();
+            @Override
+            public void acceptMessage(JsonObject payload) {
+                WebSocketEvent.handleEvent(payload);
             }
-        }
+
+            @Override
+            public void acceptError(Throwable cause) {
+                LOGGER.error("Donations websocket closed with error", cause);
+            }
+
+            @Override
+            public void acceptClosed(int code, @Nullable String reason) {
+                LOGGER.error("Donations websocket closed with code: {} and reason: {}", code, reason);
+            }
+        });
     }
 
     private static String getUrl() {
         final int configPort = DonationConfigs.TECH_STACK.port.get();
         final String port = configPort == 0 ? "" : ":" + configPort;
         return "wss://" + DonationConfigs.TECH_STACK.url.get() + port + "/ws";
+    }
+
+    public void tick() {
+        this.proxy.tick();
     }
 }

@@ -1,11 +1,5 @@
 package com.lovetropics.donations.backend.tiltify;
 
-import java.text.NumberFormat;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lovetropics.donations.DonationConfigs;
@@ -17,23 +11,26 @@ import com.lovetropics.donations.backend.tiltify.json.JsonDataDonationEntry;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonation;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonationTotal;
 import com.lovetropics.donations.command.CommandUser;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+
+import java.text.NumberFormat;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 
 @EventBusSubscriber(modid = LTDonations.MODID, bus = Bus.FORGE)
 public class TickerDonation {
@@ -87,7 +84,7 @@ public class TickerDonation {
                 		TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(donation.amount) + TextFormatting.RESET))
                 .forEach(msg -> {
                     server.getPlayerList().getPlayers().stream()
-                            .forEach(p -> p.sendMessage(msg));
+                            .forEach(p -> p.sendStatusMessage(msg, false));
 
                     triggerDonation();
                 });
@@ -112,7 +109,7 @@ public class TickerDonation {
                 while (donationData.getMonumentsPlaced() < data.totalDonated / amountPerMonument) {
                     donationData.setMonumentsPlaced(donationData.getMonumentsPlaced() + 1);
                     server.getCommandManager().handleCommand(
-                            new CommandSource(new CommandUser(), new Vec3d(world.getSpawnPoint()), Vec2f.ZERO, world, 4, "LTDonations", new StringTextComponent("Tiltify Donation Tracker"), server, null),
+                            new CommandSource(new CommandUser(), Vector3d.copy(world.getSpawnPoint()), Vector2f.ZERO, world, 4, "LTDonations", new StringTextComponent("Tiltify Donation Tracker"), server, null),
                             DonationConfigs.TILTIFY.tiltifyCommandRun.get());
                 }
             }
@@ -135,13 +132,13 @@ public class TickerDonation {
     public static void sendDonationMessage(final String name, final double amount) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         server.getPlayerList().getPlayers()
-                .forEach(p -> p.sendMessage(DonationLangKeys.NEW_DONATION.format(
+                .forEach(p -> p.sendStatusMessage(DonationLangKeys.NEW_DONATION.format(
                         TextFormatting.AQUA + name + TextFormatting.RESET.toString(),
-                        TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + TextFormatting.RESET)));
+                        TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + TextFormatting.RESET), false));
     }
     
     private static ServerWorld getOverworld() {
-        return DimensionManager.getWorld(ServerLifecycleHooks.getCurrentServer(), DimensionType.OVERWORLD, false, true);
+        return ServerLifecycleHooks.getCurrentServer().func_241755_D_();
     }
 
     public static void triggerDonation() {

@@ -5,11 +5,13 @@ import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import org.apache.logging.log4j.LogManager;
@@ -70,8 +72,8 @@ public final class TopDonorManager {
         	data.putString("ProfileName", "");
         	data.putString("CustomName", "{\"text\":\"Anonymous\"}");
         }
-        ITextComponent suffix = new StringTextComponent(" - ").applyTextStyle(TextFormatting.GRAY)
-                .appendSibling(new StringTextComponent(String.format("$%.2f", total)).applyTextStyle(TextFormatting.GREEN));
+        ITextComponent suffix = new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
+                .appendSibling(new StringTextComponent(String.format("$%.2f", total)).mergeStyle(TextFormatting.GREEN));
         data.putString("NameSuffix", ITextComponent.Serializer.toJson(suffix));
         entity.read(data);
     }
@@ -102,11 +104,11 @@ public final class TopDonorManager {
 
     private ServerWorld getWorld(MinecraftServer server) {
         ResourceLocation dimensionId = new ResourceLocation(DonationConfigs.TOP_DONORS.dimension.get());
-        DimensionType dimensionType = DimensionType.byName(dimensionId);
+        RegistryKey<World> dimensionType = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimensionId);
         ServerWorld world = server.getWorld(dimensionType);
         if (world == null) {
             LOGGER.error("Failed to find dimension : " + DonationConfigs.TOP_DONORS.dimension.get());
-            world = server.getWorld(DimensionType.OVERWORLD);
+            world = server.func_241755_D_();
         }
         return world;
     }

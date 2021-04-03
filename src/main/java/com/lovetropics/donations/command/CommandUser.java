@@ -5,10 +5,12 @@ import org.apache.logging.log4j.LogManager;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.util.text.ITextComponent;
 
+import java.util.UUID;
+
 public class CommandUser implements ICommandSource {
 
     @Override
-    public void sendMessage(ITextComponent component) {
+    public void sendMessage(ITextComponent component, UUID senderUUID) {
         LogManager.getLogger().info(component.getString());
     }
 

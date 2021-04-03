@@ -1,11 +1,5 @@
 package com.lovetropics.donations.backend.ltts;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -14,17 +8,22 @@ import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.backend.ltts.json.WebSocketEventData;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 import com.mojang.authlib.GameProfile;
-
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.WhiteList;
 import net.minecraft.server.management.WhitelistEntry;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector2f;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class WebSocketEvent<T> {
 
@@ -36,7 +35,7 @@ public class WebSocketEvent<T> {
 	public static final WebSocketEvent<Donation> DONATION = register("donation", Donation.class)
 			.on(EventAction.create, DonationHandler::queueDonation);
 
-	private static final Function<MinecraftServer, CommandSource> DUMMY_SOURCE = server -> new CommandSource(ICommandSource.DUMMY, Vec3d.ZERO, Vec2f.ZERO, server.getWorld(DimensionType.OVERWORLD), 2, "DumbCodeFix", new StringTextComponent(""), server, null);
+	private static final Function<MinecraftServer, CommandSource> DUMMY_SOURCE = server -> new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, server.getWorld(World.OVERWORLD), 2, "DumbCodeFix", new StringTextComponent(""), server, null);
 	public static final WebSocketEvent<WhitelistEvent> WHITELIST = register("whitelist", WhitelistEvent.class)
 			.on(EventAction.create, e -> {
 				MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
@@ -95,8 +94,8 @@ public class WebSocketEvent<T> {
 		callback.accept(payload);
 	}
 
-	public static void handleEvent(String dataStr) {
-		WebSocketEventData data = GSON.fromJson(dataStr, WebSocketEventData.class);
+	public static void handleEvent(JsonObject json) {
+		WebSocketEventData data = GSON.fromJson(json, WebSocketEventData.class);
 		WebSocketEvent<?> event = EVENTS.get(data.type);
 		// Discard unknown events
 		if (event != null) {

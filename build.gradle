@@ -6,7 +6,7 @@ buildscript {
         mavenLocal()
     }
     dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
     }
 }
 plugins {
@@ -25,7 +25,7 @@ version = "${mod_version}-${release_type}+${buildnumber}"
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
 minecraft {
-    mappings channel: 'snapshot', version: '20200515-1.15.1'
+    mappings channel: 'snapshot', version: '20210309-1.16.5'
     
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -105,17 +105,13 @@ repositories {
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     
-	def registrate = "com.tterrag.registrate:Registrate:MC${minecraft_version}-${registrate_version}"
+	def registrate = "com.tterrag.registrate:Registrate:MC1.16.2-${registrate_version}"
     implementation fg.deobf(registrate)
     shade registrate
     
     def ltlib = "com.lovetropics.lib:LTLib:${ltlib_version}"
     implementation fg.deobf(ltlib)
     shade ltlib
-
-    shadelib(group: 'org.asynchttpclient', name: 'async-http-client', version: '2.12.1') {
-        exclude group: 'io.netty'
-    }
 }
 
 shadowJar {

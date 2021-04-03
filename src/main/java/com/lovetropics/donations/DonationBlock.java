@@ -1,10 +1,7 @@
 package com.lovetropics.donations;
 
-import java.util.List;
-
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.entry.TileEntityEntry;
-
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -19,6 +16,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.IBlockReader;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+
+import java.util.List;
 
 public class DonationBlock extends Block {
 
@@ -35,7 +34,7 @@ public class DonationBlock extends Block {
 	public static final BlockEntry<AirBlock> AIR_LIGHT = LTDonations.registrate()
 			.block("air_light", p -> (AirBlock) new AirBlock(p) {})
 			.initialProperties(() -> Blocks.AIR)
-			.properties(p -> p.lightValue(15))
+			.properties(p -> p.setLightLevel(s -> 15))
 			.register();
 
     public static final void register() {}
@@ -58,6 +57,6 @@ public class DonationBlock extends Block {
 	@OnlyIn(Dist.CLIENT)
     public void addInformation(ItemStack stack, IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
 	    super.addInformation(stack, worldIn, tooltip, flagIn);
-	    tooltip.add(new TranslationTextComponent(this.getTranslationKey() + ".desc").applyTextStyle(TextFormatting.GRAY));
+	    tooltip.add(new TranslationTextComponent(this.getTranslationKey() + ".desc").mergeStyle(TextFormatting.GRAY));
 	}
 }

@@ -1,8 +1,8 @@
 package com.lovetropics.donations;
 
 import com.lovetropics.donations.backend.tiltify.TickerDonation;
-import com.lovetropics.lib.entity.FireworkUtil;
-
+import com.lovetropics.lib.entity.FireworkPalette;
+import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -39,7 +39,8 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
 	            while (!getWorld().isAirBlock(pos) && pos.getY() < getPos().getY() + 10) {
 	                pos = pos.up();
 	            }
-	            FireworkUtil.spawnFirework(pos, getWorld(), FireworkUtil.Palette.COOL_EARTH.getPalette());
+
+				FireworkPalette.COOL_EARTH.spawn(pos, getWorld());
 	            queued--;
 	            markDirty();
 	        }
@@ -61,8 +62,8 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     }
 
     @Override
-    public void read(CompoundNBT nbt) {
-		super.read(nbt);
+    public void read(BlockState blockState, CompoundNBT nbt) {
+		super.read(blockState, nbt);
 		this.queued = nbt.getInt("queuedDonations");
 	}
 

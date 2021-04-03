@@ -1,47 +1,39 @@
 package com.lovetropics.donations.monument;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.donations.DonationBlock;
 import com.lovetropics.donations.DonationConfigs;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.client.renderer.Vector3f;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Direction;
+import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.vector.Vector3d;
+import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.dimension.DimensionType;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class MonumentManager {
 
@@ -85,15 +77,15 @@ public class MonumentManager {
 				.thenComparingDouble(p -> {
 					if (p.equals(BlockPos.ZERO)) return -1;
 
-					Vec3d v1 = new Vec3d(p);
-					Vec3d v2 = new Vec3d(Vector3f.XN);
+					Vector3d v1 = Vector3d.copy(p);
+					Vector3d v2 = new Vector3d(Vector3f.XN);
 
-					Vec3d cross = v1.crossProduct(v2);
+					Vector3d cross = v1.crossProduct(v2);
 					double dot = v1.dotProduct(v2);
 
 					double angle = Math.atan2(cross.length(), dot);
 
-					double test = new Vec3d(Vector3f.YP).dotProduct(cross);
+					double test = new Vector3d(Vector3f.YP).dotProduct(cross);
 					if (test < 0.0) angle = -angle + (Math.PI * 2);
 					return angle;
 				}));
@@ -158,10 +150,11 @@ public class MonumentManager {
 	}
 
 	private ServerWorld getWorld(MinecraftServer server) {
-		ServerWorld world = server.getWorld(DimensionType.byName(new ResourceLocation(DonationConfigs.MONUMENT.dimension.get())));
+		RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
+		ServerWorld world = server.getWorld(dimension);
 		if (world == null) {
 			LOGGER.error("Failed to find dimension : " + DonationConfigs.MONUMENT.dimension.get());
-			world = ServerLifecycleHooks.getCurrentServer().getWorld(DimensionType.OVERWORLD);
+			world = ServerLifecycleHooks.getCurrentServer().func_241755_D_();
 		}
 		return world;
 	}
@@ -201,13 +194,13 @@ public class MonumentManager {
 				if (queued.step == LAYER_POSITIONS.size() - 1) {
 					// A layer has completed, send a message
 					ITextComponent message = new StringTextComponent("The Monument")
-							.applyTextStyles(TextFormatting.BOLD, COLORS[queued.color])
+							.mergeStyle(TextFormatting.BOLD, COLORS[queued.color])
 							.appendSibling(new StringTextComponent(" has grown to ")
-								.setStyle(new Style().setBold(false).setColor(TextFormatting.WHITE))
+								.setStyle(Style.EMPTY.setBold(false).setFormatting(TextFormatting.WHITE))
 								.appendSibling(new StringTextComponent("LEVEL " + (queued.layer + 1) + "!")
-									.setStyle(new Style().setUnderlined(true))));
+									.setStyle(Style.EMPTY.setUnderlined(true))));
 
-					world.getPlayers().forEach(p -> p.sendMessage(message));
+					world.getPlayers().forEach(p -> p.sendStatusMessage(message, false));
 					sendToDiscord(message.getString());
 				} else if (queued.step == 0 && queued.layer % LAYERS_PER_COLOR == 0) {
 					// A new layer has begun, update the glass
@@ -216,14 +209,14 @@ public class MonumentManager {
 				if (amt >= 0) { // Not an infinite drain
 					// Throw some particles around
 					Random rand = world.getRandom();
-					Vec3d center = new Vec3d(pos).add(0.5, 0.5, 0.5);
+					Vector3d center = Vector3d.copy(pos).add(0.5, 0.5, 0.5);
 					for (int i = 0; i < 20; i++) {
 						Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.byHorizontalIndex(rand.nextInt(4));
-						Vec3d spawnPos = center.add(new Vec3d(dir.getDirectionVec()).scale(0.6f))
+						Vector3d spawnPos = center.add(Vector3d.copy(dir.getDirectionVec()).scale(0.6f))
 								.add((rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getXOffset())),
 									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getYOffset())),
 									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getZOffset())));
-						Vec3d speed = spawnPos.subtract(center);
+						Vector3d speed = spawnPos.subtract(center);
 						world.spawnParticle(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
 					}
 				}
