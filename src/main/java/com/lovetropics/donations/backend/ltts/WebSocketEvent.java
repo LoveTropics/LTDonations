@@ -22,13 +22,13 @@ import net.minecraftforge.fml.server.ServerLifecycleHooks;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class WebSocketEvent<T> {
 
 	private static final Gson GSON = new Gson();
-	private static final DonationRequests REQUESTS = new DonationRequests();
 
 	private static final Map<String, WebSocketEvent<?>> EVENTS = new HashMap<>();
 
@@ -51,7 +51,10 @@ public class WebSocketEvent<T> {
 					whitelist.removeEntry(entry);
 					server.kickPlayersNotWhitelisted(DUMMY_SOURCE.apply(server));
 				}
-				REQUESTS.ackWhitelist(e.name, e.type);
+
+				CompletableFuture.runAsync(() -> {
+					DonationRequests.get().ackWhitelist(e.name, e.type);
+				});
 			});
 
 	private static <T> WebSocketEvent<T> register(String key, Class<T> type) {

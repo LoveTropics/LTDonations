@@ -14,14 +14,23 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
 
 public class DonationRequests extends RequestHelper {
+	private static final DonationRequests INSTANCE = new DonationRequests(
+			DonationConfigs.TECH_STACK.apiUrl::get,
+			DonationConfigs.TECH_STACK.authKey::get
+	);
 
-	public DonationRequests() {
-		super("https://donations.lovetropics.com/", DonationConfigs.TECH_STACK.authKey::get);
+	private DonationRequests(Supplier<String> baseURL, Supplier<String> token) {
+		super(baseURL, token);
+	}
+
+	public static DonationRequests get() {
+		return INSTANCE;
 	}
 
 	public List<WhitelistEvent> getUnprocessedEvents() {

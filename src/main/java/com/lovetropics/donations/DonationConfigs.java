@@ -58,8 +58,9 @@ public class DonationConfigs {
 
     public static final class CategoryTechStack {
         public final ConfigValue<String> authKey;
-        public final ConfigValue<String> url;
-        public final IntValue port;
+        public final ConfigValue<String> apiUrl;
+        public final ConfigValue<String> websocketUrl;
+        public final IntValue websocketPort;
 
         private CategoryTechStack() {
             COMMON_BUILDER.comment("Connection to the tech stack").push("techStack");
@@ -68,13 +69,17 @@ public class DonationConfigs {
                     .comment("API Key used to allow authentication with the tech stack")
                     .define("authKey", "");
 
-            url = COMMON_BUILDER
-                    .comment("Websocket url to post to")
-                    .define("url", "localhost");
+            apiUrl = COMMON_BUILDER
+                    .comment("API url to post to")
+                    .define("apiUrl", "http://localhost");
 
-            port = COMMON_BUILDER
+            websocketUrl = COMMON_BUILDER
+                    .comment("Websocket url to receive from")
+                    .define("websocketUrl", "localhost");
+
+            websocketPort = COMMON_BUILDER
                     .comment("Port number the websocket runs on")
-                    .defineInRange("port", 0, 0, 99999);
+                    .defineInRange("websocketPort", 0, 0, 99999);
             
             COMMON_BUILDER.pop();
         }

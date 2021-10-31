@@ -52,9 +52,9 @@ public class WebSocketHelper {
     }
 
     private static String getUrl() {
-        final int configPort = DonationConfigs.TECH_STACK.port.get();
+        final int configPort = DonationConfigs.TECH_STACK.websocketPort.get();
         final String port = configPort == 0 ? "" : ":" + configPort;
-        return "wss://" + DonationConfigs.TECH_STACK.url.get() + port + "/ws";
+        return "wss://" + DonationConfigs.TECH_STACK.websocketUrl.get() + port + "/ws";
     }
 
     public void tick() {

@@ -1,16 +1,14 @@
 package com.lovetropics.donations.backend.tiltify;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.logging.log4j.LogManager;
-
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.RequestHelper;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
-
 import io.netty.handler.codec.http.HttpMethod;
+import org.apache.logging.log4j.LogManager;
+
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.util.concurrent.TimeUnit;
 
 public class ThreadWorkerDonations extends RequestHelper implements Runnable {
 
@@ -29,7 +27,7 @@ public class ThreadWorkerDonations extends RequestHelper implements Runnable {
     }
 
     public ThreadWorkerDonations() {
-		super("https://tiltify.com/api/v3/", DonationConfigs.TILTIFY.appToken::get);
+		super(() -> "https://tiltify.com/api/v3/", DonationConfigs.TILTIFY.appToken::get);
 	}
 
     public void startThread(DonationData donationData) {

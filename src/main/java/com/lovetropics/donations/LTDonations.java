@@ -80,10 +80,10 @@ public class LTDonations {
 	}
 
 	private void serverStartingEvent(FMLServerStartingEvent event) {
-        final DonationRequests startupRequests = new DonationRequests();
-        CompletableFuture.supplyAsync(() -> startupRequests.getUnprocessedEvents())
+        final DonationRequests startupRequests = DonationRequests.get();
+        CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
-        CompletableFuture.supplyAsync(() -> startupRequests.getTotalDonations())
+        CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
         	.thenAcceptAsync(t -> {
         		// Make sure no monument updates run before the initial one
         		DonationHandler.monument = new MonumentManager();

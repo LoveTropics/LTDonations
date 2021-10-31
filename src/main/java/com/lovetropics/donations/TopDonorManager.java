@@ -23,7 +23,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class TopDonorManager {
-    private static final DonationRequests REQUESTS = new DonationRequests();
     private static final Logger LOGGER = LogManager.getLogger(TopDonorManager.class);
 
     private UUID[] lastEntityUuids;
@@ -31,7 +30,7 @@ public final class TopDonorManager {
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.topDonorUuids;
 
-        CompletableFuture.supplyAsync(() -> REQUESTS.getTopDonors(topDonorUuids.length))
+        CompletableFuture.supplyAsync(() -> DonationRequests.get().getTopDonors(topDonorUuids.length))
                 .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer());
     }
 

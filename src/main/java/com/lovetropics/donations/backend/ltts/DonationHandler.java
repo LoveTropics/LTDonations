@@ -32,7 +32,6 @@ public class DonationHandler {
 
     public static MonumentManager monument;
     public static TopDonorManager topDonors;
-    private static final DonationRequests requests = new DonationRequests();
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
@@ -78,7 +77,7 @@ public class DonationHandler {
 
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
         if (tick % (20 * 60 * 5) == 0) {
-			CompletableFuture.supplyAsync(() -> requests.getUnprocessedEvents())
+			CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
 				.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
         }
     }

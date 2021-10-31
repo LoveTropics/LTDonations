@@ -1,5 +1,12 @@
 package com.lovetropics.donations;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.mojang.datafixers.util.Either;
+import io.netty.handler.codec.http.HttpMethod;
+import net.minecraft.util.Unit;
+
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,38 +16,35 @@ import java.net.URL;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.apache.logging.log4j.LogManager;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.mojang.datafixers.util.Either;
-
-import io.netty.handler.codec.http.HttpMethod;
-import net.minecraft.util.Unit;
-
 public abstract class RequestHelper {
-	static {
-		LogManager.getLogger().info("Classloading RequestHelper", new Throwable());
-	}
-
-	private final String baseURL;
+	private final Supplier<String> baseURL;
 	private final Supplier<String> token;
 
-	protected RequestHelper(String baseURL, Supplier<String> token) {
-		this.baseURL = baseURL.endsWith("/") ? baseURL : baseURL + "/";
+	protected RequestHelper(Supplier<String> baseURL, Supplier<String> token) {
+		this.baseURL = () -> {
+			String url = baseURL.get();
+			return url.endsWith("/") ? url : url + "/";
+		};
 		this.token = token;
 	}
 
+	@Nullable
 	protected HttpURLConnection getAuthorizedConnection(HttpMethod method, String endpoint) throws IOException {
+		String baseUrl = this.baseURL.get();
+		String token = this.token.get();
+		if (baseUrl.isEmpty() || token.isEmpty()) {
+			return null;
+		}
+
 		if (endpoint.startsWith("/")) {
 			endpoint = endpoint.substring(1);
 		}
-		URL url = new URL(baseURL + endpoint);
+		URL url = new URL(baseUrl + endpoint);
 		HttpURLConnection con = (HttpURLConnection) url.openConnection();
 		con.setRequestMethod(method.name());
-		con.setRequestProperty("User-Agent", "LTDonations 1.0 (lovetropics.com)");
+		con.setRequestProperty("User-Agent", "LTDonations 1.0 (lovetropics.org)");
 		con.setRequestProperty("Content-Type", "application/json");
-		con.setRequestProperty("Authorization", "Bearer " + token.get());
+		con.setRequestProperty("Authorization", "Bearer " + token);
 		return con;
 	}
 
@@ -59,6 +63,10 @@ public abstract class RequestHelper {
 	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Function<String, T> parser) {
 		try {
 			HttpURLConnection con = getAuthorizedConnection(method, endpoint);
+			if (con == null) {
+				return Either.right("Connection not configured");
+			}
+
 			try {
 				String payload = readInput(con.getInputStream(), false);
 				System.out.println("REST Response: " + payload);

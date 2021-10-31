@@ -40,17 +40,17 @@ public class CommandDonation {
                     .executes(CommandDonation::fireworks))
             .then(literal("pendingevents").executes(ctx -> {
             	try {
-            		ctx.getSource().sendFeedback(new StringTextComponent(new DonationRequests().getUnprocessedEvents().toString()), true);
+            		ctx.getSource().sendFeedback(new StringTextComponent(DonationRequests.get().getUnprocessedEvents().toString()), true);
             	} catch (Exception e) {
             		return 0;
             	}
             	return Command.SINGLE_SUCCESS;
             }))
             .then(literal("test").then(literal("whitelist").executes(ctx -> {
-            	new DonationRequests().fakeWhitelist();
+            	DonationRequests.get().fakeWhitelist();
             	return Command.SINGLE_SUCCESS;
             })).then(literal("blacklist").executes(ctx -> {
-            	new DonationRequests().fakeBlacklist();
+            	DonationRequests.get().fakeBlacklist();
             	return Command.SINGLE_SUCCESS;
             })))
         );
