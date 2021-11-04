@@ -16,7 +16,7 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     
     private int queued = 0;
     private int randomOffset = 0;
-    
+
     public DonationTileEntity(TileEntityType<? extends DonationTileEntity> type) {
         super(type);
     }
@@ -46,14 +46,20 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
 	        }
 	    }
 	}
-	
+
 	@Override
 	public void remove() {
 	    super.remove();
 	    TickerDonation.removeCallback(this);
 	}
-	
-    @SuppressWarnings("deprecation")
+
+	@Override
+	public void onChunkUnloaded() {
+		super.onChunkUnloaded();
+		TickerDonation.removeCallback(this);
+	}
+
+	@SuppressWarnings("deprecation")
     public void triggerDonation() {
         if (world.isBlockLoaded(getPos())) {
             queued++;
