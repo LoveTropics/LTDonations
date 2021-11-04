@@ -40,7 +40,7 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
 	                pos = pos.up();
 	            }
 
-				FireworkPalette.COOL_EARTH.spawn(pos, getWorld());
+				FireworkPalette.OSA_CONSERVATION.spawn(pos, getWorld());
 	            queued--;
 	            markDirty();
 	        }
