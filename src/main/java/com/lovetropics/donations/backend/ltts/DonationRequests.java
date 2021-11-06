@@ -1,5 +1,6 @@
 package com.lovetropics.donations.backend.ltts;
 
+import com.google.common.base.Charsets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,6 +11,8 @@ import com.lovetropics.donations.backend.ltts.json.PendingEventList;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,8 +43,12 @@ public class DonationRequests extends RequestHelper {
 	}
 
 	public void ackWhitelist(String name, WhitelistEvent.Type type) {
-		request(POST, "players/ack/" + type.name() + "/" + name)
-			.orThrow();
+		try {
+			request(POST, "players/ack/" + type.name() + "/" + URLEncoder.encode(name, Charsets.US_ASCII.name()))
+				.orThrow();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private static int id = 0;

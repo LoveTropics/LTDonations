@@ -1,12 +1,5 @@
 package com.lovetropics.donations;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.mojang.datafixers.util.Either;
-import io.netty.handler.codec.http.HttpMethod;
-import net.minecraft.util.Unit;
-
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +9,25 @@ import java.net.URL;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.mojang.datafixers.util.Either;
+
+import io.netty.handler.codec.http.HttpMethod;
+import net.minecraft.util.Unit;
+
 public abstract class RequestHelper {
+	
+	private static final Logger LOGGER = LogManager.getLogger();
+	static {
+		LOGGER.info("Classloading RequestHelper", new Throwable());
+	}
+
 	private final Supplier<String> baseURL;
 	private final Supplier<String> token;
 
@@ -61,6 +72,7 @@ public abstract class RequestHelper {
 	}
 
 	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Function<String, T> parser) {
+		LOGGER.info("Sending " + method.name() + " " + endpoint);
 		try {
 			HttpURLConnection con = getAuthorizedConnection(method, endpoint);
 			if (con == null) {

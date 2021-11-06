@@ -1,5 +1,12 @@
 package com.lovetropics.donations.backend.ltts;
 
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -7,7 +14,7 @@ import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.backend.ltts.json.WebSocketEventData;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
-import com.mojang.authlib.GameProfile;
+
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.ICommandSource;
 import net.minecraft.server.MinecraftServer;
@@ -18,13 +25,6 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class WebSocketEvent<T> {
 
@@ -38,23 +38,26 @@ public class WebSocketEvent<T> {
 	private static final Function<MinecraftServer, CommandSource> DUMMY_SOURCE = server -> new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, server.getWorld(World.OVERWORLD), 2, "DumbCodeFix", new StringTextComponent(""), server, null);
 	public static final WebSocketEvent<WhitelistEvent> WHITELIST = register("whitelist", WhitelistEvent.class)
 			.on(EventAction.create, e -> {
-				MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-				GameProfile profile = server.getPlayerProfileCache().getGameProfileForUsername(e.name);
-				if (profile == null) return;
-				WhiteList whitelist = server.getPlayerList().getWhitelistedPlayers();
-				WhitelistEntry entry = new WhitelistEntry(profile);
-				if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhitelisted(profile)) {
-					System.out.println("Whitelisting user: " + profile);
-					whitelist.addEntry(entry);
-				} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhitelisted(profile)) {
-					System.out.println("Un-whitelisting user: " + profile);
-					whitelist.removeEntry(entry);
-					server.kickPlayersNotWhitelisted(DUMMY_SOURCE.apply(server));
+				if (!e.name.matches("[a-zA-z0-9_]+")) {
+					System.out.println("YEET: " + e.name);
+					return;
 				}
-
-				CompletableFuture.runAsync(() -> {
-					DonationRequests.get().ackWhitelist(e.name, e.type);
-				});
+				MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+				CompletableFuture.supplyAsync(() -> server.getPlayerProfileCache().getGameProfileForUsername(e.name))
+					.thenAcceptAsync(profile -> {
+						if (profile == null) return;
+						WhiteList whitelist = server.getPlayerList().getWhitelistedPlayers();
+						WhitelistEntry entry = new WhitelistEntry(profile);
+						if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhitelisted(profile)) {
+							System.out.println("Whitelisting user: " + profile);
+							whitelist.addEntry(entry);
+						} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhitelisted(profile)) {
+							System.out.println("Un-whitelisting user: " + profile);
+							whitelist.removeEntry(entry);
+							server.kickPlayersNotWhitelisted(DUMMY_SOURCE.apply(server));
+						}
+					}, server)
+					.thenRunAsync(() -> DonationRequests.get().ackWhitelist(e.name, e.type));
 			});
 
 	private static <T> WebSocketEvent<T> register(String key, Class<T> type) {
