@@ -1,6 +1,7 @@
 package com.lovetropics.donations.backend.ltts;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,6 +19,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpMethod.POST;
@@ -78,8 +81,11 @@ public class DonationRequests extends RequestHelper {
 			UUID uuid = UUID.fromString(donorRoot.get("uuid").getAsString());
 			JsonElement nameElement = donorRoot.get("minecraft_name");
 			String minecraftName = nameElement.isJsonNull() ? null : nameElement.getAsString();
+			List<String> displayNames = StreamSupport.stream(donorRoot.getAsJsonArray("display_names").spliterator(), false)
+					.map(e -> e.getAsString())
+					.collect(Collectors.toList());
 			double total = donorRoot.get("total").getAsDouble();
-			topDonors.add(new TopDonor(uuid, minecraftName, total));
+			topDonors.add(new TopDonor(uuid, minecraftName, displayNames, total));
 		}
 
 		topDonors.sort(Comparator.<TopDonor>comparingDouble(value -> value.total).reversed());

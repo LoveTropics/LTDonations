@@ -1,7 +1,18 @@
 package com.lovetropics.donations;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.server.MinecraftServer;
@@ -14,13 +25,6 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 public final class TopDonorManager {
     private static final Logger LOGGER = LogManager.getLogger(TopDonorManager.class);
@@ -45,7 +49,8 @@ public final class TopDonorManager {
         for (int i = 0; i < newTopDonorLength; i++) {
             UUID entityId = entityIds[i];
             TopDonor donor = topDonors.get(i);
-            this.applyToEntity(entityId, donor.minecraftName, donor.total);
+            List<String> fallbacks = donor.displayNames;
+            this.applyToEntity(entityId, donor.minecraftName, fallbacks.isEmpty() ? "Anonymous" : fallbacks.get(fallbacks.size() - 1), donor.total);
         }
 
         UUID[] lastEntityUuids = this.lastEntityUuids;
@@ -58,7 +63,7 @@ public final class TopDonorManager {
         this.lastEntityUuids = entityIds;
     }
 
-    private void applyToEntity(UUID entityId, String minecraftName, double total) {
+    private void applyToEntity(UUID entityId, String minecraftName, String fallbackName, double total) {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 
@@ -69,7 +74,7 @@ public final class TopDonorManager {
         	data.putString("ProfileName", minecraftName);
         } else {
         	data.putString("ProfileName", "");
-        	data.putString("CustomName", "{\"text\":\"Anonymous\"}");
+        	data.putString("CustomName", "{\"text\":\"" + fallbackName + "\"}");
         }
         ITextComponent suffix = new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
                 .appendSibling(new StringTextComponent(String.format("$%.2f", total)).mergeStyle(TextFormatting.GREEN));
