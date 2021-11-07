@@ -64,7 +64,7 @@ public class DonationHandler {
             donatorsDirty = true;
         }
 
-        if (tick >= nextTopDonorPollTick && donatorsDirty && topDonors != null) {
+        if ((tick >= nextTopDonorPollTick || donatorsDirty) && topDonors != null) {
             topDonors.pollTopDonors();
 
             nextTopDonorPollTick = tick + TOP_DONOR_POLL_INTERVAL;

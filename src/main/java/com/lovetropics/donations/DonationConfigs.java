@@ -130,8 +130,6 @@ public class DonationConfigs {
         public final ConfigValue<String> dimension;
         public final ConfigValue<List<? extends String>> topDonorUuidsConfig;
 
-        public UUID[] topDonorUuids;
-
         private CategoryTopDonors() {
             COMMON_BUILDER.comment("Top Donor Settings").push("top_donor");
 
@@ -149,6 +147,23 @@ public class DonationConfigs {
 
             COMMON_BUILDER.pop();
         }
+
+        public UUID[] getTopDonorUuids() {
+            if(this.active.get()) {
+                List<? extends String> uuidStrings = this.topDonorUuidsConfig.get();
+                List<UUID> uuids = new ArrayList<>(uuidStrings.size());
+                for (String string : uuidStrings) {
+                    try {
+                        uuids.add(UUID.fromString(string));
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace();
+                    }
+                }
+                return uuids.toArray(new UUID[0]);
+            } else {
+                return new UUID[0];
+            }
+        }
     }
 
     public static final ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
@@ -165,20 +180,5 @@ public class DonationConfigs {
 
 	public static void parseConfigs() {
 		MONUMENT.pos = MONUMENT.tryParse(MONUMENT.posConfig.get());
-
-		if(TOP_DONORS.active.get()) {
-            List<? extends String> topDonorUuidsConfig = TOP_DONORS.topDonorUuidsConfig.get();
-            List<UUID> uuids = new ArrayList<>(topDonorUuidsConfig.size());
-            for (String s : topDonorUuidsConfig) {
-                try {
-                    uuids.add(UUID.fromString(s));
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
-            }
-            TOP_DONORS.topDonorUuids = uuids.toArray(new UUID[0]);
-        } else {
-		    TOP_DONORS.topDonorUuids = new UUID[0];
-        }
 	}
 }

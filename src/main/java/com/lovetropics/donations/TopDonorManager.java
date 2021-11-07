@@ -32,14 +32,14 @@ public final class TopDonorManager {
     private UUID[] lastEntityUuids;
 
     public void pollTopDonors() {
-        UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.topDonorUuids;
+        UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
 
         CompletableFuture.supplyAsync(() -> DonationRequests.get().getTopDonors(topDonorUuids.length))
                 .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer());
     }
 
     private void applyTopDonors(List<TopDonor> topDonors) {
-        UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.topDonorUuids;
+        UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
 
         int newTopDonorLength = Math.min(topDonorUuids.length, topDonors.size());
 
