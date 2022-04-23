@@ -41,7 +41,7 @@ public class DonationHandler {
         if (server == null) {
             return;
         }
-        final int tick = server.getTickCounter();
+        final int tick = server.getTickCount();
 
         LTDonations.WEBSOCKET.tick();
 

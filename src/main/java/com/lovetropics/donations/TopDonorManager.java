@@ -67,7 +67,7 @@ public final class TopDonorManager {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 
-        CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
+        CompoundNBT data = entity.saveWithoutId(new CompoundNBT());
         if (minecraftName != null) {
         	data.remove("CustomName");
         	entity.setCustomName(null);
@@ -76,29 +76,29 @@ public final class TopDonorManager {
         	data.putString("ProfileName", "");
         	data.putString("CustomName", "{\"text\":\"" + fallbackName + "\"}");
         }
-        ITextComponent suffix = new StringTextComponent(" - ").mergeStyle(TextFormatting.GRAY)
-                .appendSibling(new StringTextComponent(String.format("$%.2f", total)).mergeStyle(TextFormatting.GREEN));
+        ITextComponent suffix = new StringTextComponent(" - ").withStyle(TextFormatting.GRAY)
+                .append(new StringTextComponent(String.format("$%.2f", total)).withStyle(TextFormatting.GREEN));
         data.putString("NameSuffix", ITextComponent.Serializer.toJson(suffix));
-        entity.read(data);
+        entity.load(data);
     }
 
     private void clearEntity(UUID entityId) {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 
-        CompoundNBT data = entity.writeWithoutTypeId(new CompoundNBT());
+        CompoundNBT data = entity.saveWithoutId(new CompoundNBT());
         data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
         data.putString("ProfileName", "");
         data.remove("NameSuffix");
 
-        entity.read(data);
+        entity.load(data);
     }
 
     @Nullable
     private Entity findEntity(UUID entityId) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         ServerWorld world = this.getWorld(server);
-        Entity entity = world.getEntityByUuid(entityId);
+        Entity entity = world.getEntity(entityId);
         if (entity == null) {
             LOGGER.error("Failed to find entity: " + entityId);
             return null;
@@ -108,11 +108,11 @@ public final class TopDonorManager {
 
     private ServerWorld getWorld(MinecraftServer server) {
         ResourceLocation dimensionId = new ResourceLocation(DonationConfigs.TOP_DONORS.dimension.get());
-        RegistryKey<World> dimensionType = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, dimensionId);
-        ServerWorld world = server.getWorld(dimensionType);
+        RegistryKey<World> dimensionType = RegistryKey.create(Registry.DIMENSION_REGISTRY, dimensionId);
+        ServerWorld world = server.getLevel(dimensionType);
         if (world == null) {
             LOGGER.error("Failed to find dimension : " + DonationConfigs.TOP_DONORS.dimension.get());
-            world = server.func_241755_D_();
+            world = server.overworld();
         }
         return world;
     }

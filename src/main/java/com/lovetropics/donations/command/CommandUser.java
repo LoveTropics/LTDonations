@@ -15,17 +15,17 @@ public class CommandUser implements ICommandSource {
     }
 
     @Override
-    public boolean shouldReceiveFeedback() {
+    public boolean acceptsSuccess() {
         return true;
     }
 
     @Override
-    public boolean shouldReceiveErrors() {
+    public boolean acceptsFailure() {
         return true;
     }
 
     @Override
-    public boolean allowLogging() {
+    public boolean shouldInformAdmins() {
         return true;
     }
 }

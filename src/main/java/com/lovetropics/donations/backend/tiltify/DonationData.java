@@ -18,14 +18,14 @@ public class DonationData extends WorldSavedData {
     }
 
     @Override
-    public void read(CompoundNBT nbt) {
+    public void load(CompoundNBT nbt) {
         lastSeenDate = nbt.getLong("lastSeenDate");
         lastSeenId = nbt.getInt("lastSeenId");
         monumentsPlaced = nbt.getInt("monumentsPlaced");
     }
 
     @Override
-    public CompoundNBT write(CompoundNBT compound) {
+    public CompoundNBT save(CompoundNBT compound) {
         compound.putLong("lastSeenDate", lastSeenDate);
         compound.putInt("lastSeenId", lastSeenId);
         compound.putInt("monumentsPlaced", monumentsPlaced);
@@ -38,7 +38,7 @@ public class DonationData extends WorldSavedData {
     
     public void setLastSeenDate(long id) {
         this.lastSeenDate = id;
-        markDirty();
+        setDirty();
     }
 
     public int getLastSeenId() {
@@ -47,7 +47,7 @@ public class DonationData extends WorldSavedData {
 
     public void setLastSeenId(int id) {
         this.lastSeenId = id;
-        markDirty();
+        setDirty();
     }
 
     public int getMonumentsPlaced() {

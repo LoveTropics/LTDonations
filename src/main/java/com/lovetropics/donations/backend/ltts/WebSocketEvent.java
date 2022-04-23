@@ -35,7 +35,7 @@ public class WebSocketEvent<T> {
 	public static final WebSocketEvent<Donation> DONATION = register("donation", Donation.class)
 			.on(EventAction.create, DonationHandler::queueDonation);
 
-	private static final Function<MinecraftServer, CommandSource> DUMMY_SOURCE = server -> new CommandSource(ICommandSource.DUMMY, Vector3d.ZERO, Vector2f.ZERO, server.getWorld(World.OVERWORLD), 2, "DumbCodeFix", new StringTextComponent(""), server, null);
+	private static final Function<MinecraftServer, CommandSource> DUMMY_SOURCE = server -> new CommandSource(ICommandSource.NULL, Vector3d.ZERO, Vector2f.ZERO, server.getLevel(World.OVERWORLD), 2, "DumbCodeFix", new StringTextComponent(""), server, null);
 	public static final WebSocketEvent<WhitelistEvent> WHITELIST = register("whitelist", WhitelistEvent.class)
 			.on(EventAction.create, e -> {
 				if (!e.name.matches("[a-zA-z0-9_]+")) {
@@ -43,18 +43,18 @@ public class WebSocketEvent<T> {
 					return;
 				}
 				MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-				CompletableFuture.supplyAsync(() -> server.getPlayerProfileCache().getGameProfileForUsername(e.name))
+				CompletableFuture.supplyAsync(() -> server.getProfileCache().get(e.name))
 					.thenAcceptAsync(profile -> {
 						if (profile == null) return;
-						WhiteList whitelist = server.getPlayerList().getWhitelistedPlayers();
+						WhiteList whitelist = server.getPlayerList().getWhiteList();
 						WhitelistEntry entry = new WhitelistEntry(profile);
-						if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhitelisted(profile)) {
+						if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhiteListed(profile)) {
 							System.out.println("Whitelisting user: " + profile);
-							whitelist.addEntry(entry);
-						} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhitelisted(profile)) {
+							whitelist.add(entry);
+						} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhiteListed(profile)) {
 							System.out.println("Un-whitelisting user: " + profile);
-							whitelist.removeEntry(entry);
-							server.kickPlayersNotWhitelisted(DUMMY_SOURCE.apply(server));
+							whitelist.remove(entry);
+							server.kickUnlistedPlayers(DUMMY_SOURCE.apply(server));
 						}
 					}, server)
 					.thenRunAsync(() -> DonationRequests.get().ackWhitelist(e.name, e.type));

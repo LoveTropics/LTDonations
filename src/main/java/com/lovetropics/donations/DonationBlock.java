@@ -23,7 +23,7 @@ public class DonationBlock extends Block {
 
     public static final BlockEntry<DonationBlock> BLOCK = LTDonations.registrate()
     		.block("donation", DonationBlock::new)
-            .properties(p -> Block.Properties.from(Blocks.BEDROCK).noDrops())
+            .properties(p -> Block.Properties.copy(Blocks.BEDROCK).noDrops())
             .simpleTileEntity(DonationTileEntity::new)
             .simpleItem()
             .register();
@@ -34,7 +34,7 @@ public class DonationBlock extends Block {
 	public static final BlockEntry<AirBlock> AIR_LIGHT = LTDonations.registrate()
 			.block("air_light", p -> (AirBlock) new AirBlock(p) {})
 			.initialProperties(() -> Blocks.AIR)
-			.properties(p -> p.setLightLevel(s -> 15))
+			.properties(p -> p.lightLevel(s -> 15))
 			.register();
 
     public static final void register() {}
@@ -55,8 +55,8 @@ public class DonationBlock extends Block {
 
 	@Override
 	@OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-	    super.addInformation(stack, worldIn, tooltip, flagIn);
-	    tooltip.add(new TranslationTextComponent(this.getTranslationKey() + ".desc").mergeStyle(TextFormatting.GRAY));
+    public void appendHoverText(ItemStack stack, IBlockReader worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+	    super.appendHoverText(stack, worldIn, tooltip, flagIn);
+	    tooltip.add(new TranslationTextComponent(this.getDescriptionId() + ".desc").withStyle(TextFormatting.GRAY));
 	}
 }

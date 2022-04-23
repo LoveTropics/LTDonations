@@ -24,7 +24,7 @@ public class CommandDonation {
     
     public static void register(final CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(
-            literal("donation").requires(s -> s.hasPermissionLevel(2))
+            literal("donation").requires(s -> s.hasPermission(2))
             .then(literal("dumpresponse").executes(CommandDonation::dumpResponse))
             .then(literal("reset").executes(CommandDonation::resetDonations))
             .then(literal("last")
@@ -40,7 +40,7 @@ public class CommandDonation {
                     .executes(CommandDonation::fireworks))
             .then(literal("pendingevents").executes(ctx -> {
             	try {
-            		ctx.getSource().sendFeedback(new StringTextComponent(DonationRequests.get().getUnprocessedEvents().toString()), true);
+            		ctx.getSource().sendSuccess(new StringTextComponent(DonationRequests.get().getUnprocessedEvents().toString()), true);
             	} catch (Exception e) {
             		return 0;
             	}
@@ -57,7 +57,7 @@ public class CommandDonation {
     }
 
     public static int dumpResponse(CommandContext<CommandSource> ctx) {
-        ctx.getSource().sendFeedback(new StringTextComponent(ThreadWorkerDonations.getInstance().getData_Real()), false);
+        ctx.getSource().sendSuccess(new StringTextComponent(ThreadWorkerDonations.getInstance().getData_Real()), false);
         return Command.SINGLE_SUCCESS;
     }
     
@@ -67,7 +67,7 @@ public class CommandDonation {
             synchronized (data) {
                 data.resetData();
             }
-            ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_RESET_DONATION.getComponent(), true);
+            ctx.getSource().sendSuccess(DonationLangKeys.COMMAND_RESET_DONATION.getComponent(), true);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -79,15 +79,15 @@ public class CommandDonation {
                 data.setLastSeenId(id);
                 data.setLastSeenDate(0);
             }
-            ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_RESET_LAST_DONATION.format(id), true);
+            ctx.getSource().sendSuccess(DonationLangKeys.COMMAND_RESET_LAST_DONATION.format(id), true);
         }
         return Command.SINGLE_SUCCESS;
     }
     
     public static int simulate(CommandContext<CommandSource> ctx, String name, double amount) {
-    	SharedConstants.developmentMode = true;
+    	SharedConstants.IS_RUNNING_IN_IDE = true;
         if (!name.isEmpty()) {
-            ctx.getSource().sendFeedback(DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
+            ctx.getSource().sendSuccess(DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
         }
         TickerDonation.simulateDonation(name, amount);
         return Command.SINGLE_SUCCESS;

@@ -47,7 +47,7 @@ public class TickerDonation {
         if (event.phase != Phase.END) return;
         if (!ThreadWorkerDonations.getInstance().running 
                 && !DonationConfigs.TILTIFY.appToken.get().isEmpty() && DonationConfigs.TILTIFY.campaignId.get() != 0 
-                && ServerLifecycleHooks.getCurrentServer().getPlayerList().getCurrentPlayerCount() > 0) {
+                && ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayerCount() > 0) {
             donationData = getSavedData();
             ThreadWorkerDonations.getInstance().startThread(donationData);
         }
@@ -65,7 +65,7 @@ public class TickerDonation {
     }
     
     public static DonationData getSavedData() {
-        return getOverworld().getSavedData().getOrCreate(DonationData::new, DonationData.ID);
+        return getOverworld().getDataStorage().computeIfAbsent(DonationData::new, DonationData.ID);
     }
 
     /** called once thread checked for new data, and made sure server is still running **/
@@ -84,7 +84,7 @@ public class TickerDonation {
                 		TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(donation.amount) + TextFormatting.RESET))
                 .forEach(msg -> {
                     server.getPlayerList().getPlayers().stream()
-                            .forEach(p -> p.sendStatusMessage(msg, false));
+                            .forEach(p -> p.displayClientMessage(msg, false));
 
                     triggerDonation();
                 });
@@ -108,8 +108,8 @@ public class TickerDonation {
             if (amountPerMonument > 0) {
                 while (donationData.getMonumentsPlaced() < data.totalDonated / amountPerMonument) {
                     donationData.setMonumentsPlaced(donationData.getMonumentsPlaced() + 1);
-                    server.getCommandManager().handleCommand(
-                            new CommandSource(new CommandUser(), Vector3d.copy(world.getSpawnPoint()), Vector2f.ZERO, world, 4, "LTDonations", new StringTextComponent("Tiltify Donation Tracker"), server, null),
+                    server.getCommands().performCommand(
+                            new CommandSource(new CommandUser(), Vector3d.atLowerCornerOf(world.getSharedSpawnPos()), Vector2f.ZERO, world, 4, "LTDonations", new StringTextComponent("Tiltify Donation Tracker"), server, null),
                             DonationConfigs.TILTIFY.tiltifyCommandRun.get());
                 }
             }
@@ -132,13 +132,13 @@ public class TickerDonation {
     public static void sendDonationMessage(final String name, final double amount) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         server.getPlayerList().getPlayers()
-                .forEach(p -> p.sendStatusMessage(DonationLangKeys.NEW_DONATION.format(
+                .forEach(p -> p.displayClientMessage(DonationLangKeys.NEW_DONATION.format(
                         TextFormatting.AQUA + name + TextFormatting.RESET.toString(),
                         TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + TextFormatting.RESET), false));
     }
     
     private static ServerWorld getOverworld() {
-        return ServerLifecycleHooks.getCurrentServer().func_241755_D_();
+        return ServerLifecycleHooks.getCurrentServer().overworld();
     }
 
     public static void triggerDonation() {

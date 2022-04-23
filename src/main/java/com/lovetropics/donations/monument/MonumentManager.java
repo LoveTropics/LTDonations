@@ -77,15 +77,15 @@ public class MonumentManager {
 				.thenComparingDouble(p -> {
 					if (p.equals(BlockPos.ZERO)) return -1;
 
-					Vector3d v1 = Vector3d.copy(p);
+					Vector3d v1 = Vector3d.atLowerCornerOf(p);
 					Vector3d v2 = new Vector3d(Vector3f.XN);
 
-					Vector3d cross = v1.crossProduct(v2);
-					double dot = v1.dotProduct(v2);
+					Vector3d cross = v1.cross(v2);
+					double dot = v1.dot(v2);
 
 					double angle = Math.atan2(cross.length(), dot);
 
-					double test = new Vector3d(Vector3f.YP).dotProduct(cross);
+					double test = new Vector3d(Vector3f.YP).dot(cross);
 					if (test < 0.0) angle = -angle + (Math.PI * 2);
 					return angle;
 				}));
@@ -94,7 +94,7 @@ public class MonumentManager {
 	}
 
 	private static List<BlockPos> range(int minX, int minZ, int maxX, int maxZ) {
-		return BlockPos.getAllInBox(minX, 0, minZ, maxX, 0, maxZ).map(BlockPos::toImmutable).collect(Collectors.toList());
+		return BlockPos.betweenClosedStream(minX, 0, minZ, maxX, 0, maxZ).map(BlockPos::immutable).collect(Collectors.toList());
 	}
 
 	private static final Block[][] BLOCKS = new Block[][] {
@@ -150,29 +150,29 @@ public class MonumentManager {
 	}
 
 	private ServerWorld getWorld(MinecraftServer server) {
-		RegistryKey<World> dimension = RegistryKey.getOrCreateKey(Registry.WORLD_KEY, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
-		ServerWorld world = server.getWorld(dimension);
+		RegistryKey<World> dimension = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
+		ServerWorld world = server.getLevel(dimension);
 		if (world == null) {
 			LOGGER.error("Failed to find dimension : " + DonationConfigs.MONUMENT.dimension.get());
-			world = ServerLifecycleHooks.getCurrentServer().func_241755_D_();
+			world = ServerLifecycleHooks.getCurrentServer().overworld();
 		}
 		return world;
 	}
 
 	private @Nullable BlockPos addMonumentBlock(ServerWorld world, int level, int step) {
 		BlockPos pos = DonationConfigs.MONUMENT.pos;
-		pos = pos.up(level);
+		pos = pos.above(level);
 		BlockPos offset = LAYER_POSITIONS.get(step);
-		pos = pos.add(offset);
+		pos = pos.offset(offset);
 		int color = (level / LAYERS_PER_COLOR) % COLORS.length;
-		BlockState state = BLOCKS[color][0].getDefaultState();
+		BlockState state = BLOCKS[color][0].defaultBlockState();
 		blockQueue.offer(new QueuedBlock(pos, state, color, level, step));
 		return null;
 	}
 
 	public void tick(MinecraftServer server) {
 		if (!DonationConfigs.MONUMENT.active.get()) return;
-		if (server.getTickCounter() % 10 == 0) {
+		if (server.getTickCount() % 10 == 0) {
 			drain(server, 1);
 		}
 	}
@@ -189,18 +189,18 @@ public class MonumentManager {
 		while ((amt < 0 || amt-- > 0) && !blockQueue.isEmpty()) {
 			QueuedBlock queued = blockQueue.poll();
 			BlockPos pos = queued.pos;
-			if (world.setBlockState(pos, queued.state, 0)) {
-				world.getChunkProvider().markBlockChanged(pos);
+			if (world.setBlock(pos, queued.state, 0)) {
+				world.getChunkSource().blockChanged(pos);
 				if (queued.step == LAYER_POSITIONS.size() - 1) {
 					// A layer has completed, send a message
 					ITextComponent message = new StringTextComponent("The Monument")
-							.mergeStyle(TextFormatting.BOLD, COLORS[queued.color])
-							.appendSibling(new StringTextComponent(" has grown to ")
-								.setStyle(Style.EMPTY.setBold(false).setFormatting(TextFormatting.WHITE))
-								.appendSibling(new StringTextComponent("LEVEL " + (queued.layer + 1) + "!")
+							.withStyle(TextFormatting.BOLD, COLORS[queued.color])
+							.append(new StringTextComponent(" has grown to ")
+								.setStyle(Style.EMPTY.withBold(false).withColor(TextFormatting.WHITE))
+								.append(new StringTextComponent("LEVEL " + (queued.layer + 1) + "!")
 									.setStyle(Style.EMPTY.setUnderlined(true))));
 
-					world.getPlayers().forEach(p -> p.sendStatusMessage(message, false));
+					world.players().forEach(p -> p.displayClientMessage(message, false));
 					sendToDiscord(message.getString());
 				} else if (queued.step == 0 && queued.layer % LAYERS_PER_COLOR == 0) {
 					// A new layer has begun, update the glass
@@ -209,24 +209,24 @@ public class MonumentManager {
 				if (amt >= 0) { // Not an infinite drain
 					// Throw some particles around
 					Random rand = world.getRandom();
-					Vector3d center = Vector3d.copy(pos).add(0.5, 0.5, 0.5);
+					Vector3d center = Vector3d.atLowerCornerOf(pos).add(0.5, 0.5, 0.5);
 					for (int i = 0; i < 20; i++) {
-						Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.byHorizontalIndex(rand.nextInt(4));
-						Vector3d spawnPos = center.add(Vector3d.copy(dir.getDirectionVec()).scale(0.6f))
-								.add((rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getXOffset())),
-									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getYOffset())),
-									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getZOffset())));
+						Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.from2DDataValue(rand.nextInt(4));
+						Vector3d spawnPos = center.add(Vector3d.atLowerCornerOf(dir.getNormal()).scale(0.6f))
+								.add((rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepX())),
+									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepY())),
+									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepZ())));
 						Vector3d speed = spawnPos.subtract(center);
-						world.spawnParticle(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
+						world.sendParticles(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
 					}
 				}
 			}
 			for (Direction dir : Direction.values()) {
 				if (dir != Direction.DOWN) {
-					BlockPos airPos = pos.offset(dir);
+					BlockPos airPos = pos.relative(dir);
 					BlockState atPos = world.getBlockState(airPos);
-					if ((atPos.isAir(world, airPos) || atPos.getBlock() == Blocks.WATER) && world.setBlockState(airPos, DonationBlock.AIR_LIGHT.getDefaultState())) {
-						world.getChunkProvider().markBlockChanged(airPos);
+					if ((atPos.isAir(world, airPos) || atPos.getBlock() == Blocks.WATER) && world.setBlockAndUpdate(airPos, DonationBlock.AIR_LIGHT.getDefaultState())) {
+						world.getChunkSource().blockChanged(airPos);
 					}
 				}
 			}
@@ -234,8 +234,8 @@ public class MonumentManager {
 		// Run this at the end so that it doesn't go multiple times in the intitial drain
 		if (updateGlassToColor >= 0) {
 			for (BlockPos glass : nearbyGlass) {
-				if (world.setBlockState(glass, BLOCKS[updateGlassToColor][1].getDefaultState(), 0)) {
-					world.getChunkProvider().markBlockChanged(glass);
+				if (world.setBlock(glass, BLOCKS[updateGlassToColor][1].defaultBlockState(), 0)) {
+					world.getChunkSource().blockChanged(glass);
 				}
 			}
 		}
@@ -243,13 +243,13 @@ public class MonumentManager {
 
 	private void rescanGlass(ServerWorld world, BlockPos center) {
 		nearbyGlass.clear();
-		BlockPos first = center.down(1).east(GLASS_SEARCH_HORIZ).north(GLASS_SEARCH_HORIZ);
-		BlockPos second = center.up(GLASS_SEARCH_VERT).west(GLASS_SEARCH_HORIZ).south(GLASS_SEARCH_HORIZ);
+		BlockPos first = center.below(1).east(GLASS_SEARCH_HORIZ).north(GLASS_SEARCH_HORIZ);
+		BlockPos second = center.above(GLASS_SEARCH_VERT).west(GLASS_SEARCH_HORIZ).south(GLASS_SEARCH_HORIZ);
 		Map<ChunkPos, Chunk> chunkCache = new HashMap<>();
-		BlockPos.getAllInBox(first, second).forEach(pos -> {
+		BlockPos.betweenClosedStream(first, second).forEach(pos -> {
 			Chunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> world.getChunk(p.x, p.z));
-			if (chunk.getBlockState(pos).isIn(Tags.Blocks.STAINED_GLASS)) {
-				nearbyGlass.add(pos.toImmutable());
+			if (chunk.getBlockState(pos).is(Tags.Blocks.STAINED_GLASS)) {
+				nearbyGlass.add(pos.immutable());
 			}
 		});
 	}

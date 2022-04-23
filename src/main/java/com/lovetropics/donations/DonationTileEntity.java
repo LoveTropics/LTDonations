@@ -22,34 +22,34 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     }
     
     @Override
-    public void setWorldAndPos(World worldIn, BlockPos pos) {
-        super.setWorldAndPos(worldIn, pos);
+    public void setLevelAndPosition(World worldIn, BlockPos pos) {
+        super.setLevelAndPosition(worldIn, pos);
         this.randomOffset = worldIn.getRandom().nextInt(20);
     }
     
 	@Override
 	public void tick() {
-	    if (!getWorld().isRemote) {
+	    if (!getLevel().isClientSide) {
 	        if (!registered) {
 	            TickerDonation.addCallback(this);
 	            registered = true;
 	        }
-	        if (queued > 0 && getWorld().getGameTime() % 20 == randomOffset) {
-	            BlockPos pos = getPos().up();
-	            while (!getWorld().isAirBlock(pos) && pos.getY() < getPos().getY() + 10) {
-	                pos = pos.up();
+	        if (queued > 0 && getLevel().getGameTime() % 20 == randomOffset) {
+	            BlockPos pos = getBlockPos().above();
+	            while (!getLevel().isEmptyBlock(pos) && pos.getY() < getBlockPos().getY() + 10) {
+	                pos = pos.above();
 	            }
 
-				FireworkPalette.OSA_CONSERVATION.spawn(pos, getWorld());
+				FireworkPalette.OSA_CONSERVATION.spawn(pos, getLevel());
 	            queued--;
-	            markDirty();
+	            setChanged();
 	        }
 	    }
 	}
 
 	@Override
-	public void remove() {
-	    super.remove();
+	public void setRemoved() {
+	    super.setRemoved();
 	    TickerDonation.removeCallback(this);
 	}
 
@@ -61,21 +61,21 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
 
 	@SuppressWarnings("deprecation")
     public void triggerDonation() {
-        if (world.isBlockLoaded(getPos())) {
+        if (level.hasChunkAt(getBlockPos())) {
             queued++;
-            markDirty();
+            setChanged();
         }
     }
 
     @Override
-    public void read(BlockState blockState, CompoundNBT nbt) {
-		super.read(blockState, nbt);
+    public void load(BlockState blockState, CompoundNBT nbt) {
+		super.load(blockState, nbt);
 		this.queued = nbt.getInt("queuedDonations");
 	}
 
     @Override
-    public CompoundNBT write(CompoundNBT nbt) {
-		super.write(nbt);
+    public CompoundNBT save(CompoundNBT nbt) {
+		super.save(nbt);
 		nbt.putInt("queuedDonations", queued);
 		return nbt;
 	}
