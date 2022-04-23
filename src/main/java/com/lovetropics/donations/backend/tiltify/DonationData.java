@@ -1,9 +1,9 @@
 package com.lovetropics.donations.backend.tiltify;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
 
-public class DonationData extends WorldSavedData {
+public class DonationData extends SavedData {
     
     public static final String ID = "donationData";
 
@@ -18,14 +18,14 @@ public class DonationData extends WorldSavedData {
     }
 
     @Override
-    public void load(CompoundNBT nbt) {
+    public void load(CompoundTag nbt) {
         lastSeenDate = nbt.getLong("lastSeenDate");
         lastSeenId = nbt.getInt("lastSeenId");
         monumentsPlaced = nbt.getInt("monumentsPlaced");
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT compound) {
+    public CompoundTag save(CompoundTag compound) {
         compound.putLong("lastSeenDate", lastSeenDate);
         compound.putInt("lastSeenId", lastSeenId);
         compound.putInt("monumentsPlaced", monumentsPlaced);

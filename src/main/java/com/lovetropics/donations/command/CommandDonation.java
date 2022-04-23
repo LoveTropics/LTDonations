@@ -11,18 +11,18 @@ import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.command.CommandSource;
-import net.minecraft.util.SharedConstants;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.SharedConstants;
+import net.minecraft.network.chat.TextComponent;
 
 import java.text.NumberFormat;
 
 import static net.minecraft.command.Commands.argument;
-import static net.minecraft.command.Commands.literal;
+import staticnet.minecraft.commands.Commandss.literal;
 
 public class CommandDonation {
     
-    public static void register(final CommandDispatcher<CommandSource> dispatcher) {
+    public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
             literal("donation").requires(s -> s.hasPermission(2))
             .then(literal("dumpresponse").executes(CommandDonation::dumpResponse))
@@ -40,7 +40,7 @@ public class CommandDonation {
                     .executes(CommandDonation::fireworks))
             .then(literal("pendingevents").executes(ctx -> {
             	try {
-            		ctx.getSource().sendSuccess(new StringTextComponent(DonationRequests.get().getUnprocessedEvents().toString()), true);
+            		ctx.getSource().sendSuccess(new TextComponent(DonationRequests.get().getUnprocessedEvents().toString()), true);
             	} catch (Exception e) {
             		return 0;
             	}
@@ -56,12 +56,12 @@ public class CommandDonation {
         );
     }
 
-    public static int dumpResponse(CommandContext<CommandSource> ctx) {
-        ctx.getSource().sendSuccess(new StringTextComponent(ThreadWorkerDonations.getInstance().getData_Real()), false);
+    public static int dumpResponse(CommandContext<CommandSourceStack> ctx) {
+        ctx.getSource().sendSuccess(new TextComponent(ThreadWorkerDonations.getInstance().getData_Real()), false);
         return Command.SINGLE_SUCCESS;
     }
     
-    public static int resetDonations(CommandContext<CommandSource> ctx) {
+    public static int resetDonations(CommandContext<CommandSourceStack> ctx) {
         DonationData data = TickerDonation.getSavedData();
         if (data != null) {
             synchronized (data) {
@@ -72,7 +72,7 @@ public class CommandDonation {
         return Command.SINGLE_SUCCESS;
     }
 
-    public static int setLastSeen(CommandContext<CommandSource> ctx, int id) {
+    public static int setLastSeen(CommandContext<CommandSourceStack> ctx, int id) {
         DonationData data = TickerDonation.getSavedData();
         if (data != null) {
             synchronized (data) {
@@ -84,7 +84,7 @@ public class CommandDonation {
         return Command.SINGLE_SUCCESS;
     }
     
-    public static int simulate(CommandContext<CommandSource> ctx, String name, double amount) {
+    public static int simulate(CommandContext<CommandSourceStack> ctx, String name, double amount) {
     	SharedConstants.IS_RUNNING_IN_IDE = true;
         if (!name.isEmpty()) {
             ctx.getSource().sendSuccess(DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
@@ -93,7 +93,7 @@ public class CommandDonation {
         return Command.SINGLE_SUCCESS;
     }
     
-    public static int fireworks(CommandContext<CommandSource> ctx) {
+    public static int fireworks(CommandContext<CommandSourceStack> ctx) {
         return simulate(ctx, "", 0);
     }
 }

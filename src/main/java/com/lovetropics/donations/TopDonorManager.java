@@ -13,17 +13,17 @@ import org.apache.logging.log4j.Logger;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public final class TopDonorManager {
@@ -67,7 +67,7 @@ public final class TopDonorManager {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 
-        CompoundNBT data = entity.saveWithoutId(new CompoundNBT());
+        CompoundTag data = entity.saveWithoutId(new CompoundTag());
         if (minecraftName != null) {
         	data.remove("CustomName");
         	entity.setCustomName(null);
@@ -76,9 +76,9 @@ public final class TopDonorManager {
         	data.putString("ProfileName", "");
         	data.putString("CustomName", "{\"text\":\"" + fallbackName + "\"}");
         }
-        ITextComponent suffix = new StringTextComponent(" - ").withStyle(TextFormatting.GRAY)
-                .append(new StringTextComponent(String.format("$%.2f", total)).withStyle(TextFormatting.GREEN));
-        data.putString("NameSuffix", ITextComponent.Serializer.toJson(suffix));
+        Component suffix = new TextComponent(" - ").withStyle(ChatFormatting.GRAY)
+                .append(new TextComponent(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
+        data.putString("NameSuffix", Component.Serializer.toJson(suffix));
         entity.load(data);
     }
 
@@ -86,7 +86,7 @@ public final class TopDonorManager {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 
-        CompoundNBT data = entity.saveWithoutId(new CompoundNBT());
+        CompoundTag data = entity.saveWithoutId(new CompoundTag());
         data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
         data.putString("ProfileName", "");
         data.remove("NameSuffix");
@@ -97,7 +97,7 @@ public final class TopDonorManager {
     @Nullable
     private Entity findEntity(UUID entityId) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        ServerWorld world = this.getWorld(server);
+        ServerLevel world = this.getWorld(server);
         Entity entity = world.getEntity(entityId);
         if (entity == null) {
             LOGGER.error("Failed to find entity: " + entityId);
@@ -106,10 +106,10 @@ public final class TopDonorManager {
         return entity;
     }
 
-    private ServerWorld getWorld(MinecraftServer server) {
+    private ServerLevel getWorld(MinecraftServer server) {
         ResourceLocation dimensionId = new ResourceLocation(DonationConfigs.TOP_DONORS.dimension.get());
-        RegistryKey<World> dimensionType = RegistryKey.create(Registry.DIMENSION_REGISTRY, dimensionId);
-        ServerWorld world = server.getLevel(dimensionType);
+        ResourceKey<Level> dimensionType = ResourceKey.create(Registry.DIMENSION_REGISTRY, dimensionId);
+        ServerLevel world = server.getLevel(dimensionType);
         if (world == null) {
             LOGGER.error("Failed to find dimension : " + DonationConfigs.TOP_DONORS.dimension.get());
             world = server.overworld();

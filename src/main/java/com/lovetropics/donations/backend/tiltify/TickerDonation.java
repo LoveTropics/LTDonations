@@ -11,14 +11,14 @@ import com.lovetropics.donations.backend.tiltify.json.JsonDataDonationEntry;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonation;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonationTotal;
 import com.lovetropics.donations.command.CommandUser;
-import net.minecraft.command.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -72,7 +72,7 @@ public class TickerDonation {
     public static void processDonationsServer(JsonDataDonation data) {
 
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        ServerWorld world = getOverworld();
+        ServerLevel world = getOverworld();
 
         if (world == null) return;
 
@@ -80,8 +80,8 @@ public class TickerDonation {
                 .sorted(Comparator.comparingLong(JsonDataDonationEntry::getDate))
                 .filter(entry -> entry.getDate() > donationData.getLastSeenDate())
                 .map(donation -> DonationLangKeys.NEW_DONATION.format(
-                		TextFormatting.AQUA + donation.name + TextFormatting.RESET.toString(),
-                		TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(donation.amount) + TextFormatting.RESET))
+                		ChatFormatting.AQUA + donation.name + ChatFormatting.RESET.toString(),
+                		ChatFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(donation.amount) + ChatFormatting.RESET))
                 .forEach(msg -> {
                     server.getPlayerList().getPlayers().stream()
                             .forEach(p -> p.displayClientMessage(msg, false));
@@ -109,7 +109,7 @@ public class TickerDonation {
                 while (donationData.getMonumentsPlaced() < data.totalDonated / amountPerMonument) {
                     donationData.setMonumentsPlaced(donationData.getMonumentsPlaced() + 1);
                     server.getCommands().performCommand(
-                            new CommandSource(new CommandUser(), Vector3d.atLowerCornerOf(world.getSharedSpawnPos()), Vector2f.ZERO, world, 4, "LTDonations", new StringTextComponent("Tiltify Donation Tracker"), server, null),
+                            new CommandSourceStack(new CommandUser(), Vec3.atLowerCornerOf(world.getSharedSpawnPos()), Vec2.ZERO, world, 4, "LTDonations", new TextComponent("Tiltify Donation Tracker"), server, null),
                             DonationConfigs.TILTIFY.tiltifyCommandRun.get());
                 }
             }
@@ -118,7 +118,7 @@ public class TickerDonation {
 
     public static void simulateDonation(String name, double amount) {
 
-        World world = getOverworld();
+        Level world = getOverworld();
 
         if (world == null) return;
 
@@ -133,11 +133,11 @@ public class TickerDonation {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         server.getPlayerList().getPlayers()
                 .forEach(p -> p.displayClientMessage(DonationLangKeys.NEW_DONATION.format(
-                        TextFormatting.AQUA + name + TextFormatting.RESET.toString(),
-                        TextFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + TextFormatting.RESET), false));
+                        ChatFormatting.AQUA + name + ChatFormatting.RESET.toString(),
+                        ChatFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + ChatFormatting.RESET), false));
     }
     
-    private static ServerWorld getOverworld() {
+    private static ServerLevel getOverworld() {
         return ServerLifecycleHooks.getCurrentServer().overworld();
     }
 

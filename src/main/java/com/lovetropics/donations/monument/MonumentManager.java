@@ -3,26 +3,26 @@ package com.lovetropics.donations.monument;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.donations.DonationBlock;
 import com.lovetropics.donations.DonationConfigs;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.particles.ParticleTypes;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.phys.Vec3;
+import com.mojang.math.Vector3f;
+import net.minecraft.core.Registry;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.ChatFormatting;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.common.Tags;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
@@ -77,15 +77,15 @@ public class MonumentManager {
 				.thenComparingDouble(p -> {
 					if (p.equals(BlockPos.ZERO)) return -1;
 
-					Vector3d v1 = Vector3d.atLowerCornerOf(p);
-					Vector3d v2 = new Vector3d(Vector3f.XN);
+					Vec3 v1 = Vec3.atLowerCornerOf(p);
+					Vec3 v2 = new Vec3(Vector3f.XN);
 
-					Vector3d cross = v1.cross(v2);
+					Vec3 cross = v1.cross(v2);
 					double dot = v1.dot(v2);
 
 					double angle = Math.atan2(cross.length(), dot);
 
-					double test = new Vector3d(Vector3f.YP).dot(cross);
+					double test = new Vec3(Vector3f.YP).dot(cross);
 					if (test < 0.0) angle = -angle + (Math.PI * 2);
 					return angle;
 				}));
@@ -106,14 +106,14 @@ public class MonumentManager {
 			{ Blocks.BLUE_CONCRETE, Blocks.BLUE_STAINED_GLASS },
 			{ Blocks.PURPLE_CONCRETE, Blocks.PURPLE_STAINED_GLASS },
 	};
-	private static final TextFormatting[] COLORS = new TextFormatting[] {
-			TextFormatting.RED,
-			TextFormatting.GOLD,
-			TextFormatting.YELLOW,
-			TextFormatting.GREEN,
-			TextFormatting.AQUA,
-			TextFormatting.BLUE,
-			TextFormatting.DARK_PURPLE,			
+	private static final ChatFormatting[] COLORS = new ChatFormatting[] {
+			ChatFormatting.RED,
+			ChatFormatting.GOLD,
+			ChatFormatting.YELLOW,
+			ChatFormatting.GREEN,
+			ChatFormatting.AQUA,
+			ChatFormatting.BLUE,
+			ChatFormatting.DARK_PURPLE,			
 	};
 
 	private BlockPos lastPos = null;
@@ -127,7 +127,7 @@ public class MonumentManager {
 		if (!DonationConfigs.MONUMENT.active.get()) return;
 		LOGGER.info("Total: " + amount);
 		if (amount == prevAmount) return;
-		ServerWorld world = getWorld(ServerLifecycleHooks.getCurrentServer());
+		ServerLevel world = getWorld(ServerLifecycleHooks.getCurrentServer());
 		BlockPos pos = DonationConfigs.MONUMENT.pos;
 		if (!pos.equals(lastPos)) {
 			lastPos = pos;
@@ -149,9 +149,9 @@ public class MonumentManager {
 		}
 	}
 
-	private ServerWorld getWorld(MinecraftServer server) {
-		RegistryKey<World> dimension = RegistryKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
-		ServerWorld world = server.getLevel(dimension);
+	private ServerLevel getWorld(MinecraftServer server) {
+		ResourceKey<Level> dimension = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
+		ServerLevel world = server.getLevel(dimension);
 		if (world == null) {
 			LOGGER.error("Failed to find dimension : " + DonationConfigs.MONUMENT.dimension.get());
 			world = ServerLifecycleHooks.getCurrentServer().overworld();
@@ -159,7 +159,7 @@ public class MonumentManager {
 		return world;
 	}
 
-	private @Nullable BlockPos addMonumentBlock(ServerWorld world, int level, int step) {
+	private @Nullable BlockPos addMonumentBlock(ServerLevel world, int level, int step) {
 		BlockPos pos = DonationConfigs.MONUMENT.pos;
 		pos = pos.above(level);
 		BlockPos offset = LAYER_POSITIONS.get(step);
@@ -184,7 +184,7 @@ public class MonumentManager {
 		drain(getWorld(server), amt);
 	}
 
-	private void drain(ServerWorld world, int amt) {
+	private void drain(ServerLevel world, int amt) {
 		int updateGlassToColor = -1;
 		while ((amt < 0 || amt-- > 0) && !blockQueue.isEmpty()) {
 			QueuedBlock queued = blockQueue.poll();
@@ -193,11 +193,11 @@ public class MonumentManager {
 				world.getChunkSource().blockChanged(pos);
 				if (queued.step == LAYER_POSITIONS.size() - 1) {
 					// A layer has completed, send a message
-					ITextComponent message = new StringTextComponent("The Monument")
-							.withStyle(TextFormatting.BOLD, COLORS[queued.color])
-							.append(new StringTextComponent(" has grown to ")
-								.setStyle(Style.EMPTY.withBold(false).withColor(TextFormatting.WHITE))
-								.append(new StringTextComponent("LEVEL " + (queued.layer + 1) + "!")
+					Component message = new TextComponent("The Monument")
+							.withStyle(ChatFormatting.BOLD, COLORS[queued.color])
+							.append(new TextComponent(" has grown to ")
+								.setStyle(Style.EMPTY.withBold(false).withColor(ChatFormatting.WHITE))
+								.append(new TextComponent("LEVEL " + (queued.layer + 1) + "!")
 									.setStyle(Style.EMPTY.setUnderlined(true))));
 
 					world.players().forEach(p -> p.displayClientMessage(message, false));
@@ -209,14 +209,14 @@ public class MonumentManager {
 				if (amt >= 0) { // Not an infinite drain
 					// Throw some particles around
 					Random rand = world.getRandom();
-					Vector3d center = Vector3d.atLowerCornerOf(pos).add(0.5, 0.5, 0.5);
+					Vec3 center = Vec3.atLowerCornerOf(pos).add(0.5, 0.5, 0.5);
 					for (int i = 0; i < 20; i++) {
 						Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.from2DDataValue(rand.nextInt(4));
-						Vector3d spawnPos = center.add(Vector3d.atLowerCornerOf(dir.getNormal()).scale(0.6f))
+						Vec3 spawnPos = center.add(Vec3.atLowerCornerOf(dir.getNormal()).scale(0.6f))
 								.add((rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepX())),
 									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepY())),
 									 (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepZ())));
-						Vector3d speed = spawnPos.subtract(center);
+						Vec3 speed = spawnPos.subtract(center);
 						world.sendParticles(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
 					}
 				}
@@ -241,13 +241,13 @@ public class MonumentManager {
 		}
 	}
 
-	private void rescanGlass(ServerWorld world, BlockPos center) {
+	private void rescanGlass(ServerLevel world, BlockPos center) {
 		nearbyGlass.clear();
 		BlockPos first = center.below(1).east(GLASS_SEARCH_HORIZ).north(GLASS_SEARCH_HORIZ);
 		BlockPos second = center.above(GLASS_SEARCH_VERT).west(GLASS_SEARCH_HORIZ).south(GLASS_SEARCH_HORIZ);
-		Map<ChunkPos, Chunk> chunkCache = new HashMap<>();
+		Map<ChunkPos, LevelChunk> chunkCache = new HashMap<>();
 		BlockPos.betweenClosedStream(first, second).forEach(pos -> {
-			Chunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> world.getChunk(p.x, p.z));
+			LevelChunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> world.getChunk(p.x, p.z));
 			if (chunk.getBlockState(pos).is(Tags.Blocks.STAINED_GLASS)) {
 				nearbyGlass.add(pos.immutable());
 			}

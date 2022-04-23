@@ -3,8 +3,8 @@ package com.lovetropics.donations;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.RegistrateLangProvider;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.TranslatableComponent;
 
 public enum DonationLangKeys {
 
@@ -29,14 +29,14 @@ public enum DonationLangKeys {
     	this.value = value;
     }
     
-    private TranslationTextComponent component;
+    private TranslatableComponent component;
     
-    public TranslationTextComponent getComponent() {
+    public TranslatableComponent getComponent() {
     	return component;
     }
     
-    public TranslationTextComponent format(Object... args) {
-        return new TranslationTextComponent(getComponent().getKey(), args);
+    public TranslatableComponent format(Object... args) {
+        return new TranslatableComponent(getComponent().getKey(), args);
     }
     
     public String getLocalizedText() {

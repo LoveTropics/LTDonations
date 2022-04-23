@@ -10,8 +10,8 @@ import com.lovetropics.donations.monument.MonumentManager;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import com.tterrag.registrate.util.NonNullLazyValue;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.ExtensionPoint;
@@ -31,7 +31,7 @@ public class LTDonations {
 
 	public static final String MODID = "ltdonations";
 
-	public static final ItemGroup ITEM_GROUP = new ItemGroup(MODID) {
+	public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(MODID) {
 
 		@Override
 		public ItemStack makeIcon() {

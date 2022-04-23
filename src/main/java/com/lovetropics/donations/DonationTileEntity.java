@@ -2,27 +2,27 @@ package com.lovetropics.donations;
 
 import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.lovetropics.lib.entity.FireworkPalette;
-import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.ITickableTileEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.TickableBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
 
-public class DonationTileEntity extends TileEntity implements ITickableTileEntity {
+public class DonationTileEntity extends BlockEntity implements TickableBlockEntity {
 
     private boolean registered;
     
     private int queued = 0;
     private int randomOffset = 0;
 
-    public DonationTileEntity(TileEntityType<? extends DonationTileEntity> type) {
+    public DonationTileEntity(BlockEntityType<? extends DonationTileEntity> type) {
         super(type);
     }
     
     @Override
-    public void setLevelAndPosition(World worldIn, BlockPos pos) {
+    public void setLevelAndPosition(Level worldIn, BlockPos pos) {
         super.setLevelAndPosition(worldIn, pos);
         this.randomOffset = worldIn.getRandom().nextInt(20);
     }
@@ -68,13 +68,13 @@ public class DonationTileEntity extends TileEntity implements ITickableTileEntit
     }
 
     @Override
-    public void load(BlockState blockState, CompoundNBT nbt) {
+    public void load(BlockState blockState, CompoundTag nbt) {
 		super.load(blockState, nbt);
 		this.queued = nbt.getInt("queuedDonations");
 	}
 
     @Override
-    public CompoundNBT save(CompoundNBT nbt) {
+    public CompoundTag save(CompoundTag nbt) {
 		super.save(nbt);
 		nbt.putInt("queuedDonations", queued);
 		return nbt;

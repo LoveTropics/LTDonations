@@ -15,15 +15,15 @@ import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.backend.ltts.json.WebSocketEventData;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.ICommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.CommandSource;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.WhiteList;
-import net.minecraft.server.management.WhitelistEntry;
-import net.minecraft.util.math.vector.Vector2f;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.server.players.UserWhiteList;
+import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 public class WebSocketEvent<T> {
@@ -35,7 +35,7 @@ public class WebSocketEvent<T> {
 	public static final WebSocketEvent<Donation> DONATION = register("donation", Donation.class)
 			.on(EventAction.create, DonationHandler::queueDonation);
 
-	private static final Function<MinecraftServer, CommandSource> DUMMY_SOURCE = server -> new CommandSource(ICommandSource.NULL, Vector3d.ZERO, Vector2f.ZERO, server.getLevel(World.OVERWORLD), 2, "DumbCodeFix", new StringTextComponent(""), server, null);
+	private static final Function<MinecraftServer, CommandSourceStack> DUMMY_SOURCE = server -> new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, server.getLevel(Level.OVERWORLD), 2, "DumbCodeFix", new TextComponent(""), server, null);
 	public static final WebSocketEvent<WhitelistEvent> WHITELIST = register("whitelist", WhitelistEvent.class)
 			.on(EventAction.create, e -> {
 				if (!e.name.matches("[a-zA-z0-9_]+")) {
@@ -46,8 +46,8 @@ public class WebSocketEvent<T> {
 				CompletableFuture.supplyAsync(() -> server.getProfileCache().get(e.name))
 					.thenAcceptAsync(profile -> {
 						if (profile == null) return;
-						WhiteList whitelist = server.getPlayerList().getWhiteList();
-						WhitelistEntry entry = new WhitelistEntry(profile);
+						UserWhiteList whitelist = server.getPlayerList().getWhiteList();
+						UserWhiteListEntry entry = new UserWhiteListEntry(profile);
 						if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhiteListed(profile)) {
 							System.out.println("Whitelisting user: " + profile);
 							whitelist.add(entry);
