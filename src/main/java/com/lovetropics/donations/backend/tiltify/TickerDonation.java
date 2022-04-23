@@ -4,27 +4,27 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.DonationLangKeys;
-import com.lovetropics.donations.DonationTileEntity;
+import com.lovetropics.donations.DonationBlockEntity;
 import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonationEntry;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonation;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonationTotal;
 import com.lovetropics.donations.command.CommandUser;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.ChatFormatting;
-import net.minecraft.world.level.Level;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.event.TickEvent.ServerTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.text.NumberFormat;
 import java.util.Comparator;
@@ -38,7 +38,7 @@ public class TickerDonation {
     public static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(JsonDataDonation.class, new JsonDeserializerDonation()).create();
     public static final Gson GSON_TOTAL = (new GsonBuilder()).registerTypeAdapter(JsonDataDonation.class, new JsonDeserializerDonationTotal()).create();
     
-    private static final Set<DonationTileEntity> callbacks = new HashSet<>();
+    private static final Set<DonationBlockEntity> callbacks = new HashSet<>();
     
     private static DonationData donationData;
 
@@ -65,7 +65,7 @@ public class TickerDonation {
     }
     
     public static DonationData getSavedData() {
-        return getOverworld().getDataStorage().computeIfAbsent(DonationData::new, DonationData.ID);
+        return getOverworld().getDataStorage().computeIfAbsent(DonationData::load, DonationData::new, DonationData.ID);
     }
 
     /** called once thread checked for new data, and made sure server is still running **/
@@ -142,14 +142,14 @@ public class TickerDonation {
     }
 
     public static void triggerDonation() {
-        callbacks.forEach(DonationTileEntity::triggerDonation);
+        callbacks.forEach(DonationBlockEntity::triggerDonation);
     }
 
-    public static void addCallback(DonationTileEntity tile) {
+    public static void addCallback(DonationBlockEntity tile) {
         callbacks.add(tile);
     }
     
-    public static void removeCallback(DonationTileEntity tile) {
+    public static void removeCallback(DonationBlockEntity tile) {
         callbacks.remove(tile);
     }
 

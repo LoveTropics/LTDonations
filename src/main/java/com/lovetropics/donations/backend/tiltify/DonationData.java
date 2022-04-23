@@ -13,15 +13,12 @@ public class DonationData extends SavedData {
 
     private int monumentsPlaced = 0;
 
-    public DonationData() {
-        super(ID);
-    }
-
-    @Override
-    public void load(CompoundTag nbt) {
-        lastSeenDate = nbt.getLong("lastSeenDate");
-        lastSeenId = nbt.getInt("lastSeenId");
-        monumentsPlaced = nbt.getInt("monumentsPlaced");
+    public static DonationData load(CompoundTag nbt) {
+        DonationData data = new DonationData();
+        data.lastSeenDate = nbt.getLong("lastSeenDate");
+        data.lastSeenId = nbt.getInt("lastSeenId");
+        data.monumentsPlaced = nbt.getInt("monumentsPlaced");
+        return data;
     }
 
     @Override

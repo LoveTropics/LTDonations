@@ -9,7 +9,7 @@ import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -169,12 +169,12 @@ public class DonationConfigs {
     public static final ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
 
     @SubscribeEvent
-	public static void configLoad(ModConfig.Loading event) {
+	public static void configLoad(ModConfigEvent.Loading event) {
 		parseConfigs();
 	}
 
 	@SubscribeEvent
-	public static void configReload(ModConfig.Reloading event) {
+	public static void configReload(ModConfigEvent.Reloading event) {
 		parseConfigs();
 	}
 

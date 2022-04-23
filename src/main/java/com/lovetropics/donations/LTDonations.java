@@ -9,19 +9,18 @@ import com.lovetropics.donations.command.CommandDonation;
 import com.lovetropics.donations.monument.MonumentManager;
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
-import com.tterrag.registrate.util.NonNullLazyValue;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.event.server.ServerStoppingEvent;
+import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppingEvent;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
@@ -39,8 +38,8 @@ public class LTDonations {
 		}
 	};
 
-	private static NonNullLazyValue<Registrate> registrate = new NonNullLazyValue<>(
-			() -> Registrate.create(MODID).itemGroup(() -> ITEM_GROUP));
+	private static NonNullLazy<Registrate> registrate = NonNullLazy.of(
+			() -> Registrate.create(MODID).creativeModeTab(() -> ITEM_GROUP));
 
 	public static Registrate registrate() {
 		return registrate.get();
@@ -48,7 +47,7 @@ public class LTDonations {
 
 	public LTDonations() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
-    	ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
+    	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
 
 		DonationBlock.register();
 		DonationLangKeys.init(registrate());
@@ -79,7 +78,7 @@ public class LTDonations {
 		CommandDonation.register(event.getDispatcher());
 	}
 
-	private void serverStartingEvent(FMLServerStartingEvent event) {
+	private void serverStartingEvent(ServerStartingEvent event) {
         final DonationRequests startupRequests = DonationRequests.get();
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
@@ -95,7 +94,7 @@ public class LTDonations {
         	}, event.getServer());
 	}
 
-	private void serverStoppingEvent(final FMLServerStoppingEvent event) {
+	private void serverStoppingEvent(final ServerStoppingEvent event) {
 		DonationHandler.close();
 	}
 }

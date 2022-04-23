@@ -1,12 +1,5 @@
 package com.lovetropics.donations.backend.ltts;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -14,17 +7,23 @@ import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.backend.ltts.json.WebSocketEventData;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
-
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraftforge.server.ServerLifecycleHooks;
+
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class WebSocketEvent<T> {
 
@@ -45,14 +44,14 @@ public class WebSocketEvent<T> {
 				MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
 				CompletableFuture.supplyAsync(() -> server.getProfileCache().get(e.name))
 					.thenAcceptAsync(profile -> {
-						if (profile == null) return;
+						if (profile.isEmpty()) return;
 						UserWhiteList whitelist = server.getPlayerList().getWhiteList();
-						UserWhiteListEntry entry = new UserWhiteListEntry(profile);
-						if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhiteListed(profile)) {
-							System.out.println("Whitelisting user: " + profile);
+						UserWhiteListEntry entry = new UserWhiteListEntry(profile.get());
+						if (e.type == WhitelistEvent.Type.whitelist && !whitelist.isWhiteListed(profile.get())) {
+							System.out.println("Whitelisting user: " + profile.get());
 							whitelist.add(entry);
-						} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhiteListed(profile)) {
-							System.out.println("Un-whitelisting user: " + profile);
+						} else if (e.type == WhitelistEvent.Type.blacklist && whitelist.isWhiteListed(profile.get())) {
+							System.out.println("Un-whitelisting user: " + profile.get());
 							whitelist.remove(entry);
 							server.kickUnlistedPlayers(DUMMY_SOURCE.apply(server));
 						}
