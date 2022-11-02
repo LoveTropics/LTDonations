@@ -60,7 +60,6 @@ public class DonationConfigs {
         public final ConfigValue<String> authKey;
         public final ConfigValue<String> apiUrl;
         public final ConfigValue<String> websocketUrl;
-        public final IntValue websocketPort;
 
         private CategoryTechStack() {
             COMMON_BUILDER.comment("Connection to the tech stack").push("techStack");
@@ -75,12 +74,8 @@ public class DonationConfigs {
 
             websocketUrl = COMMON_BUILDER
                     .comment("Websocket url to receive from")
-                    .define("websocketUrl", "localhost");
+                    .define("websocketUrl", "wss://localhost:443/ws");
 
-            websocketPort = COMMON_BUILDER
-                    .comment("Port number the websocket runs on")
-                    .defineInRange("websocketPort", 0, 0, 99999);
-            
             COMMON_BUILDER.pop();
         }
     }

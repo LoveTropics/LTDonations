@@ -22,7 +22,7 @@ public class WebSocketHelper {
         Supplier<URI> address = () -> {
             if (!Strings.isNullOrEmpty(DonationConfigs.TECH_STACK.authKey.get())) {
                 try {
-                    return new URI(getUrl());
+                    return new URI(DonationConfigs.TECH_STACK.websocketUrl.get());
                 } catch (URISyntaxException ignored) {
                 }
             }
@@ -49,12 +49,6 @@ public class WebSocketHelper {
                 LOGGER.error("Donations websocket closed with code: {} and reason: {}", code, reason);
             }
         });
-    }
-
-    private static String getUrl() {
-        final int configPort = DonationConfigs.TECH_STACK.websocketPort.get();
-        final String port = configPort == 0 ? "" : ":" + configPort;
-        return "wss://" + DonationConfigs.TECH_STACK.websocketUrl.get() + port + "/ws";
     }
 
     public void tick() {
