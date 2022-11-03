@@ -64,7 +64,6 @@ public final class TopDonorManager {
         if (entity == null) return;
 
         CompoundTag data = entity.saveWithoutId(new CompoundTag());
-        CompoundTag lastData = data.copy();
         if (minecraftName != null) {
         	data.remove("CustomName");
         	entity.setCustomName(null);
@@ -76,9 +75,7 @@ public final class TopDonorManager {
         Component suffix = new TextComponent(" - ").withStyle(ChatFormatting.GRAY)
                 .append(new TextComponent(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
         data.putString("NameSuffix", Component.Serializer.toJson(suffix));
-        if (!data.equals(lastData)) {
-            entity.load(data);
-        }
+        entity.load(data);
     }
 
     private void clearEntity(UUID entityId) {
