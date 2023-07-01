@@ -4,13 +4,9 @@ import com.lovetropics.donations.DonationLangKeys;
 import com.lovetropics.donations.DonationListeners;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
-import com.lovetropics.donations.backend.tiltify.DonationData;
-import com.lovetropics.donations.backend.tiltify.ThreadWorkerDonations;
-import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.SharedConstants;
@@ -29,11 +25,6 @@ public class CommandDonation {
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
             literal("donation").requires(s -> s.hasPermission(Commands.LEVEL_ADMINS))
-            .then(literal("dumpresponse").executes(CommandDonation::dumpResponse))
-            .then(literal("reset").executes(CommandDonation::resetDonations))
-            .then(literal("last")
-                    .then(argument("id", IntegerArgumentType.integer())
-                            .executes(ctx -> setLastSeen(ctx, IntegerArgumentType.getInteger(ctx, "id")))))
             .then(literal("simulate")
                     .executes(ctx -> simulate(ctx, "Nigel Winthorpe", 42))
                     .then(argument("name", StringArgumentType.string())
@@ -61,35 +52,6 @@ public class CommandDonation {
         );
     }
 
-    public static int dumpResponse(CommandContext<CommandSourceStack> ctx) {
-        String data = ThreadWorkerDonations.getInstance().getData_Real();
-        ctx.getSource().sendSuccess(() -> Component.literal(data), false);
-        return Command.SINGLE_SUCCESS;
-    }
-    
-    public static int resetDonations(CommandContext<CommandSourceStack> ctx) {
-        DonationData data = TickerDonation.getSavedData();
-        if (data != null) {
-            synchronized (data) {
-                data.resetData();
-            }
-            ctx.getSource().sendSuccess(DonationLangKeys.COMMAND_RESET_DONATION::getComponent, true);
-        }
-        return Command.SINGLE_SUCCESS;
-    }
-
-    public static int setLastSeen(CommandContext<CommandSourceStack> ctx, int id) {
-        DonationData data = TickerDonation.getSavedData();
-        if (data != null) {
-            synchronized (data) {
-                data.setLastSeenId(id);
-                data.setLastSeenDate(0);
-            }
-            ctx.getSource().sendSuccess(() -> DonationLangKeys.COMMAND_RESET_LAST_DONATION.format(id), true);
-        }
-        return Command.SINGLE_SUCCESS;
-    }
-    
     public static int simulate(CommandContext<CommandSourceStack> ctx, String name, double amount) {
     	SharedConstants.IS_RUNNING_IN_IDE = true;
         if (!name.isEmpty()) {

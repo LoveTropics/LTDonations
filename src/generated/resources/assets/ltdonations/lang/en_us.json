@@ -1,9 +1,5 @@
 {
   "block.ltdonations.donation": "Donation",
-  "command.ltdonations.donation.connection_established": "Re-established a connection to the donation servers!",
-  "command.ltdonations.donation.connection_failed": "Couldn't establish a connection to the donation servers",
-  "command.ltdonations.donation.reset": "Resetting donation data.",
-  "command.ltdonations.donation.setid": "Reset last seen donation ID to %d.",
   "command.ltdonations.donation.simulate": "Simulating donation for name %s and amount %s",
   "itemGroup.ltdonations.ltdonations": "LTDonations",
   "notification.ltdonations.donation.new": "%s donated %s!"

@@ -1,9 +1,5 @@
 {
   "block.ltdonations.donation": "uoıʇɐuoᗡ",
-  "command.ltdonations.donation.connection_established": "¡sɹǝʌɹǝs uoıʇɐuop ǝɥʇ oʇ uoıʇɔǝuuoɔ ɐ pǝɥsıןqɐʇsǝ-ǝᴚ",
-  "command.ltdonations.donation.connection_failed": "sɹǝʌɹǝs uoıʇɐuop ǝɥʇ oʇ uoıʇɔǝuuoɔ ɐ ɥsıןqɐʇsǝ ʇ,upןnoƆ",
-  "command.ltdonations.donation.reset": "˙ɐʇɐp uoıʇɐuop buıʇʇǝsǝᴚ",
-  "command.ltdonations.donation.setid": "˙%d oʇ ᗡI uoıʇɐuop uǝǝs ʇsɐן ʇǝsǝᴚ",
   "command.ltdonations.donation.simulate": "%s ʇunoɯɐ puɐ %s ǝɯɐu ɹoɟ uoıʇɐuop buıʇɐןnɯıS",
   "itemGroup.ltdonations.ltdonations": "suoıʇɐuoᗡ⟘Ꞁ",
   "notification.ltdonations.donation.new": "¡%s pǝʇɐuop %s"
