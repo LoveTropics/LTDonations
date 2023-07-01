@@ -24,9 +24,6 @@ import net.minecraft.util.Unit;
 public abstract class RequestHelper {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
-	static {
-		LOGGER.info("Classloading RequestHelper", new Throwable());
-	}
 
 	private final Supplier<String> baseURL;
 	private final Supplier<String> token;
@@ -81,7 +78,7 @@ public abstract class RequestHelper {
 
 			try {
 				String payload = readInput(con.getInputStream(), false);
-				System.out.println("REST Response: " + payload);
+				LOGGER.info("REST Response: " + payload);
 				return Either.left(parser.apply(payload));
 			} catch (IOException e) {
 				return Either.right(readInput(con.getErrorStream(), true));

@@ -2,9 +2,9 @@ package com.lovetropics.donations.backend.tiltify;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.lovetropics.donations.DonationBlockEntity;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.DonationLangKeys;
-import com.lovetropics.donations.DonationBlockEntity;
 import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonationEntry;
@@ -13,7 +13,7 @@ import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonationTo
 import com.lovetropics.donations.command.CommandUser;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -108,8 +108,8 @@ public class TickerDonation {
             if (amountPerMonument > 0) {
                 while (donationData.getMonumentsPlaced() < data.totalDonated / amountPerMonument) {
                     donationData.setMonumentsPlaced(donationData.getMonumentsPlaced() + 1);
-                    server.getCommands().performCommand(
-                            new CommandSourceStack(new CommandUser(), Vec3.atLowerCornerOf(world.getSharedSpawnPos()), Vec2.ZERO, world, 4, "LTDonations", new TextComponent("Tiltify Donation Tracker"), server, null),
+                    server.getCommands().performPrefixedCommand(
+                            new CommandSourceStack(new CommandUser(), Vec3.atLowerCornerOf(world.getSharedSpawnPos()), Vec2.ZERO, world, 4, "LTDonations", Component.literal("Tiltify Donation Tracker"), server, null),
                             DonationConfigs.TILTIFY.tiltifyCommandRun.get());
                 }
             }

@@ -1,10 +1,10 @@
 {
-  "block.ltdonations.donation": "uo\u0131\u0287\u0250uo\u15E1",
-  "command.ltdonations.donation.connection_established": "\u00A1s\u0279\u01DD\u028C\u0279\u01DDs uo\u0131\u0287\u0250uop \u01DD\u0265\u0287 o\u0287 uo\u0131\u0287\u0254\u01DDuuo\u0254 \u0250 p\u01DD\u0265s\u0131\u05DFq\u0250\u0287s\u01DD-\u01DD\u1D1A",
-  "command.ltdonations.donation.connection_failed": "s\u0279\u01DD\u028C\u0279\u01DDs uo\u0131\u0287\u0250uop \u01DD\u0265\u0287 o\u0287 uo\u0131\u0287\u0254\u01DDuuo\u0254 \u0250 \u0265s\u0131\u05DFq\u0250\u0287s\u01DD \u0287,up\u05DFno\u0186",
-  "command.ltdonations.donation.reset": "\u02D9\u0250\u0287\u0250p uo\u0131\u0287\u0250uop bu\u0131\u0287\u0287\u01DDs\u01DD\u1D1A",
-  "command.ltdonations.donation.setid": "\u02D9%d o\u0287 \u15E1I uo\u0131\u0287\u0250uop u\u01DD\u01DDs \u0287s\u0250\u05DF \u0287\u01DDs\u01DD\u1D1A",
-  "command.ltdonations.donation.simulate": "%s \u0287uno\u026F\u0250 pu\u0250 %s \u01DD\u026F\u0250u \u0279o\u025F uo\u0131\u0287\u0250uop bu\u0131\u0287\u0250\u05DFn\u026F\u0131S",
-  "itemGroup.ltdonations": "suo\u0131\u0287\u0250uo\u15E1\u27D8\uA780",
-  "notification.ltdonations.donation.new": "\u00A1%s p\u01DD\u0287\u0250uop %s"
+  "block.ltdonations.donation": "uoıʇɐuoᗡ",
+  "command.ltdonations.donation.connection_established": "¡sɹǝʌɹǝs uoıʇɐuop ǝɥʇ oʇ uoıʇɔǝuuoɔ ɐ pǝɥsıןqɐʇsǝ-ǝᴚ",
+  "command.ltdonations.donation.connection_failed": "sɹǝʌɹǝs uoıʇɐuop ǝɥʇ oʇ uoıʇɔǝuuoɔ ɐ ɥsıןqɐʇsǝ ʇ,upןnoƆ",
+  "command.ltdonations.donation.reset": "˙ɐʇɐp uoıʇɐuop buıʇʇǝsǝᴚ",
+  "command.ltdonations.donation.setid": "˙%d oʇ ᗡI uoıʇɐuop uǝǝs ʇsɐן ʇǝsǝᴚ",
+  "command.ltdonations.donation.simulate": "%s ʇunoɯɐ puɐ %s ǝɯɐu ɹoɟ uoıʇɐuop buıʇɐןnɯıS",
+  "itemGroup.ltdonations.ltdonations": "suoıʇɐuoᗡ⟘Ꞁ",
+  "notification.ltdonations.donation.new": "¡%s pǝʇɐuop %s"
 }

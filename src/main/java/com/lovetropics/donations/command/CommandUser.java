@@ -1,16 +1,12 @@
 package com.lovetropics.donations.command;
 
-import org.apache.logging.log4j.LogManager;
-
 import net.minecraft.commands.CommandSource;
 import net.minecraft.network.chat.Component;
-
-import java.util.UUID;
+import org.apache.logging.log4j.LogManager;
 
 public class CommandUser implements CommandSource {
-
     @Override
-    public void sendMessage(Component component, UUID senderUUID) {
+    public void sendSystemMessage(Component component) {
         LogManager.getLogger().info(component.getString());
     }
 

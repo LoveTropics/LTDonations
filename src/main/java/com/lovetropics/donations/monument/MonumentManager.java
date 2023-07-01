@@ -3,23 +3,23 @@ package com.lovetropics.donations.monument;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.donations.DonationBlock;
 import com.lovetropics.donations.DonationConfigs;
-import com.mojang.math.Vector3f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
@@ -78,14 +78,14 @@ public class MonumentManager {
 					if (p.equals(BlockPos.ZERO)) return -1;
 
 					Vec3 v1 = Vec3.atLowerCornerOf(p);
-					Vec3 v2 = new Vec3(Vector3f.XN);
+					Vec3 v2 = new Vec3(-1.0, 0.0, 0.0);
 
 					Vec3 cross = v1.cross(v2);
 					double dot = v1.dot(v2);
 
 					double angle = Math.atan2(cross.length(), dot);
 
-					double test = new Vec3(Vector3f.YP).dot(cross);
+					double test = new Vec3(0.0, 1.0, .0).dot(cross);
 					if (test < 0.0) angle = -angle + (Math.PI * 2);
 					return angle;
 				}));
@@ -150,7 +150,7 @@ public class MonumentManager {
 	}
 
 	private ServerLevel getWorld(MinecraftServer server) {
-		ResourceKey<Level> dimension = ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
+		ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, new ResourceLocation(DonationConfigs.MONUMENT.dimension.get()));
 		ServerLevel world = server.getLevel(dimension);
 		if (world == null) {
 			LOGGER.error("Failed to find dimension : " + DonationConfigs.MONUMENT.dimension.get());
@@ -193,12 +193,12 @@ public class MonumentManager {
 				world.getChunkSource().blockChanged(pos);
 				if (queued.step == LAYER_POSITIONS.size() - 1) {
 					// A layer has completed, send a message
-					Component message = new TextComponent("The Monument")
+					Component message = Component.literal("The Monument")
 							.withStyle(ChatFormatting.BOLD, COLORS[queued.color])
-							.append(new TextComponent(" has grown to ")
+							.append(Component.literal(" has grown to ")
 								.setStyle(Style.EMPTY.withBold(false).withColor(ChatFormatting.WHITE))
-								.append(new TextComponent("LEVEL " + (queued.layer + 1) + "!")
-									.setStyle(Style.EMPTY.setUnderlined(true))));
+								.append(Component.literal("LEVEL " + (queued.layer + 1) + "!")
+									.setStyle(Style.EMPTY.withUnderlined(true))));
 
 					world.players().forEach(p -> p.displayClientMessage(message, false));
 					sendToDiscord(message.getString());
@@ -208,7 +208,7 @@ public class MonumentManager {
 				}
 				if (amt >= 0) { // Not an infinite drain
 					// Throw some particles around
-					Random rand = world.getRandom();
+					RandomSource rand = world.getRandom();
 					Vec3 center = Vec3.atLowerCornerOf(pos).add(0.5, 0.5, 0.5);
 					for (int i = 0; i < 20; i++) {
 						Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.from2DDataValue(rand.nextInt(4));
@@ -225,7 +225,7 @@ public class MonumentManager {
 				if (dir != Direction.DOWN) {
 					BlockPos airPos = pos.relative(dir);
 					BlockState atPos = world.getBlockState(airPos);
-					if ((atPos.isAir() || atPos.getBlock() == Blocks.WATER) && world.setBlockAndUpdate(airPos, DonationBlock.AIR_LIGHT.getDefaultState())) {
+					if ((atPos.isAir() || atPos.getBlock() == Blocks.WATER) && world.setBlockAndUpdate(airPos, Blocks.LIGHT.defaultBlockState().setValue(LightBlock.LEVEL, Block.UPDATE_ALL_IMMEDIATE | Block.UPDATE_INVISIBLE))) {
 						world.getChunkSource().blockChanged(airPos);
 					}
 				}

@@ -8,9 +8,10 @@ import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.command.CommandDonation;
 import com.lovetropics.donations.monument.MonumentManager;
 import com.tterrag.registrate.Registrate;
-import com.tterrag.registrate.providers.ProviderType;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.NonNullLazy;
 import net.minecraftforge.event.RegisterCommandsEvent;
@@ -30,24 +31,24 @@ public class LTDonations {
 
 	public static final String MODID = "ltdonations";
 
-	public static final CreativeModeTab ITEM_GROUP = new CreativeModeTab(MODID) {
+	private static final ResourceLocation TAB_ID = new ResourceLocation(MODID, "ltdonations");
 
-		@Override
-		public ItemStack makeIcon() {
-			return DonationBlock.BLOCK.asStack();
-		}
-	};
-
-	private static NonNullLazy<Registrate> registrate = NonNullLazy.of(
-			() -> Registrate.create(MODID).creativeModeTab(() -> ITEM_GROUP));
+	private static final NonNullLazy<Registrate> REGISTRATE = NonNullLazy.of(() -> Registrate.create(MODID));
 
 	public static Registrate registrate() {
-		return registrate.get();
+		return REGISTRATE.get();
 	}
 
 	public LTDonations() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
     	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
+
+		registrate().generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
+				.title(registrate().addLang("itemGroup", TAB_ID, "LTDonations"))
+				.icon(() -> DonationBlock.BLOCK.asStack())
+				.build()
+		).build()
+				.defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID));
 
 		DonationBlock.register();
 		DonationLangKeys.init(registrate());
@@ -57,8 +58,6 @@ public class LTDonations {
 		MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
 
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, DonationConfigs.COMMON_CONFIG);
-
-		registrate().addDataGenerator(ProviderType.LANG, p -> p.add(ITEM_GROUP, "LTDonations"));
 	}
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
@@ -72,7 +71,7 @@ public class LTDonations {
     	return getCompatVersion().equals(getCompatVersion(version));
     }
 
-	public static final WebSocketHelper WEBSOCKET = new WebSocketHelper();
+	public static final NonNullLazy<WebSocketHelper> WEBSOCKET = NonNullLazy.of(WebSocketHelper::new);
 
 	private void registerCommands(RegisterCommandsEvent event) {
 		CommandDonation.register(event.getDispatcher());

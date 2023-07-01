@@ -43,7 +43,7 @@ public class DonationHandler {
         }
         final int tick = server.getTickCount();
 
-        LTDonations.WEBSOCKET.tick();
+        LTDonations.WEBSOCKET.get().tick();
 
         // TODO check and make sure we are in web socket mode
         if (tick >= donationLastPolledTick + TICKS_BEFORE_POLL && donationsPending()) {

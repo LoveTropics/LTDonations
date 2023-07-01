@@ -3,10 +3,9 @@ package com.lovetropics.donations;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -72,8 +71,8 @@ public final class TopDonorManager {
         	data.putString("ProfileName", "");
         	data.putString("CustomName", "{\"text\":\"" + fallbackName + "\"}");
         }
-        Component suffix = new TextComponent(" - ").withStyle(ChatFormatting.GRAY)
-                .append(new TextComponent(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
+        Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
+                .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
         data.putString("NameSuffix", Component.Serializer.toJson(suffix));
         entity.load(data);
     }
@@ -104,7 +103,7 @@ public final class TopDonorManager {
 
     private ServerLevel getWorld(MinecraftServer server) {
         ResourceLocation dimensionId = new ResourceLocation(DonationConfigs.TOP_DONORS.dimension.get());
-        ResourceKey<Level> dimensionType = ResourceKey.create(Registry.DIMENSION_REGISTRY, dimensionId);
+        ResourceKey<Level> dimensionType = ResourceKey.create(Registries.DIMENSION, dimensionId);
         ServerLevel world = server.getLevel(dimensionType);
         if (world == null) {
             LOGGER.error("Failed to find dimension : " + DonationConfigs.TOP_DONORS.dimension.get());
