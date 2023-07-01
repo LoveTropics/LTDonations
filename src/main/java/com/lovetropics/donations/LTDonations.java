@@ -84,9 +84,11 @@ public class LTDonations {
         CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
         	.thenAcceptAsync(t -> {
         		// Make sure no monument updates run before the initial one
-        		DonationHandler.monument = new MonumentManager();
+				MonumentManager monument = new MonumentManager();
         		// Run a forced update (no particles)
-        		DonationHandler.monument.updateMonument(t, true);
+				monument.updateMonument(t, true);
+				DonationListeners.register(monument);
+				DonationHandler.monument = monument;
 
         		DonationHandler.topDonors = new TopDonorManager();
         		DonationHandler.topDonors.pollTopDonors();

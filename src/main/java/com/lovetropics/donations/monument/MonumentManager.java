@@ -1,8 +1,8 @@
 package com.lovetropics.donations.monument;
 
 import com.google.common.collect.ImmutableList;
-import com.lovetropics.donations.DonationBlock;
 import com.lovetropics.donations.DonationConfigs;
+import com.lovetropics.donations.DonationListener;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,24 +33,9 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class MonumentManager {
-
-	private static class QueuedBlock {
-		final BlockPos pos;
-		final BlockState state;
-		final int color;
-		final int layer;
-		final int step;
-
-		public QueuedBlock(BlockPos pos, BlockState state, int color, int layer, int step) {
-			this.pos = pos;
-			this.state = state;
-			this.color = color;
-			this.layer = layer;
-			this.step = step;
-		}
+public class MonumentManager implements DonationListener {
+	private record QueuedBlock(BlockPos pos, BlockState state, int color, int layer, int step) {
 	}
 
 	private static final Logger LOGGER = LogManager.getLogger();
@@ -90,11 +75,11 @@ public class MonumentManager {
 					return angle;
 				}));
 
-		LAYER_POSITIONS = ImmutableList.copyOf(allPositions);
+		LAYER_POSITIONS = List.copyOf(allPositions);
 	}
 
 	private static List<BlockPos> range(int minX, int minZ, int maxX, int maxZ) {
-		return BlockPos.betweenClosedStream(minX, 0, minZ, maxX, 0, maxZ).map(BlockPos::immutable).collect(Collectors.toList());
+		return BlockPos.betweenClosedStream(minX, 0, minZ, maxX, 0, maxZ).map(BlockPos::immutable).toList();
 	}
 
 	private static final Block[][] BLOCKS = new Block[][] {
@@ -122,6 +107,11 @@ public class MonumentManager {
 
 	private int prevStep = 0;
 	private final Deque<QueuedBlock> blockQueue = new ArrayDeque<>();
+
+	@Override
+	public void handleDonation(MinecraftServer server, String name, double amount) {
+		updateMonument(amount, false);
+	}
 
 	public void updateMonument(double amount, boolean fast) {
 		if (!DonationConfigs.MONUMENT.active.get()) return;

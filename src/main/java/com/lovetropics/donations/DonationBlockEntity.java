@@ -1,6 +1,5 @@
 package com.lovetropics.donations;
 
-import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.lovetropics.lib.entity.FireworkPalette;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -9,8 +8,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
+import javax.annotation.Nullable;
+
 public class DonationBlockEntity extends BlockEntity {
-    private boolean registered;
+	@Nullable
+    private DonationListener activeListener;
     
     private int queued = 0;
     private int randomOffset = 0;
@@ -27,9 +29,10 @@ public class DonationBlockEntity extends BlockEntity {
 
 	public static void tick(Level level, BlockPos pos, BlockState state, DonationBlockEntity entity) {
 		if (!level.isClientSide) {
-			if (!entity.registered) {
-				TickerDonation.addCallback(entity);
-				entity.registered = true;
+			if (entity.activeListener == null) {
+				DonationListener listener = (server, name, amount) -> entity.triggerDonation();
+				DonationListeners.register(listener);
+				entity.activeListener = listener;
 			}
 			if (entity.queued > 0 && level.getGameTime() % 20 == entity.randomOffset) {
 				BlockPos fireworkPos = pos.above();
@@ -47,13 +50,18 @@ public class DonationBlockEntity extends BlockEntity {
 	@Override
 	public void setRemoved() {
 	    super.setRemoved();
-	    TickerDonation.removeCallback(this);
+		unregisterListener();
 	}
 
 	@Override
 	public void onChunkUnloaded() {
 		super.onChunkUnloaded();
-		TickerDonation.removeCallback(this);
+		unregisterListener();
+	}
+
+	private void unregisterListener() {
+		DonationListeners.unregister(activeListener);
+		activeListener = null;
 	}
 
 	@SuppressWarnings("deprecation")

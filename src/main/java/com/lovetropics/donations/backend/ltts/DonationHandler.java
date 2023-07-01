@@ -1,12 +1,13 @@
 package com.lovetropics.donations.backend.ltts;
 
 import com.google.common.collect.Queues;
+import com.lovetropics.donations.DonationListeners;
 import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.TopDonorManager;
 import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
-import com.lovetropics.donations.backend.tiltify.TickerDonation;
 import com.lovetropics.donations.monument.MonumentManager;
+import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -22,10 +23,10 @@ public class DonationHandler {
     public static final Queue<Donation> DONATION_QUEUE = Queues.newPriorityBlockingQueue();
     // TODO configurate
     // 3 seconds between fireworks
-    private static final int TICKS_BEFORE_POLL = 60;
+    private static final int TICKS_BEFORE_POLL = SharedConstants.TICKS_PER_SECOND * 3;
     private static int donationLastPolledTick;
 
-    private static final int TOP_DONOR_POLL_INTERVAL = 20 * 60;
+    private static final int TOP_DONOR_POLL_INTERVAL = SharedConstants.TICKS_PER_MINUTE;
     private static int nextTopDonorPollTick;
 
     private static boolean donatorsDirty = true;
@@ -52,13 +53,7 @@ public class DonationHandler {
                 return;
             }
 
-            // TODO decide whether we want to phase out this class entirely or not
-            TickerDonation.sendDonationMessage(donation.getNameShown(), donation.getAmount());
-            TickerDonation.triggerDonation();
-            
-            if (monument != null) {
-            	monument.updateMonument(donation.getTotal(), false);
-            }
+            DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount());
 
             donationLastPolledTick = tick;
             donatorsDirty = true;
@@ -76,13 +71,16 @@ public class DonationHandler {
         }
 
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
-        if (tick % (20 * 60 * 5) == 0) {
+        if (tick % (SharedConstants.TICKS_PER_MINUTE * 5) == 0) {
 			CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
 				.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
         }
     }
 
     public static void close() {
+        if (monument != null) {
+            DonationListeners.unregister(monument);
+        }
     	monument = null;
     	topDonors = null;
     }

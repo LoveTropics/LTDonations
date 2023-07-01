@@ -1,6 +1,7 @@
 package com.lovetropics.donations.command;
 
 import com.lovetropics.donations.DonationLangKeys;
+import com.lovetropics.donations.DonationListeners;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 import com.lovetropics.donations.backend.tiltify.DonationData;
@@ -94,7 +95,7 @@ public class CommandDonation {
         if (!name.isEmpty()) {
             ctx.getSource().sendSuccess(() -> DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
         }
-        TickerDonation.simulateDonation(name, amount);
+        DonationListeners.triggerDonation(ctx.getSource().getServer(), name, amount);
         return Command.SINGLE_SUCCESS;
     }
     

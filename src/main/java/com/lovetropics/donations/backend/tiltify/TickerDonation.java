@@ -2,10 +2,7 @@ package com.lovetropics.donations.backend.tiltify;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.lovetropics.donations.DonationBlockEntity;
-import com.lovetropics.donations.DonationConfigs;
-import com.lovetropics.donations.DonationLangKeys;
-import com.lovetropics.donations.LTDonations;
+import com.lovetropics.donations.*;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonation;
 import com.lovetropics.donations.backend.tiltify.json.JsonDataDonationEntry;
 import com.lovetropics.donations.backend.tiltify.json.JsonDeserializerDonation;
@@ -38,8 +35,6 @@ public class TickerDonation {
     public static final Gson GSON = (new GsonBuilder()).registerTypeAdapter(JsonDataDonation.class, new JsonDeserializerDonation()).create();
     public static final Gson GSON_TOTAL = (new GsonBuilder()).registerTypeAdapter(JsonDataDonation.class, new JsonDeserializerDonationTotal()).create();
     
-    private static final Set<DonationBlockEntity> callbacks = new HashSet<>();
-    
     private static DonationData donationData;
 
     @SubscribeEvent
@@ -60,7 +55,6 @@ public class TickerDonation {
                     .execute(() -> processDonationsServer(data));
         } else {
             ThreadWorkerDonations.getInstance().stopThread();
-            callbacks.clear();
         }
     }
     
@@ -79,15 +73,7 @@ public class TickerDonation {
         data.new_donations.stream()
                 .sorted(Comparator.comparingLong(JsonDataDonationEntry::getDate))
                 .filter(entry -> entry.getDate() > donationData.getLastSeenDate())
-                .map(donation -> DonationLangKeys.NEW_DONATION.format(
-                		ChatFormatting.AQUA + donation.name + ChatFormatting.RESET.toString(),
-                		ChatFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(donation.amount) + ChatFormatting.RESET))
-                .forEach(msg -> {
-                    server.getPlayerList().getPlayers().stream()
-                            .forEach(p -> p.displayClientMessage(msg, false));
-
-                    triggerDonation();
-                });
+                .forEach(entry -> DonationListeners.triggerDonation(server, entry.name, entry.amount));
 
         long lastSeenDate = data.new_donations.stream()
                 .mapToLong(d -> d.getDate())
@@ -116,41 +102,7 @@ public class TickerDonation {
         }
     }
 
-    public static void simulateDonation(String name, double amount) {
-
-        Level world = getOverworld();
-
-        if (world == null) return;
-
-        if (!name.equals("")) {
-            sendDonationMessage(name, amount);
-        }
-
-        triggerDonation();
-    }
-
-    public static void sendDonationMessage(final String name, final double amount) {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        server.getPlayerList().getPlayers()
-                .forEach(p -> p.displayClientMessage(DonationLangKeys.NEW_DONATION.format(
-                        ChatFormatting.AQUA + name + ChatFormatting.RESET.toString(),
-                        ChatFormatting.GREEN.toString() + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + ChatFormatting.RESET), false));
-    }
-    
     private static ServerLevel getOverworld() {
         return ServerLifecycleHooks.getCurrentServer().overworld();
     }
-
-    public static void triggerDonation() {
-        callbacks.forEach(DonationBlockEntity::triggerDonation);
-    }
-
-    public static void addCallback(DonationBlockEntity tile) {
-        callbacks.add(tile);
-    }
-    
-    public static void removeCallback(DonationBlockEntity tile) {
-        callbacks.remove(tile);
-    }
-
 }
