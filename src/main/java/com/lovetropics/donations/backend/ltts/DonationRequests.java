@@ -22,8 +22,9 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpMethod.POST;
+import static com.lovetropics.lib.repack.io.netty.handler.codec.http.HttpMethod.GET;
+import static com.lovetropics.lib.repack.io.netty.handler.codec.http.HttpMethod.POST;
+
 
 public class DonationRequests extends RequestHelper {
 	private static final DonationRequests INSTANCE = new DonationRequests(
