@@ -51,6 +51,7 @@ public class LTDonations {
 				.defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID));
 
 		DonationBlock.register();
+		DonationRedstoneBlock.register();
 		DonationLangKeys.init(registrate());
 
 		MinecraftForge.EVENT_BUS.addListener(this::serverStartingEvent);
