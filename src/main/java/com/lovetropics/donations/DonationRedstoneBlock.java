@@ -18,11 +18,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.generators.BlockModelBuilder;
+import net.minecraftforge.client.model.generators.ConfiguredModel;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -35,8 +38,16 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 			.block("donation_redstone", DonationRedstoneBlock::new)
 			.initialProperties(() -> Blocks.BEDROCK)
 			.properties(Properties::noLootTable)
+			.blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
+				BlockModelBuilder model = prov.models().cubeAll(ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off"),
+						prov.modLoc("block/" + ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off")));
+				return ConfiguredModel.builder().modelFile(model).build();
+			}))
+			.item()
+				.model((ctx, prov) -> prov.generated(ctx, prov.modLoc(ctx.getName())))
+			.build()
 			.blockEntity(DonationRedstoneBlockEntity::new).build()
-			.simpleItem()
+
 			.register();
 
 	public static final BlockEntityEntry<DonationRedstoneBlockEntity> ENTITY = BlockEntityEntry.cast(LTDonations.registrate().get("donation_redstone", Registries.BLOCK_ENTITY_TYPE));
@@ -46,6 +57,11 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 	public DonationRedstoneBlock(Properties properties) {
 		super(properties);
 		this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.valueOf(false)));
+	}
+
+	@Override
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> pBuilder) {
+		pBuilder.add(POWERED);
 	}
 
 	@Override
@@ -88,6 +104,11 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 		return true;
 	}
 
+	public BlockState setPoweredState(BlockState pState, Level pLevel, BlockPos pPos, boolean state) {
+		pLevel.setBlock(pPos, pState.setValue(POWERED, Boolean.valueOf(state)), 3);
+		pLevel.updateNeighborsAt(pPos, this);
+		return pState;
+	}
 
 	public BlockState toggle(BlockState pState, Level pLevel, BlockPos pPos) {
 		pState = pState.cycle(POWERED);
