@@ -12,7 +12,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
 import java.util.Queue;
@@ -20,17 +19,17 @@ import java.util.concurrent.CompletableFuture;
 
 @Mod.EventBusSubscriber(modid = LTDonations.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class DonationHandler {
+    private static final Queue<Donation> DONATION_QUEUE = Queues.newPriorityBlockingQueue();
 
-    public static final Queue<Donation> DONATION_QUEUE = Queues.newPriorityBlockingQueue();
     // TODO configurate
     // 3 seconds between fireworks
     private static final int TICKS_BEFORE_POLL = SharedConstants.TICKS_PER_SECOND * 3;
-    private static int donationLastPolledTick;
+    private static int nextDonationPollTick;
 
     private static final int TOP_DONOR_POLL_INTERVAL = SharedConstants.TICKS_PER_MINUTE;
     private static int nextTopDonorPollTick;
 
-    private static boolean donatorsDirty = true;
+    private static boolean topDonatorsDirty = true;
 
     @Nullable
     private static MonumentManager monument;
@@ -38,35 +37,29 @@ public class DonationHandler {
     private static TopDonorManager topDonors;
 
     @SubscribeEvent
-    public static void tick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
-
-        final MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-        if (server == null) {
+    public static void tick(final TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) {
             return;
         }
+
+        final MinecraftServer server = event.getServer();
         final int tick = server.getTickCount();
 
         LTDonations.WEBSOCKET.get().tick();
 
-        // TODO check and make sure we are in web socket mode
-        if (tick >= donationLastPolledTick + TICKS_BEFORE_POLL && donationsPending()) {
-            final Donation donation = getDonation();
-            if (donation == null) {
-                return;
+        if (tick >= nextDonationPollTick) {
+            final Donation donation = DONATION_QUEUE.poll();
+            if (donation != null) {
+                DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount());
+                nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
-
-            DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount());
-
-            donationLastPolledTick = tick;
-            donatorsDirty = true;
         }
 
-        if ((tick >= nextTopDonorPollTick || donatorsDirty) && topDonors != null) {
+        if (topDonors != null && (tick >= nextTopDonorPollTick || topDonatorsDirty)) {
             topDonors.pollTopDonors();
 
             nextTopDonorPollTick = tick + TOP_DONOR_POLL_INTERVAL;
-            donatorsDirty = false;
+            topDonatorsDirty = false;
         }
 
         if (monument != null) {
@@ -101,14 +94,7 @@ public class DonationHandler {
 
     public static void queueDonation(final Donation donation) {
         DONATION_QUEUE.offer(donation);
-    }
-
-    public static Donation getDonation() {
-        return DONATION_QUEUE.poll();
-    }
-
-    public static boolean donationsPending() {
-        return !DONATION_QUEUE.isEmpty();
+        topDonatorsDirty = true;
     }
 }
 
