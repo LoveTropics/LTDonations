@@ -30,7 +30,7 @@ public class DonationBlockEntity extends BlockEntity {
 	public static void tick(Level level, BlockPos pos, BlockState state, DonationBlockEntity entity) {
 		if (!level.isClientSide) {
 			if (entity.activeListener == null) {
-				DonationListener listener = (server, name, amount) -> entity.triggerDonation();
+				DonationListener listener = (server, name, amount, total) -> entity.triggerDonation();
 				DonationListeners.register(listener);
 				entity.activeListener = listener;
 			}

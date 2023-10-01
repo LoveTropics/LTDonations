@@ -109,8 +109,8 @@ public class MonumentManager implements DonationListener {
 	private final Deque<QueuedBlock> blockQueue = new ArrayDeque<>();
 
 	@Override
-	public void handleDonation(MinecraftServer server, String name, double amount) {
-		updateMonument(amount, false);
+	public void handleDonation(MinecraftServer server, String name, double amount, final double total) {
+		updateMonument(total, false);
 	}
 
 	public void updateMonument(double amount, boolean fast) {

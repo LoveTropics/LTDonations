@@ -31,6 +31,8 @@ public class DonationHandler {
 
     private static boolean topDonatorsDirty = true;
 
+    private static double totalAmount;
+
     @Nullable
     private static MonumentManager monument;
     @Nullable
@@ -50,7 +52,8 @@ public class DonationHandler {
         if (tick >= nextDonationPollTick) {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
-                DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount());
+                totalAmount = donation.getTotal();
+                DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount(), donation.getTotal());
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -76,6 +79,8 @@ public class DonationHandler {
     public static void initialize(final double total) {
         close();
 
+        totalAmount = total;
+
         monument = new MonumentManager();
         monument.updateMonument(total, true);
         DonationListeners.register(monument);
@@ -95,6 +100,10 @@ public class DonationHandler {
     public static void queueDonation(final Donation donation) {
         DONATION_QUEUE.offer(donation);
         topDonatorsDirty = true;
+    }
+
+    public static double getTotalAmount() {
+        return totalAmount;
     }
 }
 

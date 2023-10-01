@@ -16,7 +16,7 @@ public class DonationListeners {
         LISTENERS.add(DonationListeners::announceDonation);
     }
 
-    private static void announceDonation(final MinecraftServer server, final String name, final double amount) {
+    private static void announceDonation(final MinecraftServer server, final String name, final double amount, final double total) {
         if (name.isBlank()) {
             return;
         }
@@ -28,9 +28,9 @@ public class DonationListeners {
         }
     }
 
-    public static void triggerDonation(final MinecraftServer server, final String name, final double amount) {
+    public static void triggerDonation(final MinecraftServer server, final String name, final double amount, final double total) {
         for (final DonationListener listener : LISTENERS) {
-            listener.handleDonation(server, name, amount);
+            listener.handleDonation(server, name, amount, total);
         }
     }
 
