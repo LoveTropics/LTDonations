@@ -8,6 +8,11 @@ import net.minecraft.resources.ResourceLocation;
 
 public enum DonationLangKeys {
     COMMAND_SIMULATE_DONATION("command", "donation.simulate", "Simulating donation for name %s and amount %s"),
+    ADDED_MONUMENT("command", "donation.added_monument", "A monument has been created with id: '%s'"),
+    REMOVED_MONUMENT("command", "donation.removed_monument", "A monument has been removed with id: '%s'"),
+    INVALID_DONATION_GROUP("command", "donation.invalid_group", "There is no donation group with the id: '%s'"),
+    MONUMENT_ALREADY_EXISTS("command", "donation.monument_already_exists", "There is already a monument with the id: '%s'"),
+    MONUMENT_DOES_NOT_EXIST("command", "donation.monument_does_not_exist", "There is no monument with the id: '%s'"),
     NEW_DONATION("notification", "donation.new", "%s donated %s!"),
     ;
 

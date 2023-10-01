@@ -2,13 +2,17 @@ package com.lovetropics.donations.monument;
 
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.donations.DiscordIntegration;
+import com.lovetropics.donations.DonationGroup;
+import com.lovetropics.donations.DonationTotals;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -94,20 +98,30 @@ public class Monument {
 
     private final ServerLevel level;
     private final BlockPos origin;
+    private final DonationGroup donationGroup;
+    private final boolean announce;
     private final List<BlockPos> nearbyGlass;
 
     private final Deque<QueuedBlock> blockQueue = new ArrayDeque<>();
 
     private int step = 0;
 
-    private Monument(final ServerLevel level, final BlockPos origin, final List<BlockPos> nearbyGlass) {
+    private Monument(final ServerLevel level, final BlockPos origin, final DonationGroup donationGroup, final boolean announce, final List<BlockPos> nearbyGlass) {
         this.level = level;
         this.origin = origin;
+        this.donationGroup = donationGroup;
+        this.announce = announce;
         this.nearbyGlass = nearbyGlass;
     }
 
-    public static Monument create(final ServerLevel level, final BlockPos origin) {
-        return new Monument(level, origin, scanForGlass(level, origin));
+    public static Monument create(final MinecraftServer server, final MonumentData data) {
+        ServerLevel level = server.getLevel(data.pos().dimension());
+        if (level == null) {
+            LOGGER.warn("Could not find dimension : " + data.pos().dimension().location());
+            level = server.overworld();
+        }
+        final BlockPos origin = data.pos().pos();
+        return new Monument(level, origin, data.donationGroup(), data.announce(), scanForGlass(level, origin));
     }
 
     private static List<BlockPos> scanForGlass(final ServerLevel level, final BlockPos origin) {
@@ -125,10 +139,10 @@ public class Monument {
         return nearbyGlass;
     }
 
-    public void updateTotal(final double total) {
+    public void updateTotal(final DonationTotals totals) {
         final int blocksPerLayer = LAYER_POSITIONS.size();
         final double dollarsPerBlock = (double) DOLLARS_PER_LAYER / blocksPerLayer;
-        final int newStep = Mth.floor(total / dollarsPerBlock);
+        final int newStep = Mth.floor(totals.get(donationGroup) / dollarsPerBlock);
         LOGGER.info("Step Increase: {} -> {}", step, newStep);
         while (newStep > step) {
             queueBlock(step / blocksPerLayer, step % blocksPerLayer);
@@ -205,6 +219,9 @@ public class Monument {
     }
 
     private void announceLayer(final ChatFormatting color, final int layer) {
+        if (!announce) {
+            return;
+        }
         final Component message = Component.literal("The Monument")
                 .withStyle(ChatFormatting.BOLD, color)
                 .append(Component.literal(" has grown to ")
@@ -214,6 +231,10 @@ public class Monument {
 
         level.players().forEach(p -> p.displayClientMessage(message, false));
         DiscordIntegration.send(message.getString());
+    }
+
+    public MonumentData toData() {
+        return new MonumentData(GlobalPos.of(level.dimension(), origin), donationGroup, announce);
     }
 
     private record QueuedBlock(BlockPos pos, BlockState state, int color, int layer, int step) {

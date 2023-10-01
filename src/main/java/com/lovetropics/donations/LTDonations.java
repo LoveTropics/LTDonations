@@ -82,10 +82,10 @@ public class LTDonations {
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
         CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
-        	.thenAcceptAsync(DonationHandler::initialize, event.getServer());
+        	.thenAcceptAsync(total -> DonationHandler.initialize(event.getServer(), total), event.getServer());
 	}
 
 	private void serverStoppingEvent(final ServerStoppingEvent event) {
-		DonationHandler.close();
+		DonationHandler.close(event.getServer());
 	}
 }

@@ -26,7 +26,6 @@ public class DonationConfigs {
     private static final Builder COMMON_BUILDER = new Builder();
 
     public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
-    public static final CategoryMonument MONUMENT = new CategoryMonument();
     public static final CategoryTopDonors TOP_DONORS = new CategoryTopDonors();
 
     public static final class CategoryTechStack {
@@ -51,47 +50,6 @@ public class DonationConfigs {
 
             COMMON_BUILDER.pop();
         }
-    }
-
-    public static final class CategoryMonument {
-    	public final BooleanValue active;
-
-        public final ConfigValue<String> posConfig;
-        public final ConfigValue<String> dimension;
-
-        @Nullable
-        public GlobalPos pos;
-
-        private CategoryMonument() {
-            COMMON_BUILDER.comment("Monument Settings").push("monument");
-
-            active = COMMON_BUILDER
-            		.comment("Activate the monument manager, defaults to false so you get a chance to configure the position/dimension first")
-            		.define("active", false);
-
-            posConfig = COMMON_BUILDER
-                    .comment("Position of the monument, given as the center position comma separated, e.g. 42,60,-99")
-                    .define("pos", "0,64,0", s -> s instanceof String && tryParsePos((String) s) != null);
-
-            dimension = COMMON_BUILDER
-            		.comment("Dimension the monument is in")
-            		.define("dimension", "tropicraft:tropics", o -> o instanceof final String s && ResourceLocation.tryParse(s) != null);
-
-            COMMON_BUILDER.pop();
-        }
-
-        @Nullable
-		BlockPos tryParsePos(String cfg) {
-			String[] coords = cfg.split(",");
-			if (coords.length != 3) {
-				return null;
-			}
-			try {
-				return new BlockPos(Integer.parseInt(coords[0]), Integer.parseInt(coords[1]), Integer.parseInt(coords[2]));
-			} catch (NumberFormatException e) {
-				return null;
-			}
-		}
     }
 
     public static final class CategoryTopDonors {
@@ -149,12 +107,5 @@ public class DonationConfigs {
 	}
 
 	public static void parseConfigs() {
-        final BlockPos pos = MONUMENT.tryParsePos(MONUMENT.posConfig.get());
-        final ResourceLocation dimensionId = ResourceLocation.tryParse(MONUMENT.dimension.get());
-        if (pos == null || dimensionId == null) {
-            MONUMENT.pos = null;
-            return;
-        }
-        MONUMENT.pos = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimensionId), pos);
 	}
 }

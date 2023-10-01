@@ -1,9 +1,7 @@
 package com.lovetropics.donations.backend.ltts;
 
 import com.google.common.collect.Queues;
-import com.lovetropics.donations.DonationListeners;
-import com.lovetropics.donations.LTDonations;
-import com.lovetropics.donations.TopDonorManager;
+import com.lovetropics.donations.*;
 import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.monument.MonumentManager;
@@ -14,6 +12,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,10 +31,8 @@ public class DonationHandler {
 
     private static boolean topDonatorsDirty = true;
 
-    private static double totalAmount;
+    private static final Counter TOTALS = new Counter();
 
-    @Nullable
-    private static MonumentManager monuments;
     @Nullable
     private static TopDonorManager topDonors;
 
@@ -52,8 +50,8 @@ public class DonationHandler {
         if (tick >= nextDonationPollTick) {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
-                totalAmount = donation.getTotal();
-                DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount(), donation.getTotal());
+                TOTALS.set(DonationGroup.ALL, donation.getTotal());
+                DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount(), TOTALS);
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -65,9 +63,7 @@ public class DonationHandler {
             topDonatorsDirty = false;
         }
 
-        if (monuments != null) {
-        	monuments.tick(server);
-        }
+        MonumentManager.get(server).tick(server);
 
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
         if (tick % (SharedConstants.TICKS_PER_MINUTE * 5) == 0) {
@@ -76,24 +72,20 @@ public class DonationHandler {
         }
     }
 
-    public static void initialize(final double total) {
-        close();
+    public static void initialize(final MinecraftServer server, final double total) {
+        TOTALS.set(DonationGroup.ALL, total);
 
-        totalAmount = total;
-
-        monuments = new MonumentManager();
-        monuments.updateTotal(total, true);
+        final MonumentManager monuments = MonumentManager.get(server);
+        monuments.update(TOTALS, true);
         DonationListeners.register(monuments);
 
         topDonors = new TopDonorManager();
         topDonors.pollTopDonors();
     }
 
-    public static void close() {
-        if (monuments != null) {
-            DonationListeners.unregister(monuments);
-        }
-    	monuments = null;
+    public static void close(final MinecraftServer server) {
+        final MonumentManager monuments = MonumentManager.get(server);
+        DonationListeners.unregister(monuments);
     	topDonors = null;
     }
 
@@ -102,8 +94,21 @@ public class DonationHandler {
         topDonatorsDirty = true;
     }
 
-    public static double getTotalAmount() {
-        return totalAmount;
+    public static DonationTotals totals() {
+        return TOTALS;
+    }
+
+    private static class Counter implements DonationTotals {
+        private final Map<DonationGroup, Double> amounts = new EnumMap<>(DonationGroup.class);
+
+        public void set(final DonationGroup group, final double total) {
+            amounts.put(group, total);
+        }
+
+        @Override
+        public double get(final DonationGroup group) {
+            return amounts.getOrDefault(group, 0.0);
+        }
     }
 }
 

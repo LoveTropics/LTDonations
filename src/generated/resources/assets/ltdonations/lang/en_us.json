@@ -1,5 +1,10 @@
 {
   "block.ltdonations.donation": "Donation",
+  "command.ltdonations.donation.added_monument": "A monument has been created with id: '%s'",
+  "command.ltdonations.donation.invalid_group": "There is no donation group with the id: '%s'",
+  "command.ltdonations.donation.monument_already_exists": "There is already a monument with the id: '%s'",
+  "command.ltdonations.donation.monument_does_not_exist": "There is no monument with the id: '%s'",
+  "command.ltdonations.donation.removed_monument": "A monument has been removed with id: '%s'",
   "command.ltdonations.donation.simulate": "Simulating donation for name %s and amount %s",
   "itemGroup.ltdonations.ltdonations": "LTDonations",
   "notification.ltdonations.donation.new": "%s donated %s!"
