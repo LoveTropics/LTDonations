@@ -1,6 +1,11 @@
 package com.lovetropics.donations;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.Builder;
@@ -10,6 +15,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -51,9 +57,10 @@ public class DonationConfigs {
     	public final BooleanValue active;
 
         public final ConfigValue<String> posConfig;
-        public BlockPos pos = BlockPos.ZERO;
-
         public final ConfigValue<String> dimension;
+
+        @Nullable
+        public GlobalPos pos;
 
         private CategoryMonument() {
             COMMON_BUILDER.comment("Monument Settings").push("monument");
@@ -64,16 +71,17 @@ public class DonationConfigs {
 
             posConfig = COMMON_BUILDER
                     .comment("Position of the monument, given as the center position comma separated, e.g. 42,60,-99")
-                    .define("pos", "0,64,0", s -> s instanceof String && tryParse((String) s) != null);
+                    .define("pos", "0,64,0", s -> s instanceof String && tryParsePos((String) s) != null);
 
             dimension = COMMON_BUILDER
             		.comment("Dimension the monument is in")
-            		.define("dimension", "tropicraft:tropics");
+            		.define("dimension", "tropicraft:tropics", o -> o instanceof final String s && ResourceLocation.tryParse(s) != null);
 
             COMMON_BUILDER.pop();
         }
 
-		BlockPos tryParse(String cfg) {
+        @Nullable
+		BlockPos tryParsePos(String cfg) {
 			String[] coords = cfg.split(",");
 			if (coords.length != 3) {
 				return null;
@@ -141,6 +149,12 @@ public class DonationConfigs {
 	}
 
 	public static void parseConfigs() {
-		MONUMENT.pos = MONUMENT.tryParse(MONUMENT.posConfig.get());
+        final BlockPos pos = MONUMENT.tryParsePos(MONUMENT.posConfig.get());
+        final ResourceLocation dimensionId = ResourceLocation.tryParse(MONUMENT.dimension.get());
+        if (pos == null || dimensionId == null) {
+            MONUMENT.pos = null;
+            return;
+        }
+        MONUMENT.pos = GlobalPos.of(ResourceKey.create(Registries.DIMENSION, dimensionId), pos);
 	}
 }

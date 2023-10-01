@@ -34,7 +34,7 @@ public class DonationHandler {
     private static double totalAmount;
 
     @Nullable
-    private static MonumentManager monument;
+    private static MonumentManager monuments;
     @Nullable
     private static TopDonorManager topDonors;
 
@@ -65,8 +65,8 @@ public class DonationHandler {
             topDonatorsDirty = false;
         }
 
-        if (monument != null) {
-        	monument.tick(server);
+        if (monuments != null) {
+        	monuments.tick(server);
         }
 
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
@@ -81,19 +81,19 @@ public class DonationHandler {
 
         totalAmount = total;
 
-        monument = new MonumentManager();
-        monument.updateMonument(total, true);
-        DonationListeners.register(monument);
+        monuments = new MonumentManager();
+        monuments.updateTotal(total, true);
+        DonationListeners.register(monuments);
 
         topDonors = new TopDonorManager();
         topDonors.pollTopDonors();
     }
 
     public static void close() {
-        if (monument != null) {
-            DonationListeners.unregister(monument);
+        if (monuments != null) {
+            DonationListeners.unregister(monuments);
         }
-    	monument = null;
+    	monuments = null;
     	topDonors = null;
     }
 
