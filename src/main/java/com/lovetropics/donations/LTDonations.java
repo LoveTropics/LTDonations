@@ -82,17 +82,7 @@ public class LTDonations {
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
         CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
-        	.thenAcceptAsync(t -> {
-        		// Make sure no monument updates run before the initial one
-				MonumentManager monument = new MonumentManager();
-        		// Run a forced update (no particles)
-				monument.updateMonument(t, true);
-				DonationListeners.register(monument);
-				DonationHandler.monument = monument;
-
-        		DonationHandler.topDonors = new TopDonorManager();
-        		DonationHandler.topDonors.pollTopDonors();
-        	}, event.getServer());
+        	.thenAcceptAsync(DonationHandler::initialize, event.getServer());
 	}
 
 	private void serverStoppingEvent(final ServerStoppingEvent event) {

@@ -14,6 +14,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
+import javax.annotation.Nullable;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
@@ -31,8 +32,10 @@ public class DonationHandler {
 
     private static boolean donatorsDirty = true;
 
-    public static MonumentManager monument;
-    public static TopDonorManager topDonors;
+    @Nullable
+    private static MonumentManager monument;
+    @Nullable
+    private static TopDonorManager topDonors;
 
     @SubscribeEvent
     public static void tick(TickEvent.ServerTickEvent event) {
@@ -75,6 +78,17 @@ public class DonationHandler {
 			CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
 				.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
         }
+    }
+
+    public static void initialize(final double total) {
+        close();
+
+        monument = new MonumentManager();
+        monument.updateMonument(total, true);
+        DonationListeners.register(monument);
+
+        topDonors = new TopDonorManager();
+        topDonors.pollTopDonors();
     }
 
     public static void close() {
