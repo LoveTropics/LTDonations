@@ -34,6 +34,9 @@ public class DonationHandler {
     private static final Counter TOTALS = new Counter();
 
     @Nullable
+    private static Donation lastDonation;
+
+    @Nullable
     private static TopDonorManager topDonors;
 
     @SubscribeEvent
@@ -51,7 +54,7 @@ public class DonationHandler {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
                 TOTALS.set(DonationGroup.ALL, donation.getTotal());
-                DonationListeners.triggerDonation(server, donation.getName(), donation.getAmount(), TOTALS);
+                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.getAmount(), TOTALS);
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -92,10 +95,16 @@ public class DonationHandler {
     public static void queueDonation(final Donation donation) {
         DONATION_QUEUE.offer(donation);
         topDonatorsDirty = true;
+        lastDonation = donation;
     }
 
     public static DonationTotals totals() {
         return TOTALS;
+    }
+
+    @Nullable
+    public static Donation getLastDonation() {
+        return lastDonation;
     }
 
     private static class Counter implements DonationTotals {

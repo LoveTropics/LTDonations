@@ -109,6 +109,7 @@ dependencies {
     }
 
     jarJar(implementation(fg.deobf("com.lovetropics.lib:LTLib:$ltlib_version")))
+    jarJar(implementation(fg.deobf("eu.pb4:placeholder-api:$placeholder_api_version")))
 }
 
 tasks.jarJar.configure {

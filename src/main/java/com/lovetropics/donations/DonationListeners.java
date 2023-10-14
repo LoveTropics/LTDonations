@@ -23,7 +23,7 @@ public class DonationListeners {
         for (final ServerPlayer player : server.getPlayerList().getPlayers()) {
             player.displayClientMessage(DonationLangKeys.NEW_DONATION.format(
                     ChatFormatting.AQUA + name + ChatFormatting.RESET,
-                    ChatFormatting.GREEN + NumberFormat.getCurrencyInstance(Locale.US).format(amount) + ChatFormatting.RESET
+                    ChatFormatting.GREEN + LTDonations.CURRENCY_FORMAT.format(amount) + ChatFormatting.RESET
             ), false);
         }
     }

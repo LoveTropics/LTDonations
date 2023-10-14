@@ -23,6 +23,8 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 
+import java.text.NumberFormat;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
@@ -30,6 +32,8 @@ import java.util.regex.Pattern;
 public class LTDonations {
 
 	public static final String MODID = "ltdonations";
+
+	public static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.US);
 
 	private static final ResourceLocation TAB_ID = new ResourceLocation(MODID, "ltdonations");
 
@@ -58,6 +62,8 @@ public class LTDonations {
 		MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
 
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, DonationConfigs.COMMON_CONFIG);
+
+		DonationPlaceholders.register();
 	}
 
     private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
