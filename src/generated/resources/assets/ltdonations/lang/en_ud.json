@@ -5,6 +5,7 @@
   "command.ltdonations.donation.monument_already_exists": ",%s, :pı ǝɥʇ ɥʇıʍ ʇuǝɯnuoɯ ɐ ʎpɐǝɹןɐ sı ǝɹǝɥ⟘",
   "command.ltdonations.donation.monument_does_not_exist": ",%s, :pı ǝɥʇ ɥʇıʍ ʇuǝɯnuoɯ ou sı ǝɹǝɥ⟘",
   "command.ltdonations.donation.removed_monument": ",%s, :pı ɥʇıʍ pǝʌoɯǝɹ uǝǝq sɐɥ ʇuǝɯnuoɯ Ɐ",
+  "block.ltdonations.donation_redstone": "ǝuoʇspǝᴚ uoıʇɐuoᗡ",
   "command.ltdonations.donation.simulate": "%s ʇunoɯɐ puɐ %s ǝɯɐu ɹoɟ uoıʇɐuop buıʇɐןnɯıS",
   "itemGroup.ltdonations.ltdonations": "suoıʇɐuoᗡ⟘Ꞁ",
   "notification.ltdonations.donation.new": "¡%s pǝʇɐuop %s"

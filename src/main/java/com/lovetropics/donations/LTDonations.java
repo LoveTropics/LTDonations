@@ -43,6 +43,12 @@ public class LTDonations {
 		return REGISTRATE.get();
 	}
 
+	public static GlobalDonationTracker getGlobalDonationTracker() {
+		return globalDonationTracker;
+	}
+
+	public static GlobalDonationTracker globalDonationTracker = new GlobalDonationTracker();
+
 	public LTDonations() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
     	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
@@ -55,6 +61,8 @@ public class LTDonations {
 				.defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID));
 
 		DonationBlock.register();
+		DonationRedstoneBlock.register();
+		DonationGoalRedstoneBlock.register();
 		DonationLangKeys.init(registrate());
 
 		MinecraftForge.EVENT_BUS.addListener(this::serverStartingEvent);
@@ -84,11 +92,28 @@ public class LTDonations {
 	}
 
 	private void serverStartingEvent(ServerStartingEvent event) {
+		DonationListeners.register(globalDonationTracker);
         final DonationRequests startupRequests = DonationRequests.get();
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
         CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
+<<<<<<< HEAD
         	.thenAcceptAsync(total -> DonationHandler.initialize(event.getServer(), total), event.getServer());
+=======
+        	.thenAcceptAsync(t -> {
+        		// Make sure no monument updates run before the initial one
+				MonumentManager monument = new MonumentManager();
+        		// Run a forced update (no particles)
+				monument.updateMonument(t, true);
+				DonationListeners.register(monument);
+				DonationHandler.monument = monument;
+
+        		DonationHandler.topDonors = new TopDonorManager();
+        		DonationHandler.topDonors.pollTopDonors();
+
+				globalDonationTracker.addDonation(t);
+        	}, event.getServer());
+>>>>>>> lt23_donation_redstone_block
 	}
 
 	private void serverStoppingEvent(final ServerStoppingEvent event) {
