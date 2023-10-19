@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "ltdonations:block/donation_redstone_off"
+    "all": "ltdonations:block/donation_goal_redstone_on"
   }
 }

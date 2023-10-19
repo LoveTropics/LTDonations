@@ -39,6 +39,12 @@ public class LTDonations {
 		return REGISTRATE.get();
 	}
 
+	public static GlobalDonationTracker getGlobalDonationTracker() {
+		return globalDonationTracker;
+	}
+
+	public static GlobalDonationTracker globalDonationTracker = new GlobalDonationTracker();
+
 	public LTDonations() {
     	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
     	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
@@ -52,6 +58,7 @@ public class LTDonations {
 
 		DonationBlock.register();
 		DonationRedstoneBlock.register();
+		DonationGoalRedstoneBlock.register();
 		DonationLangKeys.init(registrate());
 
 		MinecraftForge.EVENT_BUS.addListener(this::serverStartingEvent);
@@ -79,6 +86,7 @@ public class LTDonations {
 	}
 
 	private void serverStartingEvent(ServerStartingEvent event) {
+		DonationListeners.register(globalDonationTracker);
         final DonationRequests startupRequests = DonationRequests.get();
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
@@ -93,6 +101,8 @@ public class LTDonations {
 
         		DonationHandler.topDonors = new TopDonorManager();
         		DonationHandler.topDonors.pollTopDonors();
+
+				globalDonationTracker.addDonation(t);
         	}, event.getServer());
 	}
 

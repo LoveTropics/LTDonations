@@ -1,6 +1,7 @@
 {
   "block.ltdonations.donation": "Donation",
-  "block.ltdonations.donation_redstone": "Donation Redstone",
+  "block.ltdonations.donation_redstone": "Donation Redstone Emitter",
+  "block.ltdonations.donation_goal_redstone": "Donation Threshold Goal Redstone Emitter",
   "command.ltdonations.donation.simulate": "Simulating donation for name %s and amount %s",
   "itemGroup.ltdonations.ltdonations": "LTDonations",
   "notification.ltdonations.donation.new": "%s donated %s!"

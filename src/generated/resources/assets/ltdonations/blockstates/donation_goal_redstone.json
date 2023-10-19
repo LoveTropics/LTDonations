@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "ltdonations:block/donation_goal_redstone_off"
+    },
+    "powered=true": {
+      "model": "ltdonations:block/donation_goal_redstone_on"
+    }
+  }
+}

@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
@@ -34,32 +33,31 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class DonationRedstoneBlock extends Block implements EntityBlock {
+public class DonationGoalRedstoneBlock extends Block implements EntityBlock {
 
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
-	public static final BlockEntry<DonationRedstoneBlock> BLOCK = LTDonations.registrate()
-			.block("donation_redstone", DonationRedstoneBlock::new)
+	public static final BlockEntry<DonationGoalRedstoneBlock> BLOCK = LTDonations.registrate()
+			.block("donation_goal_redstone", DonationGoalRedstoneBlock::new)
 			.initialProperties(() -> Blocks.BEDROCK)
 			.properties(Properties::noLootTable)
 			.blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
-				BlockModelBuilder model = prov.models().cubeAll(ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off"),
-						prov.modLoc("block/" + ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off")));
+				BlockModelBuilder model = prov.models().cubeAll(ctx.getName() + (state.getValue(DonationGoalRedstoneBlock.POWERED) ? "_on" : "_off"),
+						prov.modLoc("block/" + ctx.getName() + (state.getValue(DonationGoalRedstoneBlock.POWERED) ? "_on" : "_off")));
 				return ConfiguredModel.builder().modelFile(model).build();
 			}))
-			/*.item()
+			.item()
 				.model((ctx, prov) -> prov.generated(ctx, prov.modLoc(ctx.getName())))
-			.build()*/
-			.simpleItem()
-			.blockEntity(DonationRedstoneBlockEntity::new).build()
+			.build()
+			.blockEntity(DonationGoalRedstoneBlockEntity::new).build()
 
 			.register();
 
-	public static final BlockEntityEntry<DonationRedstoneBlockEntity> ENTITY = BlockEntityEntry.cast(LTDonations.registrate().get("donation_redstone", Registries.BLOCK_ENTITY_TYPE));
+	public static final BlockEntityEntry<DonationGoalRedstoneBlockEntity> ENTITY = BlockEntityEntry.cast(LTDonations.registrate().get("donation_goal_redstone", Registries.BLOCK_ENTITY_TYPE));
 
     public static final void register() {}
 
-	public DonationRedstoneBlock(Properties properties) {
+	public DonationGoalRedstoneBlock(Properties properties) {
 		super(properties);
 		this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.valueOf(false)));
 	}
@@ -73,11 +71,11 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
 		if (!pLevel.isClientSide && pHand == InteractionHand.MAIN_HAND) {
 			BlockEntity ent = pLevel.getBlockEntity(pPos);
-			if (ent instanceof DonationRedstoneBlockEntity) {
+			if (ent instanceof DonationGoalRedstoneBlockEntity) {
 				if (pPlayer.isCrouching()) {
-					((DonationRedstoneBlockEntity) ent).pulseLengthDown(pPlayer);
+					((DonationGoalRedstoneBlockEntity) ent).pulseLengthDown(pPlayer);
 				} else {
-					((DonationRedstoneBlockEntity) ent).pulseLengthUp(pPlayer);
+					((DonationGoalRedstoneBlockEntity) ent).pulseLengthUp(pPlayer);
 				}
 				return InteractionResult.SUCCESS;
 			}
@@ -95,13 +93,13 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 	@Nullable
 	@Override
 	public BlockEntity newBlockEntity(final BlockPos pos, final BlockState state) {
-		return new DonationRedstoneBlockEntity(ENTITY.get(), pos, state);
+		return new DonationGoalRedstoneBlockEntity(ENTITY.get(), pos, state);
 	}
 
 	@Nullable
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(final Level level, final BlockState state, final BlockEntityType<T> type) {
-		return createTicker(type, ENTITY.get(), DonationRedstoneBlockEntity::tick);
+		return createTicker(type, ENTITY.get(), DonationGoalRedstoneBlockEntity::tick);
 	}
 
 	@Nullable
@@ -129,6 +127,10 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 		pLevel.setBlock(pPos, pState.setValue(POWERED, Boolean.valueOf(state)), 3);
 		pLevel.updateNeighborsAt(pPos, this);
 		return pState;
+	}
+
+	public boolean isPowered(BlockState pState, Level pLevel, BlockPos pPos) {
+		return pState.getValue(POWERED).booleanValue();
 	}
 
 	public BlockState toggle(BlockState pState, Level pLevel, BlockPos pPos) {
