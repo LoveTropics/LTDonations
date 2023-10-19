@@ -97,23 +97,7 @@ public class LTDonations {
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
         	.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), event.getServer());
         CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
-<<<<<<< HEAD
         	.thenAcceptAsync(total -> DonationHandler.initialize(event.getServer(), total), event.getServer());
-=======
-        	.thenAcceptAsync(t -> {
-        		// Make sure no monument updates run before the initial one
-				MonumentManager monument = new MonumentManager();
-        		// Run a forced update (no particles)
-				monument.updateMonument(t, true);
-				DonationListeners.register(monument);
-				DonationHandler.monument = monument;
-
-        		DonationHandler.topDonors = new TopDonorManager();
-        		DonationHandler.topDonors.pollTopDonors();
-
-				globalDonationTracker.addDonation(t);
-        	}, event.getServer());
->>>>>>> lt23_donation_redstone_block
 	}
 
 	private void serverStoppingEvent(final ServerStoppingEvent event) {

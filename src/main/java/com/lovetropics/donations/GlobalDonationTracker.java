@@ -9,7 +9,7 @@ public class GlobalDonationTracker implements DonationListener {
     GlobalDonationTracker() {
     }
 
-    public void handleDonation(MinecraftServer server, String name, double amount) {
+    public void handleDonation(MinecraftServer server, String name, double amount, DonationTotals totals) {
         this.addDonation(amount);
     }
 

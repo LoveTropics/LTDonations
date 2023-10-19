@@ -84,6 +84,8 @@ public class DonationHandler {
 
         topDonors = new TopDonorManager();
         topDonors.pollTopDonors();
+
+        LTDonations.globalDonationTracker.addDonation(total);
     }
 
     public static void close(final MinecraftServer server) {
