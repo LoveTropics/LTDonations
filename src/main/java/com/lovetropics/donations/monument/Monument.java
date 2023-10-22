@@ -135,7 +135,7 @@ public class Monument {
                 nearbyGlass.add(pos.immutable());
             }
         });
-        LOGGER.info("Found {} glass blocks nearby", nearbyGlass.size());
+        LOGGER.debug("Found {} glass blocks nearby", nearbyGlass.size());
         return nearbyGlass;
     }
 
@@ -143,7 +143,7 @@ public class Monument {
         final int blocksPerLayer = LAYER_POSITIONS.size();
         final double dollarsPerBlock = (double) DOLLARS_PER_LAYER / blocksPerLayer;
         final int newStep = Mth.floor(totals.get(donationGroup) / dollarsPerBlock);
-        LOGGER.info("Step Increase: {} -> {}", step, newStep);
+        LOGGER.debug("Step Increase: {} -> {}", step, newStep);
         while (newStep > step) {
             queueBlock(step / blocksPerLayer, step % blocksPerLayer);
             step++;

@@ -69,7 +69,7 @@ public abstract class RequestHelper {
 	}
 
 	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Function<String, T> parser) {
-		LOGGER.info("Sending " + method.name() + " " + endpoint);
+		LOGGER.debug("Sending " + method.name() + " " + endpoint);
 		try {
 			HttpURLConnection con = getAuthorizedConnection(method, endpoint);
 			if (con == null) {
@@ -78,7 +78,7 @@ public abstract class RequestHelper {
 
 			try {
 				String payload = readInput(con.getInputStream(), false);
-				LOGGER.info("REST Response: " + payload);
+				LOGGER.debug("REST Response: " + payload);
 				return Either.left(parser.apply(payload));
 			} catch (IOException e) {
 				return Either.right(readInput(con.getErrorStream(), true));
