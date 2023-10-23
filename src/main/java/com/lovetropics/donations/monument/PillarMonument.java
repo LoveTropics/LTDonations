@@ -13,13 +13,11 @@ import net.minecraft.SharedConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -30,6 +28,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.common.Tags;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class PillarMonument implements Monument {
@@ -180,18 +179,7 @@ public class PillarMonument implements Monument {
                     updateGlassToColor = queued.color;
                 }
                 if (amt >= 0) { // Not an infinite drain
-                    // Throw some particles around
-                    final RandomSource rand = level.getRandom();
-                    final Vec3 center = Vec3.atLowerCornerOf(pos).add(0.5, 0.5, 0.5);
-                    for (int i = 0; i < 20; i++) {
-                        final Direction dir = rand.nextInt(3) != 0 ? Direction.UP : Direction.from2DDataValue(rand.nextInt(4));
-                        final Vec3 spawnPos = center.add(Vec3.atLowerCornerOf(dir.getNormal()).scale(0.6f))
-                                .add((rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepX())),
-                                        (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepY())),
-                                        (rand.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepZ())));
-                        final Vec3 speed = spawnPos.subtract(center);
-                        level.sendParticles(ParticleTypes.END_ROD, spawnPos.x, spawnPos.y, spawnPos.z, 0, speed.x, speed.y, speed.z, 0.075);
-                    }
+                    MonumentEffects.spawnParticles(level, pos);
                 }
             }
             for (final Direction dir : Direction.values()) {
@@ -245,11 +233,12 @@ public class PillarMonument implements Monument {
         ).apply(i, Data::new));
 
         @Override
+        @Nullable
         public Monument create(final MinecraftServer server) {
-            ServerLevel level = server.getLevel(pos.dimension());
+            final ServerLevel level = server.getLevel(pos.dimension());
             if (level == null) {
                 LOGGER.warn("Could not find dimension : " + pos.dimension().location());
-                level = server.overworld();
+                return null;
             }
             final BlockPos origin = pos.pos();
             return new PillarMonument(level, origin, scanForGlass(level, origin), this);

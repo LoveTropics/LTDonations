@@ -62,8 +62,10 @@ public class MonumentManager extends SavedData implements DonationListener {
         if (!pendingMonuments.isEmpty()) {
             pendingMonuments.forEach((id, data) -> {
                 final Monument monument = data.create(server);
-                monument.sync(totals);
-                monuments.put(id, monument);
+                if (monument != null) {
+                    monument.sync(totals);
+                    monuments.put(id, monument);
+                }
             });
             pendingMonuments.clear();
         }

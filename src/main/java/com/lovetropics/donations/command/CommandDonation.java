@@ -6,8 +6,11 @@ import com.lovetropics.donations.DonationListeners;
 import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
+import com.lovetropics.donations.monument.MonumentData;
 import com.lovetropics.donations.monument.MonumentManager;
 import com.lovetropics.donations.monument.PillarMonument;
+import com.lovetropics.donations.monument.WallMonument;
+import com.lovetropics.lib.BlockBox;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -28,10 +31,9 @@ import java.text.NumberFormat;
 import java.util.List;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.*;
-import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
-import static net.minecraft.commands.arguments.coordinates.BlockPosArgument.*;
+import static net.minecraft.commands.arguments.coordinates.BlockPosArgument.blockPos;
 import static net.minecraft.commands.arguments.coordinates.BlockPosArgument.getBlockPos;
 
 public class CommandDonation {
@@ -69,12 +71,27 @@ public class CommandDonation {
                     .then(literal("monument")
                             .then(literal("add")
                                     .then(argument("id", word())
-                                            .then(argument("pos", blockPos())
-                                                    .then(argument("group", word())
-                                                            .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(DonationGroup.names(), builder))
-                                                            .executes(ctx -> addMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "pos"), getDonationGroup(ctx), false))
-                                                            .then(literal("withAnnouncement")
-                                                                    .executes(ctx -> addMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "pos"), getDonationGroup(ctx), true))
+                                            .then(literal("pillar")
+                                                    .then(argument("pos", blockPos())
+                                                            .then(argument("group", word())
+                                                                    .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(DonationGroup.names(), builder))
+                                                                    .executes(ctx -> addPillarMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "pos"), getDonationGroup(ctx), false))
+                                                                    .then(literal("withAnnouncement")
+                                                                            .executes(ctx -> addPillarMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "pos"), getDonationGroup(ctx), true))
+                                                                    )
+                                                            )
+                                                    )
+                                            )
+                                            .then(literal("wall")
+                                                    .then(argument("corner1", blockPos())
+                                                            .then(argument("corner2", blockPos())
+                                                                    .then(argument("group", word())
+                                                                            .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(DonationGroup.names(), builder))
+                                                                            .executes(ctx -> addWallMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "corner1"), getBlockPos(ctx, "corner2"), getDonationGroup(ctx), false))
+                                                                            .then(literal("withAnnouncement")
+                                                                                    .executes(ctx -> addWallMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "corner1"), getBlockPos(ctx, "corner2"), getDonationGroup(ctx), true))
+                                                                            )
+                                                                    )
                                                             )
                                                     )
                                             )
@@ -110,15 +127,24 @@ public class CommandDonation {
         DonationListeners.triggerDonation(ctx.getSource().getServer(), name, amount, DonationHandler.totals());
         return Command.SINGLE_SUCCESS;
     }
-    
+
     public static int fireworks(CommandContext<CommandSourceStack> ctx) {
         return simulate(ctx, "", 0);
     }
 
-    private static int addMonument(final CommandContext<CommandSourceStack> ctx, final String id, final BlockPos pos, final DonationGroup group, final boolean announce) throws CommandSyntaxException {
-        final MonumentManager monuments = MonumentManager.get(ctx.getSource().getServer());
+    private static int addPillarMonument(final CommandContext<CommandSourceStack> ctx, final String id, final BlockPos pos, final DonationGroup group, final boolean announce) throws CommandSyntaxException {
         final ResourceKey<Level> dimension = ctx.getSource().getLevel().dimension();
-        if (!monuments.add(id, new PillarMonument.Data(GlobalPos.of(dimension, pos), group, announce))) {
+        return addMonument(ctx, id, new PillarMonument.Data(GlobalPos.of(dimension, pos), group, announce));
+    }
+
+    private static int addWallMonument(final CommandContext<CommandSourceStack> ctx, final String id, final BlockPos corner1, final BlockPos corner2, final DonationGroup group, final boolean announce) throws CommandSyntaxException {
+        final ResourceKey<Level> dimension = ctx.getSource().getLevel().dimension();
+        return addMonument(ctx, id, new WallMonument.Data(dimension, BlockBox.of(corner1, corner2), group, announce));
+    }
+
+    private static int addMonument(final CommandContext<CommandSourceStack> ctx, final String id, final MonumentData data) throws CommandSyntaxException {
+        final MonumentManager monuments = MonumentManager.get(ctx.getSource().getServer());
+        if (!monuments.add(id, data)) {
             throw MONUMENT_ALREADY_EXISTS.create(id);
         }
         ctx.getSource().sendSuccess(() -> DonationLangKeys.ADDED_MONUMENT.format(id), true);
