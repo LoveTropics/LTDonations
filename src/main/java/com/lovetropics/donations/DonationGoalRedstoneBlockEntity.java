@@ -38,7 +38,7 @@ public class DonationGoalRedstoneBlockEntity extends BlockEntity {
 		if (!level.isClientSide) {
 
 			if (entity.getRandomOffset() == 0 || level.getGameTime() % 20 == 0) {
-				if (LTDonations.getGlobalDonationTracker().getTotalAmount() >= entity.getDonationGoalAmount()) {
+				if (LTDonations.totals().get(DonationGroup.ALL) >= entity.getDonationGoalAmount()) {
 					if (!entity.lastPoweredState) {
 						entity.setPoweredState(true);
 					}

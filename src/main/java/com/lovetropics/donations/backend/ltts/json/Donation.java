@@ -1,88 +1,45 @@
 package com.lovetropics.donations.backend.ltts.json;
 
-import java.time.LocalDateTime;
+import com.lovetropics.lib.codec.MoreCodecs;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
+
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-import javax.annotation.Nullable;
+public record Donation(
+        String name,
+        UUID uuid,
+        double amount,
+        String comments,
+        Instant paymentTime,
+        boolean anonymous,
+        FullDonationState fullState
+) implements Comparable<Donation> {
+    private static final Codec<Instant> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")).xmap(
+            localTime -> localTime.atOffset(ZoneOffset.UTC).toInstant(),
+            instant -> instant.atOffset(ZoneOffset.UTC).toLocalDateTime()
+    );
 
-import com.google.gson.annotations.SerializedName;
-
-public class Donation implements Comparable<Donation> {
-    private final String name;
-    private final UUID uuid;
-    private final double amount;
-    private final String comments;
-    @SerializedName("payment_time")
-    private final String paymentTime;
-    private final boolean anonymous;
-    private final double total;
-
-    public Donation(String name, UUID uuid, double amount, String comments, String paymentTime, boolean anonymous, double total) {
-        this.name = name;
-        this.uuid = uuid;
-        this.amount = amount;
-        this.comments = comments;
-        this.paymentTime = paymentTime;
-        this.anonymous = anonymous;
-        this.total = total;
-    }
+    public static final Codec<Donation> CODEC = RecordCodecBuilder.create(i -> i.group(
+            Codec.STRING.optionalFieldOf("name", "").forGetter(Donation::name),
+            UUIDUtil.AUTHLIB_CODEC.fieldOf("uuid").forGetter(Donation::uuid),
+            Codec.DOUBLE.fieldOf("amount").forGetter(Donation::amount),
+            Codec.STRING.optionalFieldOf("comments", "").forGetter(Donation::comments),
+            TIME_CODEC.optionalFieldOf("payment_time", Instant.EPOCH).forGetter(Donation::paymentTime),
+            Codec.BOOL.optionalFieldOf("anonymous", true).forGetter(Donation::anonymous),
+            FullDonationState.MAP_CODEC.forGetter(Donation::fullState)
+    ).apply(i, Donation::new));
 
     @Override
-    public int compareTo(Donation other) {
-        final LocalDateTime thisDate = getDate(paymentTime);
-        final LocalDateTime thatDate = getDate(other.paymentTime);
-        if (thisDate != null && thatDate != null) {
-            return thisDate.compareTo(thatDate);
-        }
-        return 0;
-    }
-
-    @Nullable
-    private LocalDateTime getDate(String dateStr) {
-        dateStr = dateStr.split("\\.")[0];
-        LocalDateTime date;
-        try {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            date = LocalDateTime.parse(dateStr, formatter);
-        }
-        catch (final DateTimeParseException exc) {
-            System.out.printf("%s is not parsable!%n", dateStr);
-            return null;
-        }
-        return date;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public String getComments() {
-        return comments;
-    }
-
-    public String getPaymentTime() {
-        return paymentTime;
-    }
-
-    public boolean isAnonymous() {
-        return anonymous;
+    public int compareTo(final Donation other) {
+        return paymentTime.compareTo(other.paymentTime);
     }
 
     public String getNameShown() {
-        return isAnonymous() ? "Anonymous" : getName();
+        return anonymous() ? "Anonymous" : name();
     }
-    
-    public double getTotal() {
-		return total;
-	}
 }

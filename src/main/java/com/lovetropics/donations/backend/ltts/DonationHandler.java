@@ -3,6 +3,7 @@ package com.lovetropics.donations.backend.ltts;
 import com.google.common.collect.Queues;
 import com.lovetropics.donations.*;
 import com.lovetropics.donations.backend.ltts.json.Donation;
+import com.lovetropics.donations.backend.ltts.json.FullDonationState;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.monument.MonumentManager;
 import net.minecraft.SharedConstants;
@@ -48,13 +49,13 @@ public class DonationHandler {
         final MinecraftServer server = event.getServer();
         final int tick = server.getTickCount();
 
-        LTDonations.WEBSOCKET.get().tick();
+        LTDonations.websocket().tick();
 
         if (tick >= nextDonationPollTick) {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
-                TOTALS.set(DonationGroup.ALL, donation.getTotal());
-                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.getAmount(), TOTALS);
+                applyFullState(server, donation.fullState(), false);
+                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.amount(), TOTALS);
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -70,28 +71,42 @@ public class DonationHandler {
 
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
         if (tick % (SharedConstants.TICKS_PER_MINUTE * 5) == 0) {
-			CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
-				.thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
+            CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
+                    .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
         }
     }
 
-    public static void initialize(final MinecraftServer server, final double total) {
-        TOTALS.set(DonationGroup.ALL, total);
+    public static void fetchFullState(final MinecraftServer server, final boolean initial) {
+        final DonationRequests startupRequests = DonationRequests.get();
+        CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
+                .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
+        CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
+                .thenAcceptAsync(total -> applyFullState(server, total, initial), server);
+    }
 
+    public static void initialize(final MinecraftServer server) {
         final MonumentManager monuments = MonumentManager.get(server);
-        monuments.update(TOTALS, true);
         DonationListeners.register(monuments);
 
         topDonors = new TopDonorManager();
         topDonors.pollTopDonors();
 
-        LTDonations.globalDonationTracker.addDonation(total);
+        fetchFullState(server, true);
+    }
+
+    private static void applyFullState(final MinecraftServer server, final FullDonationState data, final boolean initial) {
+        TOTALS.set(DonationGroup.ALL, data.total(), 0);
+        TOTALS.set(DonationGroup.TEAM_CENTS, data.teamCentsTotal(), data.teamCentsCount());
+        TOTALS.set(DonationGroup.TEAM_NO_CENTS, data.teamNoCentsTotal(), data.teamNoCentsCount());
+        TOTALS.set(DonationGroup.TEAM_NICE, 0.0, data.teamNiceCount());
+
+        MonumentManager.get(server).update(TOTALS, initial);
     }
 
     public static void close(final MinecraftServer server) {
         final MonumentManager monuments = MonumentManager.get(server);
         DonationListeners.unregister(monuments);
-    	topDonors = null;
+        topDonors = null;
     }
 
     public static void queueDonation(final Donation donation) {
@@ -111,14 +126,21 @@ public class DonationHandler {
 
     private static class Counter implements DonationTotals {
         private final Map<DonationGroup, Double> amounts = new EnumMap<>(DonationGroup.class);
+        private final Map<DonationGroup, Integer> counts = new EnumMap<>(DonationGroup.class);
 
-        public void set(final DonationGroup group, final double total) {
+        public void set(final DonationGroup group, final double total, final int count) {
             amounts.put(group, total);
+            counts.put(group, count);
         }
 
         @Override
         public double get(final DonationGroup group) {
             return amounts.getOrDefault(group, 0.0);
+        }
+
+        @Override
+        public int getCount(final DonationGroup group) {
+            return counts.getOrDefault(group, 0);
         }
     }
 }

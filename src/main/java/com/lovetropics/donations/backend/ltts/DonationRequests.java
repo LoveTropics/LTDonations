@@ -1,18 +1,20 @@
 package com.lovetropics.donations.backend.ltts;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.RequestHelper;
+import com.lovetropics.donations.backend.ltts.json.FullDonationState;
 import com.lovetropics.donations.backend.ltts.json.PendingEventList;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
+import com.mojang.serialization.JsonOps;
+import net.minecraft.Util;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -63,11 +65,9 @@ public class DonationRequests extends RequestHelper {
 		request(POST, "players/blacklist/tterrag" + id--).orThrow();
 	}
 
-	public double getTotalDonations() {
-		return request(GET, "donations/total", JsonObject.class)
-				.orThrow()
-				.get("total")
-				.getAsDouble();
+	public FullDonationState getTotalDonations() {
+		final JsonObject json = request(GET, "donations/total", JsonObject.class).orThrow();
+        return Util.getOrThrow(FullDonationState.CODEC.parse(JsonOps.INSTANCE, json), JsonParseException::new);
 	}
 
 	public List<TopDonor> getTopDonors(int count) {

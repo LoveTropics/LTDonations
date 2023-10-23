@@ -3,7 +3,7 @@ package com.lovetropics.donations.command;
 import com.lovetropics.donations.DonationGroup;
 import com.lovetropics.donations.DonationLangKeys;
 import com.lovetropics.donations.DonationListeners;
-import com.lovetropics.donations.backend.ltts.DonationHandler;
+import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 import com.lovetropics.donations.monument.MonumentData;
@@ -124,7 +124,7 @@ public class CommandDonation {
         if (!name.isEmpty()) {
             ctx.getSource().sendSuccess(() -> DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
         }
-        DonationListeners.triggerDonation(ctx.getSource().getServer(), name, amount, DonationHandler.totals());
+        DonationListeners.triggerDonation(ctx.getSource().getServer(), name, amount, LTDonations.totals());
         return Command.SINGLE_SUCCESS;
     }
 
