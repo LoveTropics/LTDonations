@@ -124,7 +124,7 @@ public class CommandDonation {
         if (!name.isEmpty()) {
             ctx.getSource().sendSuccess(() -> DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
         }
-        DonationListeners.triggerDonation(ctx.getSource().getServer(), name, amount, LTDonations.totals());
+        DonationListeners.triggerDonation(ctx.getSource().getServer(), name, amount, LTDonations.state());
         return Command.SINGLE_SUCCESS;
     }
 

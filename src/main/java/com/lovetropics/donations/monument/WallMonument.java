@@ -2,7 +2,7 @@ package com.lovetropics.donations.monument;
 
 import com.lovetropics.donations.DiscordIntegration;
 import com.lovetropics.donations.DonationGroup;
-import com.lovetropics.donations.DonationTotals;
+import com.lovetropics.donations.DonationState;
 import com.lovetropics.lib.BlockBox;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -123,17 +123,17 @@ public class WallMonument implements Monument {
     }
 
     @Override
-    public void tick(final MinecraftServer server, final DonationTotals totals) {
-        targetCursor = computeCursor(totals);
+    public void tick(final MinecraftServer server, final DonationState state) {
+        targetCursor = computeCursor(state);
         if (server.getTickCount() % PLACE_INTERVAL == 0) {
             tryBuild(targetCursor, true, 1);
         }
     }
 
     @Override
-    public void sync(final DonationTotals totals) {
+    public void sync(final DonationState state) {
         clear();
-        targetCursor = computeCursor(totals);
+        targetCursor = computeCursor(state);
         tryBuild(targetCursor, false, Integer.MAX_VALUE);
     }
 
@@ -200,8 +200,8 @@ public class WallMonument implements Monument {
         return palette[(layer / BLOCKS_PER_COLOR) % palette.length].defaultBlockState();
     }
 
-    private Cursor computeCursor(final DonationTotals totals) {
-        final double totalLayers = totals.get(data.group()) / DOLLARS_PER_LAYER;
+    private Cursor computeCursor(final DonationState totals) {
+        final double totalLayers = totals.getAmount(data.group()) / DOLLARS_PER_LAYER;
         final int currentLayer = Mth.floor(totalLayers);
         final double layerProgress = totalLayers - currentLayer;
 

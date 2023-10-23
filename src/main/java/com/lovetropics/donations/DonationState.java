@@ -1,9 +1,9 @@
 package com.lovetropics.donations;
 
-public interface DonationTotals {
-    DonationTotals ZERO = new DonationTotals() {
+public interface DonationState {
+    DonationState ZERO = new DonationState() {
         @Override
-        public double get(final DonationGroup group) {
+        public double getAmount(final DonationGroup group) {
             return 0.0;
         }
 
@@ -13,7 +13,7 @@ public interface DonationTotals {
         }
     };
 
-    double get(DonationGroup group);
+    double getAmount(DonationGroup group);
 
     int getCount(DonationGroup group);
 }

@@ -1,12 +1,12 @@
 package com.lovetropics.donations.monument;
 
-import com.lovetropics.donations.DonationTotals;
+import com.lovetropics.donations.DonationState;
 import net.minecraft.server.MinecraftServer;
 
 public interface Monument {
-    void tick(MinecraftServer server, DonationTotals totals);
+    void tick(MinecraftServer server, DonationState state);
 
-    void sync(DonationTotals totals);
+    void sync(DonationState state);
 
     MonumentData toData();
 }

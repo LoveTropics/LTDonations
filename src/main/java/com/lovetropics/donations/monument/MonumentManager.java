@@ -1,7 +1,7 @@
 package com.lovetropics.donations.monument;
 
 import com.lovetropics.donations.DonationListener;
-import com.lovetropics.donations.DonationTotals;
+import com.lovetropics.donations.DonationState;
 import com.lovetropics.donations.LTDonations;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -23,7 +23,7 @@ public class MonumentManager extends SavedData implements DonationListener {
     private final Map<String, Monument> monuments = new Object2ObjectOpenHashMap<>();
     private final Map<String, MonumentData> pendingMonuments = new Object2ObjectOpenHashMap<>();
 
-    private DonationTotals totals = DonationTotals.ZERO;
+    private DonationState state = DonationState.ZERO;
 
     public static MonumentManager get(final MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(MonumentManager::load, MonumentManager::new, STORAGE_ID);
@@ -44,16 +44,16 @@ public class MonumentManager extends SavedData implements DonationListener {
     }
 
     @Override
-    public void handleDonation(final MinecraftServer server, final String name, final double amount, final DonationTotals totals) {
-        update(totals, false);
+    public void handleDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
+        update(state, false);
     }
 
-    public void update(final DonationTotals totals, final boolean fast) {
+    public void update(final DonationState state, final boolean fast) {
         setDirty();
-        this.totals = totals;
+        this.state = state;
         if (fast) {
             for (final Monument monument : monuments.values()) {
-                monument.sync(totals);
+                monument.sync(state);
             }
         }
     }
@@ -63,14 +63,14 @@ public class MonumentManager extends SavedData implements DonationListener {
             pendingMonuments.forEach((id, data) -> {
                 final Monument monument = data.create(server);
                 if (monument != null) {
-                    monument.sync(totals);
+                    monument.sync(state);
                     monuments.put(id, monument);
                 }
             });
             pendingMonuments.clear();
         }
 
-        monuments.values().forEach(monument -> monument.tick(server, totals));
+        monuments.values().forEach(monument -> monument.tick(server, state));
     }
 
     public Stream<String> ids() {

@@ -32,7 +32,7 @@ public class DonationHandler {
 
     private static boolean topDonatorsDirty = true;
 
-    private static final Counter TOTALS = new Counter();
+    private static final State STATE = new State();
 
     @Nullable
     private static Donation lastDonation;
@@ -55,7 +55,7 @@ public class DonationHandler {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
                 applyFullState(server, donation.fullState(), false);
-                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.amount(), TOTALS);
+                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.amount(), STATE);
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -95,12 +95,12 @@ public class DonationHandler {
     }
 
     private static void applyFullState(final MinecraftServer server, final FullDonationState data, final boolean initial) {
-        TOTALS.set(DonationGroup.ALL, data.total(), 0);
-        TOTALS.set(DonationGroup.TEAM_CENTS, data.teamCentsTotal(), data.teamCentsCount());
-        TOTALS.set(DonationGroup.TEAM_NO_CENTS, data.teamNoCentsTotal(), data.teamNoCentsCount());
-        TOTALS.set(DonationGroup.TEAM_NICE, 0.0, data.teamNiceCount());
+        STATE.set(DonationGroup.ALL, data.total(), 0);
+        STATE.set(DonationGroup.TEAM_CENTS, data.teamCentsTotal(), data.teamCentsCount());
+        STATE.set(DonationGroup.TEAM_NO_CENTS, data.teamNoCentsTotal(), data.teamNoCentsCount());
+        STATE.set(DonationGroup.TEAM_NICE, 0.0, data.teamNiceCount());
 
-        MonumentManager.get(server).update(TOTALS, initial);
+        MonumentManager.get(server).update(STATE, initial);
     }
 
     public static void close(final MinecraftServer server) {
@@ -115,8 +115,8 @@ public class DonationHandler {
         lastDonation = donation;
     }
 
-    public static DonationTotals totals() {
-        return TOTALS;
+    public static DonationState state() {
+        return STATE;
     }
 
     @Nullable
@@ -124,7 +124,7 @@ public class DonationHandler {
         return lastDonation;
     }
 
-    private static class Counter implements DonationTotals {
+    private static class State implements DonationState {
         private final Map<DonationGroup, Double> amounts = new EnumMap<>(DonationGroup.class);
         private final Map<DonationGroup, Integer> counts = new EnumMap<>(DonationGroup.class);
 
@@ -134,7 +134,7 @@ public class DonationHandler {
         }
 
         @Override
-        public double get(final DonationGroup group) {
+        public double getAmount(final DonationGroup group) {
             return amounts.getOrDefault(group, 0.0);
         }
 

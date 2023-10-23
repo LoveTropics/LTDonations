@@ -103,8 +103,8 @@ public class LTDonations {
         return Objects.requireNonNull(websocket, "Websocket has not been initialized");
     }
 
-	public static DonationTotals totals() {
-		return DonationHandler.totals();
+	public static DonationState state() {
+		return DonationHandler.state();
 	}
 
 	@Nullable

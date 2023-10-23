@@ -5,8 +5,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.Set;
 
 public class DonationListeners {
@@ -16,7 +14,7 @@ public class DonationListeners {
         LISTENERS.add(DonationListeners::announceDonation);
     }
 
-    private static void announceDonation(final MinecraftServer server, final String name, final double amount, final DonationTotals totals) {
+    private static void announceDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
         if (name.isBlank()) {
             return;
         }
@@ -28,9 +26,9 @@ public class DonationListeners {
         }
     }
 
-    public static void triggerDonation(final MinecraftServer server, final String name, final double amount, final DonationTotals totals) {
+    public static void triggerDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
         for (final DonationListener listener : LISTENERS) {
-            listener.handleDonation(server, name, amount, totals);
+            listener.handleDonation(server, name, amount, state);
         }
     }
 

@@ -35,14 +35,14 @@ public class DonationPlaceholders {
 
     private static PlaceholderHandler totalHandler(final DonationGroup group) {
         return (ctx, arg) -> {
-            final double total = LTDonations.totals().get(group);
+            final double total = LTDonations.state().getAmount(group);
             return PlaceholderResult.value(LTDonations.CURRENCY_FORMAT.format(total));
         };
     }
 
     private static PlaceholderHandler countHandler(final DonationGroup group) {
         return (ctx, arg) -> {
-            final int count = LTDonations.totals().getCount(group);
+            final int count = LTDonations.state().getCount(group);
             return PlaceholderResult.value(String.valueOf(count));
         };
     }

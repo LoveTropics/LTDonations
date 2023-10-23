@@ -3,7 +3,7 @@ package com.lovetropics.donations.monument;
 import com.google.common.collect.ImmutableList;
 import com.lovetropics.donations.DiscordIntegration;
 import com.lovetropics.donations.DonationGroup;
-import com.lovetropics.donations.DonationTotals;
+import com.lovetropics.donations.DonationState;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -137,10 +137,10 @@ public class PillarMonument implements Monument {
         blockQueue.offer(new QueuedBlock(pos, state, color, layer, step));
     }
 
-    private void updateTotal(final DonationTotals totals) {
+    private void updateTotal(final DonationState totals) {
         final int blocksPerLayer = LAYER_POSITIONS.size();
         final double dollarsPerBlock = (double) DOLLARS_PER_LAYER / blocksPerLayer;
-        final int newStep = Mth.floor(totals.get(data.donationGroup()) / dollarsPerBlock);
+        final int newStep = Mth.floor(totals.getAmount(data.donationGroup()) / dollarsPerBlock);
         LOGGER.debug("Step Increase: {} -> {}", step, newStep);
         while (newStep > step) {
             queueBlock(step / blocksPerLayer, step % blocksPerLayer);
@@ -149,16 +149,16 @@ public class PillarMonument implements Monument {
     }
 
     @Override
-    public void tick(final MinecraftServer server, final DonationTotals totals) {
-        updateTotal(totals);
+    public void tick(final MinecraftServer server, final DonationState state) {
+        updateTotal(state);
         if (level.getGameTime() % DRAIN_INTERVAL == 0) {
             drain(1);
         }
     }
 
     @Override
-    public void sync(final DonationTotals totals) {
-        updateTotal(totals);
+    public void sync(final DonationState state) {
+        updateTotal(state);
         drain(-1);
     }
 
