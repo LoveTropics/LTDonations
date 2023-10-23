@@ -103,8 +103,13 @@ public class WallMonument implements Monument {
                 result[layer].add(pos.asLong());
             }
         }
+        final BlockPos centerBlock = box.centerBlock();
         for (int i = 0; i < result.length; i++) {
             final LongList layer = result[i];
+            layer.sort((a, b) -> Integer.compare(
+                    BlockPos.of(a).distManhattan(centerBlock),
+                    BlockPos.of(b).distManhattan(centerBlock))
+            );
             if (layer.isEmpty()) {
                 LOGGER.error("No replaceable blocks in layer: {}", i + minY);
                 return null;
