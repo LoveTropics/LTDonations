@@ -6,6 +6,9 @@ import eu.pb4.placeholders.api.PlaceholderResult;
 import eu.pb4.placeholders.api.Placeholders;
 import net.minecraft.resources.ResourceLocation;
 
+import java.time.Duration;
+import java.time.Instant;
+
 public class DonationPlaceholders {
     private static final PlaceholderResult NO_DONOR_YET = PlaceholderResult.value("Nobody");
 
@@ -19,7 +22,7 @@ public class DonationPlaceholders {
         }
 
         Placeholders.register(id("last_donor"), (ctx, arg) -> {
-            final Donation lastDonation = LTDonations.lastDonation();
+            final Donation lastDonation = LTDonations.state().getLastDonation();
             if (lastDonation == null) {
                 return NO_DONOR_YET;
             }
@@ -27,9 +30,26 @@ public class DonationPlaceholders {
         });
 
         Placeholders.register(id("last_donation"), (ctx, arg) -> {
-            final Donation lastDonation = LTDonations.lastDonation();
+            final Donation lastDonation = LTDonations.state().getLastDonation();
             final double amount = lastDonation != null ? lastDonation.amount() : 0.0;
             return PlaceholderResult.value(LTDonations.CURRENCY_FORMAT.format(amount));
+        });
+
+        Placeholders.register(id("leading_team"), (ctx, arg) -> {
+            final DonationState.LeadingTeam leadingTeam = LTDonations.state().getLeadingTeam();
+            if (leadingTeam != null) {
+                return PlaceholderResult.value(leadingTeam.group().getName());
+            }
+            return NO_DONOR_YET;
+        });
+
+        Placeholders.register(id("leading_team_time"), (ctx, arg) -> {
+            final DonationState.LeadingTeam leadingTeam = LTDonations.state().getLeadingTeam();
+            if (leadingTeam != null) {
+                final Duration leadingTime = Duration.between(leadingTeam.sinceTime(), Instant.now());
+                return PlaceholderResult.value(DonationLangKeys.TIME_MINUTES.format(leadingTime.toMinutes()));
+            }
+            return NO_DONOR_YET;
         });
     }
 

@@ -106,9 +106,4 @@ public class LTDonations {
 	public static DonationState state() {
 		return DonationHandler.state();
 	}
-
-	@Nullable
-	public static Donation lastDonation() {
-		return DonationHandler.getLastDonation();
-	}
 }

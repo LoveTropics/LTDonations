@@ -1,5 +1,6 @@
 package com.lovetropics.donations.backend.ltts;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
 import com.lovetropics.donations.*;
 import com.lovetropics.donations.backend.ltts.json.Donation;
@@ -14,6 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import javax.annotation.Nullable;
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
@@ -33,9 +35,6 @@ public class DonationHandler {
     private static boolean topDonatorsDirty = true;
 
     private static final State STATE = new State();
-
-    @Nullable
-    private static Donation lastDonation;
 
     @Nullable
     private static TopDonorManager topDonors;
@@ -95,10 +94,7 @@ public class DonationHandler {
     }
 
     private static void applyFullState(final MinecraftServer server, final FullDonationState data, final boolean initial) {
-        STATE.set(DonationGroup.ALL, data.total(), 0);
-        STATE.set(DonationGroup.TEAM_CENTS, data.teamCentsTotal(), data.teamCentsCount());
-        STATE.set(DonationGroup.TEAM_NO_CENTS, data.teamNoCentsTotal(), data.teamNoCentsCount());
-        STATE.set(DonationGroup.TEAM_NICE, 0.0, data.teamNiceCount());
+        STATE.apply(data);
 
         MonumentManager.get(server).update(STATE, initial);
     }
@@ -112,21 +108,37 @@ public class DonationHandler {
     public static void queueDonation(final Donation donation) {
         DONATION_QUEUE.offer(donation);
         topDonatorsDirty = true;
-        lastDonation = donation;
+        STATE.lastDonation = donation;
     }
 
     public static DonationState state() {
         return STATE;
     }
 
-    @Nullable
-    public static Donation getLastDonation() {
-        return lastDonation;
-    }
-
     private static class State implements DonationState {
         private final Map<DonationGroup, Double> amounts = new EnumMap<>(DonationGroup.class);
         private final Map<DonationGroup, Integer> counts = new EnumMap<>(DonationGroup.class);
+        @Nullable
+        private LeadingTeam leadingTeam;
+        @Nullable
+        private Donation lastDonation;
+
+        public void apply(final FullDonationState state) {
+            set(DonationGroup.ALL, state.total(), 0);
+            set(DonationGroup.TEAM_CENTS, state.teamCentsTotal(), state.teamCentsCount());
+            set(DonationGroup.TEAM_NO_CENTS, state.teamNoCentsTotal(), state.teamNoCentsCount());
+            set(DonationGroup.TEAM_NICE, 0.0, state.teamNiceCount());
+
+            if (!Strings.isNullOrEmpty(state.latestTeam())) {
+                leadingTeam = switch (state.latestTeam().toLowerCase(Locale.ROOT)) {
+                    case "team_cents" -> new LeadingTeam(DonationGroup.TEAM_CENTS, state.teamLeadChangeTimestamp());
+                    case "team_no_cents" -> new LeadingTeam(DonationGroup.TEAM_NO_CENTS, state.teamLeadChangeTimestamp());
+                    default -> leadingTeam;
+                };
+            } else {
+                leadingTeam = null;
+            }
+        }
 
         public void set(final DonationGroup group, final double total, final int count) {
             amounts.put(group, total);
@@ -141,6 +153,18 @@ public class DonationHandler {
         @Override
         public int getCount(final DonationGroup group) {
             return counts.getOrDefault(group, 0);
+        }
+
+        @Nullable
+        @Override
+        public Donation getLastDonation() {
+            return lastDonation;
+        }
+
+        @Nullable
+        @Override
+        public LeadingTeam getLeadingTeam() {
+            return leadingTeam;
         }
     }
 }

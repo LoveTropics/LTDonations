@@ -14,6 +14,11 @@ public enum DonationLangKeys {
     MONUMENT_ALREADY_EXISTS("command", "donation.monument_already_exists", "There is already a monument with the id: '%s'"),
     MONUMENT_DOES_NOT_EXIST("command", "donation.monument_does_not_exist", "There is no monument with the id: '%s'"),
     NEW_DONATION("notification", "donation.new", "%s donated %s!"),
+    GROUP_ALL("donation_group", "all", "Global"),
+    TEAM_CENTS("donation_group", "team_cents", "Team Cents"),
+    TEAM_NO_CENTS("donation_group", "team_no_cents", "Team No Cents"),
+    TEAM_NICE("donation_group", "team_nice", "Team Nice"),
+    TIME_MINUTES("time", "minutes", "%s minutes")
     ;
 
     private final String key;
