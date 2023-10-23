@@ -132,8 +132,20 @@ public class WallMonument implements Monument {
 
     @Override
     public void sync(final DonationTotals totals) {
+        clear();
         targetCursor = computeCursor(totals);
         tryBuild(targetCursor, false, Integer.MAX_VALUE);
+    }
+
+    private void clear() {
+        cursor = null;
+        final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+        for (final LongList layer : blocksByLayer) {
+            layer.forEach(l -> {
+                final BlockPos pos = mutablePos.set(l);
+                level.setBlock(pos, BACKGROUND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+            });
+        }
     }
 
     private void tryBuild(final Cursor target, final boolean effects, int budget) {
