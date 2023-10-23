@@ -1,19 +1,14 @@
 package com.lovetropics.donations.monument;
 
-import com.lovetropics.donations.DonationGroup;
 import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationTotals;
 import com.lovetropics.donations.LTDonations;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.Util;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 
 import java.util.Map;
@@ -56,10 +51,9 @@ public class MonumentManager extends SavedData implements DonationListener {
     public void update(final DonationTotals totals, final boolean fast) {
         setDirty();
         this.totals = totals;
-        for (final Monument monument : monuments.values()) {
-            monument.updateTotal(totals);
-            if (fast) {
-                monument.drainAll();
+        if (fast) {
+            for (final Monument monument : monuments.values()) {
+                monument.sync(totals);
             }
         }
     }
@@ -67,26 +61,24 @@ public class MonumentManager extends SavedData implements DonationListener {
     public void tick(final MinecraftServer server) {
         if (!pendingMonuments.isEmpty()) {
             pendingMonuments.forEach((id, data) -> {
-                final Monument monument = Monument.create(server, data);
-                monument.updateTotal(totals);
-                monument.drainAll();
+                final Monument monument = data.create(server);
+                monument.sync(totals);
                 monuments.put(id, monument);
             });
             pendingMonuments.clear();
         }
 
-        monuments.values().forEach(Monument::tick);
+        monuments.values().forEach(monument -> monument.tick(server, totals));
     }
 
     public Stream<String> ids() {
         return monuments.keySet().stream();
     }
 
-    public boolean add(final String id, final ResourceKey<Level> dimension, final BlockPos pos, final DonationGroup group, final boolean announce) {
+    public boolean add(final String id, final MonumentData data) {
         if (monuments.containsKey(id)) {
             return false;
         }
-        final MonumentData data = new MonumentData(GlobalPos.of(dimension, pos), group, announce);
         if (pendingMonuments.putIfAbsent(id, data) == null) {
             setDirty();
             return true;

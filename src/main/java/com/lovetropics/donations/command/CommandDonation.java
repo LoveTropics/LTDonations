@@ -7,6 +7,7 @@ import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 import com.lovetropics.donations.monument.MonumentManager;
+import com.lovetropics.donations.monument.PillarMonument;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
@@ -18,6 +19,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -116,7 +118,7 @@ public class CommandDonation {
     private static int addMonument(final CommandContext<CommandSourceStack> ctx, final String id, final BlockPos pos, final DonationGroup group, final boolean announce) throws CommandSyntaxException {
         final MonumentManager monuments = MonumentManager.get(ctx.getSource().getServer());
         final ResourceKey<Level> dimension = ctx.getSource().getLevel().dimension();
-        if (!monuments.add(id, dimension, pos, group, announce)) {
+        if (!monuments.add(id, new PillarMonument.Data(GlobalPos.of(dimension, pos), group, announce))) {
             throw MONUMENT_ALREADY_EXISTS.create(id);
         }
         ctx.getSource().sendSuccess(() -> DonationLangKeys.ADDED_MONUMENT.format(id), true);
