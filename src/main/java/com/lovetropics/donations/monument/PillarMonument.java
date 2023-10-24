@@ -141,6 +141,9 @@ public class PillarMonument implements Monument {
         final int blocksPerLayer = LAYER_POSITIONS.size();
         final double dollarsPerBlock = (double) DOLLARS_PER_LAYER / blocksPerLayer;
         final int newStep = Mth.floor(totals.getAmount(data.donationGroup()) / dollarsPerBlock);
+        if (step == newStep) {
+            return;
+        }
         LOGGER.debug("Step Increase: {} -> {}", step, newStep);
         while (newStep > step) {
             queueBlock(step / blocksPerLayer, step % blocksPerLayer);
