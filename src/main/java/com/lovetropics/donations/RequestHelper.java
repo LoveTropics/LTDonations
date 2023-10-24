@@ -50,7 +50,7 @@ public final class RequestHelper {
 		if (endpoint.startsWith("/")) {
 			endpoint = endpoint.substring(1);
 		}
-		return HttpRequest.newBuilder(URI.create(baseUrl + "/" + endpoint))
+		return HttpRequest.newBuilder(URI.create(baseUrl + endpoint))
 				.header(HttpHeaders.USER_AGENT, "LTDonations 1.0 (lovetropics.org)")
 				.header(HttpHeaders.CONTENT_TYPE, "application/json")
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
