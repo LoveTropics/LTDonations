@@ -43,14 +43,14 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 			.initialProperties(() -> Blocks.BEDROCK)
 			.properties(Properties::noLootTable)
 			.blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
-				BlockModelBuilder model = prov.models().cubeAll(ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off"),
-						prov.modLoc("block/" + ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off")));
+				String name = ctx.getName() + (state.getValue(DonationRedstoneBlock.POWERED) ? "_on" : "_off");
+				BlockModelBuilder model = prov.models().cubeAll(name, prov.modLoc("block/" + name));
 				return ConfiguredModel.builder().modelFile(model).build();
 			}))
-			/*.item()
-				.model((ctx, prov) -> prov.generated(ctx, prov.modLoc(ctx.getName())))
-			.build()*/
-			.simpleItem()
+			.lang("Donation Redstone Emitter")
+			.item()
+				.model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/" + ctx.getName() + "_off")))
+			.build()
 			.blockEntity(DonationRedstoneBlockEntity::new).build()
 
 			.register();

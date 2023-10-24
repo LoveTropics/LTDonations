@@ -1,12 +1,18 @@
 {
   "block.ltdonations.donation": "uoıʇɐuoᗡ",
+  "block.ltdonations.donation_goal_redstone": "ɹǝʇʇıɯƎ ǝuoʇspǝᴚ ןɐo⅁ pןoɥsǝɹɥ⟘ uoıʇɐuoᗡ",
+  "block.ltdonations.donation_redstone": "ɹǝʇʇıɯƎ ǝuoʇspǝᴚ uoıʇɐuoᗡ",
   "command.ltdonations.donation.added_monument": ",%s, :pı ɥʇıʍ pǝʇɐǝɹɔ uǝǝq sɐɥ ʇuǝɯnuoɯ Ɐ",
   "command.ltdonations.donation.invalid_group": ",%s, :pı ǝɥʇ ɥʇıʍ dnoɹb uoıʇɐuop ou sı ǝɹǝɥ⟘",
   "command.ltdonations.donation.monument_already_exists": ",%s, :pı ǝɥʇ ɥʇıʍ ʇuǝɯnuoɯ ɐ ʎpɐǝɹןɐ sı ǝɹǝɥ⟘",
   "command.ltdonations.donation.monument_does_not_exist": ",%s, :pı ǝɥʇ ɥʇıʍ ʇuǝɯnuoɯ ou sı ǝɹǝɥ⟘",
   "command.ltdonations.donation.removed_monument": ",%s, :pı ɥʇıʍ pǝʌoɯǝɹ uǝǝq sɐɥ ʇuǝɯnuoɯ Ɐ",
-  "block.ltdonations.donation_redstone": "ǝuoʇspǝᴚ uoıʇɐuoᗡ",
   "command.ltdonations.donation.simulate": "%s ʇunoɯɐ puɐ %s ǝɯɐu ɹoɟ uoıʇɐuop buıʇɐןnɯıS",
+  "donation_group.ltdonations.all": "ןɐqoן⅁",
+  "donation_group.ltdonations.team_cents": "sʇuǝƆ ɯɐǝ⟘",
+  "donation_group.ltdonations.team_nice": "ǝɔıN ɯɐǝ⟘",
+  "donation_group.ltdonations.team_no_cents": "sʇuǝƆ oN ɯɐǝ⟘",
   "itemGroup.ltdonations.ltdonations": "suoıʇɐuoᗡ⟘Ꞁ",
-  "notification.ltdonations.donation.new": "¡%s pǝʇɐuop %s"
+  "notification.ltdonations.donation.new": "¡%s pǝʇɐuop %s",
+  "time.ltdonations.minutes": "sǝʇnuıɯ %s"
 }
