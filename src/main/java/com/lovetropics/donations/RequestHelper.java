@@ -3,101 +3,99 @@ package com.lovetropics.donations;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
-import com.lovetropics.lib.repack.io.netty.handler.codec.http.HttpMethod;
-import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Unit;
+import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.Util;
+import org.apache.http.HttpHeaders;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class RequestHelper {
-	
-	private static final Logger LOGGER = LogManager.getLogger();
+public final class RequestHelper {
+	private static final Logger LOGGER = LogUtils.getLogger();
 
-	private final Supplier<String> baseURL;
+	private static final HttpClient CLIENT = HttpClient.newBuilder()
+			.executor(Util.ioPool())
+			.build();
+
+	private final Supplier<String> baseUrl;
 	private final Supplier<String> token;
 
-	protected RequestHelper(Supplier<String> baseURL, Supplier<String> token) {
-		this.baseURL = () -> {
-			String url = baseURL.get();
+	public RequestHelper(final Supplier<String> baseUrl, final Supplier<String> token) {
+		this.baseUrl = () -> {
+			final String url = baseUrl.get();
 			return url.endsWith("/") ? url : url + "/";
 		};
 		this.token = token;
 	}
 
 	@Nullable
-	protected HttpURLConnection getAuthorizedConnection(HttpMethod method, String endpoint) throws IOException {
-		String baseUrl = this.baseURL.get();
-		String token = this.token.get();
+	private HttpRequest.Builder requestBuilder(String endpoint) {
+		final String baseUrl = this.baseUrl.get();
+		final String token = this.token.get();
 		if (baseUrl.isEmpty() || token.isEmpty()) {
 			return null;
 		}
-
 		if (endpoint.startsWith("/")) {
 			endpoint = endpoint.substring(1);
 		}
-		URL url = new URL(baseUrl + endpoint);
-		HttpURLConnection con = (HttpURLConnection) url.openConnection();
-		con.setRequestMethod(method.name());
-		con.setRequestProperty("User-Agent", "LTDonations 1.0 (lovetropics.org)");
-		con.setRequestProperty("Content-Type", "application/json");
-		con.setRequestProperty("Authorization", "Bearer " + token);
-		return con;
+		return HttpRequest.newBuilder(URI.create(baseUrl + "/" + endpoint))
+				.header(HttpHeaders.USER_AGENT, "LTDonations 1.0 (lovetropics.org)")
+				.header(HttpHeaders.CONTENT_TYPE, "application/json")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + token);
 	}
 
-	protected Either<Unit, String> request(HttpMethod method, String endpoint) {
-		return request(method, endpoint, DSL.emptyPartType().codec());
-	}
+	private <T> Either<T, String> request(final String endpoint, final Function<HttpRequest.Builder, HttpRequest> builder, final Function<String, Either<T, String>> parser) {
+		LOGGER.debug("Sending request to {}", endpoint);
 
-	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Codec<T> codec) {
-		LOGGER.debug("Sending " + method.name() + " " + endpoint);
+		final HttpRequest.Builder request = requestBuilder(endpoint);
+		if (request == null) {
+			return Either.right("Connection not configured");
+		}
+
 		try {
-			HttpURLConnection con = getAuthorizedConnection(method, endpoint);
-			if (con == null) {
-				return Either.right("Connection not configured");
+			final HttpResponse<String> response = CLIENT.send(builder.apply(request), HttpResponse.BodyHandlers.ofString());
+			LOGGER.debug("Got {} from {}: {}", response.statusCode(), endpoint, response.body());
+
+			if (response.statusCode() >= 200 && response.statusCode() < 300) {
+				return parser.apply(response.body());
 			}
 
-			try {
-				String payload = readInput(con.getInputStream(), false);
-				LOGGER.debug("REST Response: " + payload);
-				try {
-					final JsonElement json = JsonParser.parseString(payload);
-					return codec.parse(JsonOps.INSTANCE, json).get().mapRight(DataResult.PartialResult::message);
-				} catch (final JsonParseException e) {
-					return Either.right("Malformed JSON: " + e.getMessage());
-				}
-			} catch (IOException e) {
-				return Either.right(readInput(con.getErrorStream(), true));
-			}
-		} catch (IOException e) {
+			return Either.right(response.body());
+		} catch (final IOException | InterruptedException e) {
 			return Either.right(e.toString());
 		}
 	}
 
-	protected final String readInput(InputStream is, boolean newlines) throws IOException {
-		BufferedReader in = new BufferedReader(new InputStreamReader(is));
-		String inputLine;
-		StringBuffer content = new StringBuffer();
-		while ((inputLine = in.readLine()) != null) {
-			content.append(inputLine);
-			if (newlines) {
-				content.append("\n");
-			}
-		}
-		in.close();
-		return content.toString();
+	public Either<Unit, String> post(final String endpoint) {
+		return request(endpoint,
+				request -> request.POST(HttpRequest.BodyPublishers.noBody()).build(),
+				string -> Either.left(Unit.INSTANCE)
+		);
 	}
 
+	public <T> Either<T, String> get(final String endpoint, final Codec<T> codec) {
+		return request(endpoint,
+				request -> request.GET().build(),
+				body -> {
+					try {
+						final JsonElement json = JsonParser.parseString(body);
+						return codec.parse(JsonOps.INSTANCE, json).get().mapRight(DataResult.PartialResult::message);
+					} catch (final JsonParseException e) {
+						return Either.right("Malformed JSON: " + e.getMessage());
+					}
+				}
+		);
+	}
 }
