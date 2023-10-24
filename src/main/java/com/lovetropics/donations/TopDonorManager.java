@@ -2,6 +2,7 @@ package com.lovetropics.donations;
 
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
+import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -13,8 +14,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.server.ServerLifecycleHooks;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class TopDonorManager {
-    private static final Logger LOGGER = LogManager.getLogger(TopDonorManager.class);
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private UUID[] lastEntityUuids;
 
@@ -35,6 +35,7 @@ public final class TopDonorManager {
 
     private void applyTopDonors(List<TopDonor> topDonors) {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
+        LOGGER.debug("Applying {} top donators to {} entities", topDonors.size(), topDonorUuids.length);
 
         int newTopDonorLength = Math.min(topDonorUuids.length, topDonors.size());
 

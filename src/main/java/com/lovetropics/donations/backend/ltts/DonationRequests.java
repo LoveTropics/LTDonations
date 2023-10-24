@@ -5,11 +5,11 @@ import com.lovetropics.donations.RequestHelper;
 import com.lovetropics.donations.backend.ltts.json.FullDonationState;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
@@ -22,10 +22,15 @@ public class DonationRequests {
 	);
 
     private static final Codec<List<WhitelistEvent>> WHITELIST_EVENTS_CODEC = WhitelistEvent.CODEC.listOf().fieldOf("events").codec();
-    private static final Codec<List<TopDonor>> TOP_DONORS_CODEC = MoreCodecs.sorted(
-            TopDonor.CODEC.listOf().fieldOf("donors").codec(),
-            Comparator.comparingDouble(TopDonor::total).reversed()
-    );
+	private static final Comparator<TopDonor> TOP_DONOR_COMPARATOR = Comparator.comparingDouble(TopDonor::total).reversed();
+	private static final Codec<List<TopDonor>> TOP_DONORS_CODEC = TopDonor.CODEC.listOf().fieldOf("donors").codec().xmap(
+			topDonors -> {
+				final List<TopDonor> sorted = new ArrayList<>(topDonors);
+				sorted.sort(TOP_DONOR_COMPARATOR);
+				return List.copyOf(sorted);
+			},
+			topDonors -> topDonors
+	);
 
 	private final RequestHelper requests;
 
