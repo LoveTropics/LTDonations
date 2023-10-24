@@ -87,9 +87,9 @@ public class CommandDonation {
                                                             .then(argument("corner2", blockPos())
                                                                     .then(argument("group", word())
                                                                             .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(DonationGroup.names(), builder))
-                                                                            .executes(ctx -> addWallMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "corner1"), getBlockPos(ctx, "corner2"), getDonationGroup(ctx), false))
-                                                                            .then(literal("withAnnouncement")
-                                                                                    .executes(ctx -> addWallMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "corner1"), getBlockPos(ctx, "corner2"), getDonationGroup(ctx), true))
+                                                                            .then(argument("style", word())
+                                                                                    .suggests((ctx, builder) -> SharedSuggestionProvider.suggest(WallMonument.MonumentStyle.names(), builder))
+                                                                                    .executes(ctx -> addWallMonument(ctx, getString(ctx, "id"), getBlockPos(ctx, "corner1"), getBlockPos(ctx, "corner2"), getDonationGroup(ctx), getMonumentStyle(ctx)))
                                                                             )
                                                                     )
                                                             )
@@ -119,6 +119,10 @@ public class CommandDonation {
         return group;
     }
 
+    private static WallMonument.MonumentStyle getMonumentStyle(final CommandContext<CommandSourceStack> ctx) {
+        return WallMonument.MonumentStyle.CODEC.byName(getString(ctx, "style"), WallMonument.MonumentStyle.NORMAL);
+    }
+
     public static int simulate(CommandContext<CommandSourceStack> ctx, String name, double amount) {
     	SharedConstants.IS_RUNNING_IN_IDE = true;
         if (!name.isEmpty()) {
@@ -137,9 +141,9 @@ public class CommandDonation {
         return addMonument(ctx, id, new PillarMonument.Data(GlobalPos.of(dimension, pos), group, announce));
     }
 
-    private static int addWallMonument(final CommandContext<CommandSourceStack> ctx, final String id, final BlockPos corner1, final BlockPos corner2, final DonationGroup group, final boolean announce) throws CommandSyntaxException {
+    private static int addWallMonument(final CommandContext<CommandSourceStack> ctx, final String id, final BlockPos corner1, final BlockPos corner2, final DonationGroup group, final WallMonument.MonumentStyle style) throws CommandSyntaxException {
         final ResourceKey<Level> dimension = ctx.getSource().getLevel().dimension();
-        return addMonument(ctx, id, new WallMonument.Data(dimension, BlockBox.of(corner1, corner2), group, announce));
+        return addMonument(ctx, id, new WallMonument.Data(dimension, BlockBox.of(corner1, corner2), group, style));
     }
 
     private static int addMonument(final CommandContext<CommandSourceStack> ctx, final String id, final MonumentData data) throws CommandSyntaxException {
