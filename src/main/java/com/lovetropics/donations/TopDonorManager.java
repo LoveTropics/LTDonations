@@ -44,8 +44,8 @@ public final class TopDonorManager {
         for (int i = 0; i < newTopDonorLength; i++) {
             UUID entityId = entityIds[i];
             TopDonor donor = topDonors.get(i);
-            List<String> fallbacks = donor.displayNames;
-            this.applyToEntity(entityId, donor.minecraftName, fallbacks.isEmpty() ? "Anonymous" : fallbacks.get(fallbacks.size() - 1), donor.total);
+            List<String> fallbacks = donor.displayNames();
+            this.applyToEntity(entityId, donor.minecraftName().orElse(null), fallbacks.isEmpty() ? "Anonymous" : fallbacks.get(fallbacks.size() - 1), donor.total());
         }
 
         UUID[] lastEntityUuids = this.lastEntityUuids;
@@ -58,7 +58,7 @@ public final class TopDonorManager {
         this.lastEntityUuids = entityIds;
     }
 
-    private void applyToEntity(UUID entityId, String minecraftName, String fallbackName, double total) {
+    private void applyToEntity(UUID entityId, @Nullable String minecraftName, String fallbackName, double total) {
         Entity entity = this.findEntity(entityId);
         if (entity == null) return;
 

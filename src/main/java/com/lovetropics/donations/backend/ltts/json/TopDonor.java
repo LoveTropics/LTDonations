@@ -1,18 +1,18 @@
 package com.lovetropics.donations.backend.ltts.json;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-public final class TopDonor {
-    public final UUID uuid;
-    public final String minecraftName;
-    public final List<String> displayNames;
-    public final double total;
-
-    public TopDonor(UUID uuid, String minecraftName, List<String> displayNames, double total) {
-        this.uuid = uuid;
-        this.minecraftName = minecraftName;
-        this.displayNames = displayNames;
-        this.total = total;
-    }
+public record TopDonor(UUID uuid, Optional<String> minecraftName, List<String> displayNames, double total) {
+    public static final Codec<TopDonor> CODEC = RecordCodecBuilder.create(i -> i.group(
+            UUIDUtil.STRING_CODEC.fieldOf("uuid").forGetter(TopDonor::uuid),
+            Codec.STRING.optionalFieldOf("minecraft_name").forGetter(TopDonor::minecraftName),
+            Codec.STRING.listOf().optionalFieldOf("display_names", List.of()).forGetter(TopDonor::displayNames),
+            Codec.DOUBLE.fieldOf("total").forGetter(TopDonor::total)
+    ).apply(i, TopDonor::new));
 }

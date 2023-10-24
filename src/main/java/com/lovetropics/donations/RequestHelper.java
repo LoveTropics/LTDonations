@@ -1,25 +1,26 @@
 package com.lovetropics.donations;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+import com.lovetropics.lib.repack.io.netty.handler.codec.http.HttpMethod;
+import com.mojang.datafixers.DSL;
+import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Unit;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import com.lovetropics.lib.repack.io.netty.handler.codec.http.HttpMethod;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.mojang.datafixers.util.Either;
-
-import net.minecraft.util.Unit;
 
 public abstract class RequestHelper {
 	
@@ -57,18 +58,10 @@ public abstract class RequestHelper {
 	}
 
 	protected Either<Unit, String> request(HttpMethod method, String endpoint) {
-		return request(method, endpoint, s -> Unit.INSTANCE);
+		return request(method, endpoint, DSL.emptyPartType().codec());
 	}
 
-	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Class<T> clazz) {
-		return request(method, endpoint, TypeToken.get(clazz));
-	}
-
-	protected <T> Either<T, String> request(HttpMethod method, String endpoint, TypeToken<T> clazz) {
-		return request(method, endpoint, s -> new Gson().<T>fromJson(s, clazz.getType()));
-	}
-
-	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Function<String, T> parser) {
+	protected <T> Either<T, String> request(HttpMethod method, String endpoint, Codec<T> codec) {
 		LOGGER.debug("Sending " + method.name() + " " + endpoint);
 		try {
 			HttpURLConnection con = getAuthorizedConnection(method, endpoint);
@@ -79,7 +72,12 @@ public abstract class RequestHelper {
 			try {
 				String payload = readInput(con.getInputStream(), false);
 				LOGGER.debug("REST Response: " + payload);
-				return Either.left(parser.apply(payload));
+				try {
+					final JsonElement json = JsonParser.parseString(payload);
+					return codec.parse(JsonOps.INSTANCE, json).get().mapRight(DataResult.PartialResult::message);
+				} catch (final JsonParseException e) {
+					return Either.right("Malformed JSON: " + e.getMessage());
+				}
 			} catch (IOException e) {
 				return Either.right(readInput(con.getErrorStream(), true));
 			}
