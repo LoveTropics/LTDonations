@@ -12,8 +12,9 @@ import javax.annotation.Nullable;
 public class DonationListenerBlockEntity extends BlockEntity {
 	@Nullable
     private DonationListener activeListener;
+	private double threshold;
 
-    private int queued = 0;
+	private int queued = 0;
     private int randomOffset = 0;
 
 	public int getQueued() {
@@ -44,7 +45,7 @@ public class DonationListenerBlockEntity extends BlockEntity {
 
 	public void monitorListener() {
 		if (this.activeListener == null) {
-			DonationListener listener = (server, name, amount, totals) -> this.triggerDonation();
+			DonationListener listener = (server, name, amount, totals) -> this.triggerDonation(amount);
 			DonationListeners.register(listener);
 			this.activeListener = listener;
 		}
@@ -68,7 +69,10 @@ public class DonationListenerBlockEntity extends BlockEntity {
 	}
 
 	@SuppressWarnings("deprecation")
-    public void triggerDonation() {
+    public void triggerDonation(double amount) {
+		if (amount < threshold) {
+			return;
+		}
         if (level.hasChunkAt(getBlockPos())) {
             queued++;
             setChanged();
@@ -79,11 +83,13 @@ public class DonationListenerBlockEntity extends BlockEntity {
 	public void load(final CompoundTag tag) {
 		super.load(tag);
 		this.queued = tag.getInt("queuedDonations");
+		threshold = tag.getDouble("threshold");
 	}
 
 	@Override
 	protected void saveAdditional(final CompoundTag tag) {
 		super.saveAdditional(tag);
 		tag.putInt("queuedDonations", queued);
+		tag.putDouble("threshold", threshold);
 	}
 }
