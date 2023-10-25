@@ -12,6 +12,7 @@ public class DonationListeners {
 
     static {
         LISTENERS.add(DonationListeners::announceDonation);
+        LISTENERS.add(new DonationScoreboard());
     }
 
     private static void announceDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
