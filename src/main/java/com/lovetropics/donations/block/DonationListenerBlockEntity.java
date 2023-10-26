@@ -4,6 +4,7 @@ import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationListeners;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -15,6 +16,7 @@ public class DonationListenerBlockEntity extends BlockEntity {
 	@Nullable
     private DonationListener activeListener;
 	private double threshold;
+	private double upperThreshold = Double.MAX_VALUE;
 
 	private int queued = 0;
     private int randomOffset = 0;
@@ -72,7 +74,7 @@ public class DonationListenerBlockEntity extends BlockEntity {
 
 	@SuppressWarnings("deprecation")
     public void triggerDonation(double amount) {
-		if (amount < threshold) {
+		if (amount < threshold || amount > upperThreshold) {
 			return;
 		}
         if (level.hasChunkAt(getBlockPos())) {
@@ -86,6 +88,9 @@ public class DonationListenerBlockEntity extends BlockEntity {
 		super.load(tag);
 		this.queued = tag.getInt("queuedDonations");
 		threshold = tag.getDouble("threshold");
+		if (tag.contains("upper_threshold", Tag.TAG_DOUBLE)) {
+			upperThreshold = tag.getDouble("upper_threshold");
+		}
 	}
 
 	@Override
@@ -93,5 +98,8 @@ public class DonationListenerBlockEntity extends BlockEntity {
 		super.saveAdditional(tag);
 		tag.putInt("queuedDonations", queued);
 		tag.putDouble("threshold", threshold);
+		if (upperThreshold != Double.MAX_VALUE) {
+			tag.putDouble("upper_threshold", upperThreshold);
+		}
 	}
 }
