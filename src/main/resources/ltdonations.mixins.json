@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.lovetropics.donations.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "ltdonations.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
