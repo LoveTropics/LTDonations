@@ -1,5 +1,7 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.block;
 
+import com.lovetropics.donations.DonationListener;
+import com.lovetropics.donations.DonationListeners;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;

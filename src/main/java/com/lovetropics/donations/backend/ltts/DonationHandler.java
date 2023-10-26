@@ -7,6 +7,7 @@ import com.lovetropics.donations.backend.ltts.json.Donation;
 import com.lovetropics.donations.backend.ltts.json.FullDonationState;
 import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.monument.MonumentManager;
+import com.lovetropics.donations.top_donor.TopDonorManager;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.TickEvent;

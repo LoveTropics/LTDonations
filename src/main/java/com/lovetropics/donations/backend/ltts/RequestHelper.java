@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.backend.ltts;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;

@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.block;
 
 import com.lovetropics.lib.entity.FireworkPalette;
 import net.minecraft.core.BlockPos;

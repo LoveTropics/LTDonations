@@ -1,5 +1,6 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.top_donor;
 
+import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.mojang.logging.LogUtils;

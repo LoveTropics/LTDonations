@@ -1,5 +1,6 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.block;
 
+import com.lovetropics.donations.LTDonations;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.ChatFormatting;

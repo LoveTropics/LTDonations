@@ -1,4 +1,4 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;

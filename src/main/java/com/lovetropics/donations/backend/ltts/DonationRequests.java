@@ -1,7 +1,6 @@
 package com.lovetropics.donations.backend.ltts;
 
 import com.lovetropics.donations.DonationConfigs;
-import com.lovetropics.donations.RequestHelper;
 import com.lovetropics.donations.backend.ltts.json.FullDonationState;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;

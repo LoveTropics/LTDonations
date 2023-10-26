@@ -2,7 +2,9 @@ package com.lovetropics.donations;
 
 import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.WebSocketHelper;
-import com.lovetropics.donations.backend.ltts.json.Donation;
+import com.lovetropics.donations.block.DonationBlock;
+import com.lovetropics.donations.block.DonationGoalRedstoneBlock;
+import com.lovetropics.donations.block.DonationRedstoneBlock;
 import com.lovetropics.donations.command.CommandDonation;
 import com.tterrag.registrate.Registrate;
 import net.minecraft.core.registries.Registries;

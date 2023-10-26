@@ -1,5 +1,7 @@
-package com.lovetropics.donations;
+package com.lovetropics.donations.block;
 
+import com.lovetropics.donations.DonationGroup;
+import com.lovetropics.donations.LTDonations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
