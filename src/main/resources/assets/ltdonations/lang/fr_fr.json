@@ -1,0 +1,18 @@
+{
+  "block.ltdonations.donation": "Don",
+  "block.ltdonations.donation_goal_redstone": "Donation Threshold Goal Redstone Emitter",
+  "block.ltdonations.donation_redstone": "Donation Redstone Emitter",
+  "command.ltdonations.donation.added_monument": "Un monument a été créé avec l'ID : \"%s\"",
+  "command.ltdonations.donation.invalid_group": "There is no donation group with the id: '%s'",
+  "command.ltdonations.donation.monument_already_exists": "There is already a monument with the id: '%s'",
+  "command.ltdonations.donation.monument_does_not_exist": "Il n'y a pas de monument avec l'ID : \"%s\"",
+  "command.ltdonations.donation.removed_monument": "Un monument a été supprimé avec l'ID : \"%s\"",
+  "command.ltdonations.donation.simulate": "Simulating donation for name %s and amount %s",
+  "donation_group.ltdonations.all": "Global",
+  "donation_group.ltdonations.team_cents": "Team Cents",
+  "donation_group.ltdonations.team_nice": "Team Nice",
+  "donation_group.ltdonations.team_no_cents": "Team No Cents",
+  "itemGroup.ltdonations.ltdonations": "LTDonations",
+  "notification.ltdonations.donation.new": "%s a fait un don de %s !",
+  "time.ltdonations.minutes": "%s minutes"
+}
