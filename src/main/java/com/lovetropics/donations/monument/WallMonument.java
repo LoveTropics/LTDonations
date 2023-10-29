@@ -264,14 +264,14 @@ public class WallMonument implements Monument {
                 }
         }),
         TEAM_CENTS("team_cents", 500.0, new Block[][]{
-                {Blocks.GREEN_CONCRETE, Blocks.LIME_CONCRETE},
-                {Blocks.GREEN_GLAZED_TERRACOTTA, Blocks.LIME_GLAZED_TERRACOTTA},
-                {Blocks.EMERALD_BLOCK, Blocks.DARK_PRISMARINE}
+                {Blocks.BLUE_CONCRETE, Blocks.LIGHT_BLUE_CONCRETE},
+                {Blocks.BLUE_GLAZED_TERRACOTTA, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA},
+                {Blocks.DIAMOND_BLOCK, Blocks.LAPIS_BLOCK}
         }),
         TEAM_NO_CENTS("team_no_cents", 500.0, new Block[][]{
-                {Blocks.YELLOW_CONCRETE, Blocks.ORANGE_CONCRETE},
-                {Blocks.YELLOW_GLAZED_TERRACOTTA, Blocks.ORANGE_GLAZED_TERRACOTTA},
-                {Blocks.GOLD_BLOCK, Blocks.COPPER_BLOCK}
+                {Blocks.RED_CONCRETE, Blocks.ORANGE_CONCRETE},
+                {Blocks.RED_GLAZED_TERRACOTTA, Blocks.ORANGE_GLAZED_TERRACOTTA},
+                {Blocks.REDSTONE_BLOCK, Blocks.COPPER_BLOCK}
         }),
         ;
 

@@ -1,6 +1,5 @@
 package com.lovetropics.donations;
 
-import com.mojang.serialization.Codec;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
@@ -10,9 +9,9 @@ import java.util.stream.Stream;
 
 public enum DonationGroup implements StringRepresentable {
     ALL("all", DonationLangKeys.GROUP_ALL.getComponent()),
-    TEAM_CENTS("team_cents", DonationLangKeys.TEAM_CENTS.getComponent().copy().withStyle(ChatFormatting.GREEN)),
-    TEAM_NO_CENTS("team_no_cents", DonationLangKeys.TEAM_NO_CENTS.getComponent().copy().withStyle(ChatFormatting.GOLD)),
-    TEAM_NICE("team_nice", DonationLangKeys.TEAM_NICE.getComponent().copy().withStyle(ChatFormatting.RED)),
+    TEAM_CENTS("team_cents", DonationLangKeys.TEAM_CENTS.getComponent().copy().withStyle(ChatFormatting.BLUE)),
+    TEAM_NO_CENTS("team_no_cents", DonationLangKeys.TEAM_NO_CENTS.getComponent().copy().withStyle(ChatFormatting.RED)),
+    TEAM_NICE("team_nice", DonationLangKeys.TEAM_NICE.getComponent().copy().withStyle(ChatFormatting.GOLD)),
     ;
 
     public static final EnumCodec<DonationGroup> CODEC = StringRepresentable.fromEnum(DonationGroup::values);
