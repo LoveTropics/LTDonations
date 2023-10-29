@@ -44,10 +44,8 @@ public class WallMonument implements Monument {
     private final LongList[] blocksByLayer;
     private final Data data;
 
-    @Nullable
-    private Cursor cursor;
-    @Nullable
-    private Cursor targetCursor;
+    private Cursor cursor = Cursor.START;
+    private Cursor targetCursor = Cursor.START;
 
     private WallMonument(final ServerLevel level, final LongList[] blocksByLayer, final Data data) {
         this.level = level;
@@ -104,7 +102,7 @@ public class WallMonument implements Monument {
     }
 
     private void clear() {
-        cursor = null;
+        cursor = Cursor.START;
         final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
         for (final LongList layer : blocksByLayer) {
             layer.forEach(l -> {
@@ -115,16 +113,15 @@ public class WallMonument implements Monument {
     }
 
     private void tryBuild(final Cursor target, final boolean effects, int budget) {
-        int lastLayer = cursor != null ? cursor.layer : -1;
-
-        while (cursor == null || cursor.compareTo(target) < 0) {
-            cursor = step(cursor);
+        int lastLayer = cursor.layer;
+        while (cursor.compareTo(target) < 0) {
             place(cursor, effects);
-
             if (cursor.layer != lastLayer) {
-                announceLayer(cursor.layer);
+                announceLayer(lastLayer);
+                lastLayer = cursor.layer;
             }
-            lastLayer = cursor.layer;
+
+            cursor = step(cursor);
 
             if (--budget == 0) {
                 break;
@@ -177,10 +174,7 @@ public class WallMonument implements Monument {
         return new Cursor(currentLayer, blockInLayer);
     }
 
-    private Cursor step(@Nullable final Cursor cursor) {
-        if (cursor == null) {
-            return Cursor.START;
-        }
+    private Cursor step(final Cursor cursor) {
         final LongList blocks = getBlocksByLayer(cursor.layer);
         if (cursor.blockInLayer + 1 < blocks.size()) {
             return new Cursor(cursor.layer, cursor.blockInLayer + 1);
