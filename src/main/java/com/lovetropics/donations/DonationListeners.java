@@ -9,13 +9,14 @@ import java.util.Set;
 
 public class DonationListeners {
     private static final Set<DonationListener> LISTENERS = new ReferenceOpenHashSet<>();
+    private static final Set<DonationStateListener> STATE_LISTENERS = new ReferenceOpenHashSet<>();
 
     static {
         LISTENERS.add(DonationListeners::announceDonation);
-        LISTENERS.add(new DonationScoreboard());
+        STATE_LISTENERS.add(new DonationScoreboard());
     }
 
-    private static void announceDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
+    private static void announceDonation(final MinecraftServer server, final String name, final double amount) {
         if (name.isBlank()) {
             return;
         }
@@ -27,9 +28,15 @@ public class DonationListeners {
         }
     }
 
-    public static void triggerDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
+    public static void updateState(final MinecraftServer server, final DonationState state, final boolean initial) {
+        for (final DonationStateListener listener : STATE_LISTENERS) {
+            listener.handleState(server, state, initial);
+        }
+    }
+
+    public static void triggerDonation(final MinecraftServer server, final String name, final double amount) {
         for (final DonationListener listener : LISTENERS) {
-            listener.handleDonation(server, name, amount, state);
+            listener.handleDonation(server, name, amount);
         }
     }
 
@@ -37,7 +44,15 @@ public class DonationListeners {
         LISTENERS.add(listener);
     }
 
+    public static void register(final DonationStateListener listener) {
+        STATE_LISTENERS.add(listener);
+    }
+
     public static void unregister(final DonationListener listener) {
         LISTENERS.remove(listener);
+    }
+
+    public static void unregister(final DonationStateListener listener) {
+        STATE_LISTENERS.remove(listener);
     }
 }

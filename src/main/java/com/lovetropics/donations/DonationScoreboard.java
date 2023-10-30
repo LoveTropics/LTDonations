@@ -7,13 +7,13 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
-public class DonationScoreboard implements DonationListener {
+public class DonationScoreboard implements DonationStateListener {
     private static final DonationGroup[] DONATION_GROUPS = DonationGroup.values();
     private static final String TOTALS_OBJECTIVE = "donations.totals";
     private static final String COUNTS_OBJECTIVE = "donations.counts";
 
     @Override
-    public void handleDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
+    public void handleState(final MinecraftServer server, final DonationState state, final boolean initial) {
         updateScoreboard(server.getScoreboard(), state);
     }
 

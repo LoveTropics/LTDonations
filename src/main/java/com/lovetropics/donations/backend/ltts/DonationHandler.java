@@ -58,7 +58,7 @@ public class DonationHandler {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
                 applyFullState(server, donation.fullState(), false);
-                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.amount(), STATE);
+                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.amount());
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -99,8 +99,7 @@ public class DonationHandler {
 
     private static void applyFullState(final MinecraftServer server, final FullDonationState data, final boolean initial) {
         STATE.apply(data);
-
-        MonumentManager.get(server).update(STATE, initial);
+        DonationListeners.updateState(server, STATE, initial);
     }
 
     public static void close(final MinecraftServer server) {

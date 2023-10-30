@@ -49,7 +49,7 @@ public class DonationListenerBlockEntity extends BlockEntity {
 
 	public void monitorListener() {
 		if (this.activeListener == null) {
-			DonationListener listener = (server, name, amount, totals) -> this.triggerDonation(amount);
+			DonationListener listener = (server, name, amount) -> this.triggerDonation(amount);
 			DonationListeners.register(listener);
 			this.activeListener = listener;
 		}

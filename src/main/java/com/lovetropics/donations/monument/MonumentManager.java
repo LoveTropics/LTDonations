@@ -1,7 +1,7 @@
 package com.lovetropics.donations.monument;
 
-import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationState;
+import com.lovetropics.donations.DonationStateListener;
 import com.lovetropics.donations.LTDonations;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MonumentManager extends SavedData implements DonationListener {
+public class MonumentManager extends SavedData implements DonationStateListener {
     private static final String STORAGE_ID = LTDonations.MODID + "_monuments";
 
     private static final Codec<Map<String, MonumentData>> CODEC = Codec.unboundedMap(Codec.STRING, MonumentData.CODEC);
@@ -44,8 +44,8 @@ public class MonumentManager extends SavedData implements DonationListener {
     }
 
     @Override
-    public void handleDonation(final MinecraftServer server, final String name, final double amount, final DonationState state) {
-        update(state, false);
+    public void handleState(final MinecraftServer server, final DonationState state, final boolean initial) {
+        update(state, initial);
     }
 
     public void update(final DonationState state, final boolean fast) {
