@@ -26,7 +26,7 @@ public class DonationBlockEntity extends DonationListenerBlockEntity {
 					fireworkPos = fireworkPos.above();
 				}
 
-				FireworkPalette.OSA_CONSERVATION.spawn(fireworkPos, level);
+				FireworkPalette.SUSTAINABLE_HARVEST.spawn(fireworkPos, level);
 				entity.setQueued(entity.getQueued()-1);
 				entity.setChanged();
 			}
