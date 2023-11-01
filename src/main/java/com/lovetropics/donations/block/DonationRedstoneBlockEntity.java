@@ -12,7 +12,7 @@ public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
 
 	private int countdown = 0;
 	private int pulseLengthIndex = 19;
-	private int pulseLengths[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 40, 60, 80, 100};
+	private int pulseLengths[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400};
 
 	public DonationRedstoneBlockEntity(BlockEntityType<? extends DonationRedstoneBlockEntity> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
