@@ -113,15 +113,14 @@ public class WallMonument implements Monument {
     }
 
     private void tryBuild(final Cursor target, final boolean effects, int budget) {
-        int lastLayer = cursor.layer;
         while (cursor.compareTo(target) < 0) {
             place(cursor, effects);
-            if (cursor.layer != lastLayer) {
-                announceLayer(lastLayer);
-                lastLayer = cursor.layer;
-            }
 
-            cursor = step(cursor);
+            final Cursor newCursor = step(cursor);
+            if (newCursor.layer != cursor.layer) {
+                announceLayer(cursor.layer);
+            }
+            cursor = newCursor;
 
             if (--budget == 0) {
                 break;
