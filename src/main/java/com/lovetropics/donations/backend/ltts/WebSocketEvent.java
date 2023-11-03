@@ -23,6 +23,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -100,7 +101,7 @@ public class WebSocketEvent<T> {
 
 	public static void handleEvent(JsonObject json) {
 		WebSocketEventData data = GSON.fromJson(json, WebSocketEventData.class);
-		WebSocketEvent<?> event = EVENTS.get(data.type);
+		WebSocketEvent<?> event = EVENTS.get(data.type.toLowerCase(Locale.ROOT));
 		// Discard unknown events
 		if (event != null) {
 			event.act(data.crud, data.payload);
