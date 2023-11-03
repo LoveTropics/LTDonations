@@ -75,6 +75,7 @@ public final class TopDonorManager {
         Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
         data.putString("NameSuffix", Component.Serializer.toJson(suffix));
+        data.putBoolean("CustomNameVisible", true);
         entity.load(data);
     }
 
