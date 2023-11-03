@@ -65,7 +65,7 @@ public final class TopDonorManager {
             data.putUUID("ProfileID", Util.NIL_UUID);
             data.putString("CustomName", Component.Serializer.toJson(fallbackName));
         } else if (minecraftName != null) {
-        	data.putString("CustomName", EMPTY_COMPONENT_STRING);
+        	data.remove("CustomName");
         	entity.setCustomName(null);
         	data.putString("ProfileName", minecraftName);
         } else {
