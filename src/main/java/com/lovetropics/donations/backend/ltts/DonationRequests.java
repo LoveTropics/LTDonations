@@ -47,7 +47,7 @@ public class DonationRequests {
 
 	public void ackWhitelist(final String name, final WhitelistEvent.Type type) {
 		try {
-			requests.post("players/ack/" + type.name() + "/" + URLEncoder.encode(name, StandardCharsets.US_ASCII))
+			requests.post("players/ack/" + type.getSerializedName() + "/" + URLEncoder.encode(name, StandardCharsets.US_ASCII))
 				.orThrow();
 		} catch (final Exception e) {
 			e.printStackTrace();
