@@ -8,6 +8,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 public final class TopDonorManager {
     private static final Logger LOGGER = LogUtils.getLogger();
+    private static final String EMPTY_COMPONENT_STRING = Component.Serializer.toJson(CommonComponents.EMPTY);
 
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
@@ -63,7 +65,7 @@ public final class TopDonorManager {
             data.putUUID("ProfileID", Util.NIL_UUID);
             data.putString("CustomName", Component.Serializer.toJson(fallbackName));
         } else if (minecraftName != null) {
-        	data.remove("CustomName");
+        	data.putString("CustomName", EMPTY_COMPONENT_STRING);
         	entity.setCustomName(null);
         	data.putString("ProfileName", minecraftName);
         } else {
@@ -80,7 +82,7 @@ public final class TopDonorManager {
         CompoundTag data = entity.saveWithoutId(new CompoundTag());
         data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
         data.putString("ProfileName", "");
-        data.remove("NameSuffix");
+        data.putString("NameSuffix", EMPTY_COMPONENT_STRING);
 
         entity.load(data);
     }
