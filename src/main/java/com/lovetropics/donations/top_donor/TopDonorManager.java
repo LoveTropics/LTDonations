@@ -5,6 +5,7 @@ import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -25,8 +26,6 @@ import java.util.concurrent.CompletableFuture;
 public final class TopDonorManager {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    private UUID[] lastEntityUuids;
-
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
 
@@ -35,43 +34,41 @@ public final class TopDonorManager {
     }
 
     private void applyTopDonors(List<TopDonor> topDonors) {
-        UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
-        LOGGER.debug("Applying {} top donators to {} entities", topDonors.size(), topDonorUuids.length);
+        UUID[] entityIds = DonationConfigs.TOP_DONORS.getTopDonorUuids();
+        LOGGER.debug("Applying {} top donators to {} entities", topDonors.size(), entityIds.length);
 
-        int newTopDonorLength = Math.min(topDonorUuids.length, topDonors.size());
-
-        UUID[] entityIds = new UUID[newTopDonorLength];
-        System.arraycopy(topDonorUuids, 0, entityIds, 0, newTopDonorLength);
-
-        for (int i = 0; i < newTopDonorLength; i++) {
+        for (int i = 0; i < entityIds.length; i++) {
             UUID entityId = entityIds[i];
-            TopDonor donor = topDonors.get(i);
-            List<String> fallbacks = donor.displayNames();
-            this.applyToEntity(entityId, donor.minecraftName().orElse(null), fallbacks.isEmpty() ? "Anonymous" : fallbacks.get(fallbacks.size() - 1), donor.total());
-        }
+            Entity entity = findEntity(entityId);
+            if (entity == null) {
+                continue;
+            }
 
-        UUID[] lastEntityUuids = this.lastEntityUuids;
-        if (lastEntityUuids != null && lastEntityUuids.length > entityIds.length) {
-            for (int i = entityIds.length; i < lastEntityUuids.length; i++) {
-                this.clearEntity(lastEntityUuids[i]);
+            if (i < topDonors.size()) {
+                TopDonor donor = topDonors.get(i);
+                List<String> fallbacks = donor.displayNames();
+                String minecraftName = donor.minecraftName().orElse(null);
+                String fallbackName = fallbacks.isEmpty() ? "Anonymous" : fallbacks.get(fallbacks.size() - 1);
+                applyToEntity(entity, minecraftName, Component.literal(fallbackName), donor.total(), donor.isAnonymous());
+            } else {
+                clearEntity(entity);
             }
         }
-
-        this.lastEntityUuids = entityIds;
     }
 
-    private void applyToEntity(UUID entityId, @Nullable String minecraftName, String fallbackName, double total) {
-        Entity entity = this.findEntity(entityId);
-        if (entity == null) return;
-
+    private void applyToEntity(Entity entity, @Nullable String minecraftName, Component fallbackName, double total, boolean anonymous) {
         CompoundTag data = entity.saveWithoutId(new CompoundTag());
-        if (minecraftName != null) {
+        if (anonymous) {
+            // We look for the null UUID in the datapack
+            data.putUUID("ProfileID", Util.NIL_UUID);
+            data.putString("CustomName", Component.Serializer.toJson(fallbackName));
+        } else if (minecraftName != null) {
         	data.remove("CustomName");
         	entity.setCustomName(null);
         	data.putString("ProfileName", minecraftName);
         } else {
         	data.putString("ProfileName", "");
-        	data.putString("CustomName", "{\"text\":\"" + fallbackName + "\"}");
+        	data.putString("CustomName", Component.Serializer.toJson(fallbackName));
         }
         Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
@@ -79,10 +76,7 @@ public final class TopDonorManager {
         entity.load(data);
     }
 
-    private void clearEntity(UUID entityId) {
-        Entity entity = this.findEntity(entityId);
-        if (entity == null) return;
-
+    private void clearEntity(Entity entity) {
         CompoundTag data = entity.saveWithoutId(new CompoundTag());
         data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
         data.putString("ProfileName", "");

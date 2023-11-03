@@ -2,6 +2,7 @@ package com.lovetropics.donations.backend.ltts.json;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
 
 import java.util.List;
@@ -15,4 +16,8 @@ public record TopDonor(UUID uuid, Optional<String> minecraftName, List<String> d
             Codec.STRING.listOf().optionalFieldOf("display_names", List.of()).forGetter(TopDonor::displayNames),
             Codec.DOUBLE.fieldOf("total").forGetter(TopDonor::total)
     ).apply(i, TopDonor::new));
+
+    public boolean isAnonymous() {
+        return uuid.equals(Util.NIL_UUID);
+    }
 }
