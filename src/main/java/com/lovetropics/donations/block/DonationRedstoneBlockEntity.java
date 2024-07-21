@@ -1,6 +1,7 @@
 package com.lovetropics.donations.block;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -70,14 +71,14 @@ public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
 	}
 
 	@Override
-	public void load(final CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		this.pulseLengthIndex = tag.getInt("pulseLengthIndex");
 	}
 
 	@Override
-	protected void saveAdditional(final CompoundTag tag) {
-		super.saveAdditional(tag);
+	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		tag.putInt("pulseLengthIndex", this.pulseLengthIndex);
 	}
 }

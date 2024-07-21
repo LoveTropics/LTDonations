@@ -6,6 +6,7 @@ import com.lovetropics.donations.LTDonations;
 import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
@@ -17,6 +18,7 @@ import java.util.stream.Stream;
 
 public class MonumentManager extends SavedData implements DonationStateListener {
     private static final String STORAGE_ID = LTDonations.MODID + "_monuments";
+    private static final Factory<MonumentManager> FACTORY = new Factory<>(MonumentManager::new, MonumentManager::load);
 
     private static final Codec<Map<String, MonumentData>> CODEC = Codec.unboundedMap(Codec.STRING, MonumentData.CODEC);
 
@@ -26,20 +28,20 @@ public class MonumentManager extends SavedData implements DonationStateListener 
     private DonationState state = DonationState.ZERO;
 
     public static MonumentManager get(final MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(MonumentManager::load, MonumentManager::new, STORAGE_ID);
+        return server.overworld().getDataStorage().computeIfAbsent(FACTORY, STORAGE_ID);
     }
 
-    private static MonumentManager load(final CompoundTag tag) {
+    private static MonumentManager load(final CompoundTag tag, final HolderLookup.Provider registries) {
         final MonumentManager manager = new MonumentManager();
-        CODEC.parse(NbtOps.INSTANCE, tag.get("monuments")).result().ifPresent(manager.pendingMonuments::putAll);
+        CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("monuments")).result().ifPresent(manager.pendingMonuments::putAll);
         return manager;
     }
 
     @Override
-    public CompoundTag save(final CompoundTag tag) {
+    public CompoundTag save(final CompoundTag tag, final HolderLookup.Provider registries) {
         final Map<String, MonumentData> data = monuments.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toData()));
         data.putAll(pendingMonuments);
-        tag.put("monuments", Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, data), IllegalStateException::new));
+        tag.put("monuments", CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), data).getOrThrow());
         return tag;
     }
 

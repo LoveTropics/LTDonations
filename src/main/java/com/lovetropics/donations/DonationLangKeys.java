@@ -25,7 +25,7 @@ public enum DonationLangKeys {
     private final String value;
 
     DonationLangKeys(final String type, final String key, final String value) {
-        this.key = Util.makeDescriptionId(type, new ResourceLocation(LTDonations.MODID, key));
+        this.key = Util.makeDescriptionId(type, ResourceLocation.fromNamespaceAndPath(LTDonations.MODID, key));
         this.value = value;
     }
 

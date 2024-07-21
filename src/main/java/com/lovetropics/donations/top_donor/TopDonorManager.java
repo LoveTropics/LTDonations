@@ -6,6 +6,7 @@ import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
@@ -16,7 +17,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -26,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 public final class TopDonorManager {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final String EMPTY_COMPONENT_STRING = Component.Serializer.toJson(CommonComponents.EMPTY);
+    private static final String EMPTY_COMPONENT_STRING = Component.Serializer.toJson(CommonComponents.EMPTY, RegistryAccess.EMPTY);
 
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
@@ -63,18 +64,18 @@ public final class TopDonorManager {
         if (anonymous) {
             // We look for the null UUID in the datapack
             data.putUUID("ProfileID", Util.NIL_UUID);
-            data.putString("CustomName", Component.Serializer.toJson(fallbackName));
+            data.putString("CustomName", Component.Serializer.toJson(fallbackName, entity.registryAccess()));
         } else if (minecraftName != null) {
         	data.remove("CustomName");
         	entity.setCustomName(null);
         	data.putString("ProfileName", minecraftName);
         } else {
         	data.putString("ProfileName", "");
-        	data.putString("CustomName", Component.Serializer.toJson(fallbackName));
+        	data.putString("CustomName", Component.Serializer.toJson(fallbackName, entity.registryAccess()));
         }
         Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
-        data.putString("NameSuffix", Component.Serializer.toJson(suffix));
+        data.putString("NameSuffix", Component.Serializer.toJson(suffix, entity.registryAccess()));
         data.putBoolean("CustomNameVisible", true);
         entity.load(data);
     }
@@ -101,7 +102,7 @@ public final class TopDonorManager {
     }
 
     private ServerLevel getWorld(MinecraftServer server) {
-        ResourceLocation dimensionId = new ResourceLocation(DonationConfigs.TOP_DONORS.dimension.get());
+        ResourceLocation dimensionId = ResourceLocation.parse(DonationConfigs.TOP_DONORS.dimension.get());
         ResourceKey<Level> dimensionType = ResourceKey.create(Registries.DIMENSION, dimensionId);
         ServerLevel world = server.getLevel(dimensionType);
         if (world == null) {

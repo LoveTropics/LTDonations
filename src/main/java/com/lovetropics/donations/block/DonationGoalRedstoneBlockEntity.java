@@ -3,6 +3,7 @@ package com.lovetropics.donations.block;
 import com.lovetropics.donations.DonationGroup;
 import com.lovetropics.donations.LTDonations;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -79,15 +80,15 @@ public class DonationGoalRedstoneBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	public void load(final CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		this.donationGoalIndex = tag.getInt("donationGoalIndex");
 		this.lastPoweredState = tag.getBoolean("lastPoweredState");
 	}
 
 	@Override
-	protected void saveAdditional(final CompoundTag tag) {
-		super.saveAdditional(tag);
+	protected void saveAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		tag.putInt("donationGoalIndex", this.donationGoalIndex);
 		tag.putBoolean("lastPoweredState", this.lastPoweredState);
 	}

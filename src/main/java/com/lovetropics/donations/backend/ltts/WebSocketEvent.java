@@ -9,7 +9,6 @@ import com.lovetropics.donations.backend.ltts.json.WebSocketEventData;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.CommonComponents;
@@ -19,7 +18,7 @@ import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.server.ServerLifecycleHooks;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -83,8 +82,8 @@ public class WebSocketEvent<T> {
 		return this;
 	}
 
-	private T parse(JsonObject payload) {
-		return Util.getOrThrow(codec.parse(JsonOps.INSTANCE, payload), JsonSyntaxException::new);
+	private T parse(JsonObject payload) throws JsonSyntaxException {
+		return codec.parse(JsonOps.INSTANCE, payload).getOrThrow(JsonSyntaxException::new);
 	}
 
 	private void act(EventAction action, JsonObject payload) {

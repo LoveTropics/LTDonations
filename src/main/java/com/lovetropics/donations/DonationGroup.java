@@ -3,11 +3,12 @@ package com.lovetropics.donations;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.scores.ScoreHolder;
 
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-public enum DonationGroup implements StringRepresentable {
+public enum DonationGroup implements StringRepresentable, ScoreHolder {
     ALL("all", DonationLangKeys.GROUP_ALL.getComponent()),
     TEAM_CENTS("team_cents", DonationLangKeys.TEAM_CENTS.getComponent().copy().withStyle(ChatFormatting.BLUE)),
     TEAM_NO_CENTS("team_no_cents", DonationLangKeys.TEAM_NO_CENTS.getComponent().copy().withStyle(ChatFormatting.RED)),
@@ -35,5 +36,15 @@ public enum DonationGroup implements StringRepresentable {
     @Override
     public String getSerializedName() {
         return key;
+    }
+
+    @Override
+    public String getScoreboardName() {
+        return key;
+    }
+
+    @Override
+    public Component getFeedbackDisplayName() {
+        return name;
     }
 }

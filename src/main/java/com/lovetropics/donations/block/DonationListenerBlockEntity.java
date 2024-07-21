@@ -3,6 +3,7 @@ package com.lovetropics.donations.block;
 import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationListeners;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
@@ -84,8 +85,8 @@ public class DonationListenerBlockEntity extends BlockEntity {
     }
 
 	@Override
-	public void load(final CompoundTag tag) {
-		super.load(tag);
+	public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
+		super.loadAdditional(tag, registries);
 		this.queued = tag.getInt("queuedDonations");
 		threshold = tag.getDouble("threshold");
 		if (tag.contains("upper_threshold", Tag.TAG_DOUBLE)) {
@@ -94,8 +95,8 @@ public class DonationListenerBlockEntity extends BlockEntity {
 	}
 
 	@Override
-	protected void saveAdditional(final CompoundTag tag) {
-		super.saveAdditional(tag);
+	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+		super.saveAdditional(tag, registries);
 		tag.putInt("queuedDonations", queued);
 		tag.putDouble("threshold", threshold);
 		if (upperThreshold != Double.MAX_VALUE) {

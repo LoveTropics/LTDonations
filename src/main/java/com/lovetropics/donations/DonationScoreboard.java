@@ -23,15 +23,15 @@ public class DonationScoreboard implements DonationStateListener {
         for (final DonationGroup group : DONATION_GROUPS) {
             final int total = Mth.floor(state.getAmount(group));
             final int count = state.getCount(group);
-            scoreboard.getOrCreatePlayerScore(group.getSerializedName(), totalsObjective).setScore(total);
-            scoreboard.getOrCreatePlayerScore(group.getSerializedName(), countsObjective).setScore(count);
+            scoreboard.getOrCreatePlayerScore(group, totalsObjective).set(total);
+            scoreboard.getOrCreatePlayerScore(group, countsObjective).set(count);
         }
     }
 
     private static Objective getOrCreateObjective(final ServerScoreboard scoreboard, final String name) {
         final Objective objective = scoreboard.getObjective(name);
         if (objective == null) {
-            return scoreboard.addObjective(name, ObjectiveCriteria.DUMMY, Component.literal("Donations"), ObjectiveCriteria.RenderType.INTEGER);
+            return scoreboard.addObjective(name, ObjectiveCriteria.DUMMY, Component.literal("Donations"), ObjectiveCriteria.RenderType.INTEGER, false, null);
         }
         return objective;
     }

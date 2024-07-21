@@ -13,9 +13,9 @@ import com.lovetropics.donations.monument.MonumentManager;
 import com.lovetropics.donations.top_donor.TopDonorManager;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 import javax.annotation.Nullable;
 import java.util.EnumMap;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
-@Mod.EventBusSubscriber(modid = LTDonations.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(modid = LTDonations.MODID, bus = EventBusSubscriber.Bus.GAME)
 public class DonationHandler {
     private static final Queue<Donation> DONATION_QUEUE = Queues.newPriorityBlockingQueue();
 
@@ -44,11 +44,7 @@ public class DonationHandler {
     private static TopDonorManager topDonors;
 
     @SubscribeEvent
-    public static void tick(final TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) {
-            return;
-        }
-
+    public static void tick(final ServerTickEvent.Post event) {
         final MinecraftServer server = event.getServer();
         final int tick = server.getTickCount();
 

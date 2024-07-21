@@ -25,7 +25,7 @@ import net.minecraft.world.level.block.LightBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.common.Tags;
+import net.neoforged.neoforge.common.Tags;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -122,7 +122,7 @@ public class PillarMonument implements Monument {
         final Map<ChunkPos, LevelChunk> chunkCache = new HashMap<>();
         BlockPos.betweenClosedStream(first, second).forEach(pos -> {
             final LevelChunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> level.getChunk(p.x, p.z));
-            if (chunk.getBlockState(pos).is(Tags.Blocks.STAINED_GLASS)) {
+            if (chunk.getBlockState(pos).is(Tags.Blocks.GLASS_BLOCKS_TINTED)) {
                 nearbyGlass.add(pos.immutable());
             }
         });

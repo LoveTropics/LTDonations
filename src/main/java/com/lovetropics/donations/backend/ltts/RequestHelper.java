@@ -91,7 +91,12 @@ public final class RequestHelper {
 				body -> {
 					try {
 						final JsonElement json = JsonParser.parseString(body);
-						return codec.parse(JsonOps.INSTANCE, json).get().mapRight(DataResult.PartialResult::message);
+						final DataResult<T> result = codec.parse(JsonOps.INSTANCE, json);
+						if (result.isSuccess()) {
+							return Either.left(result.getOrThrow());
+						} else {
+							return Either.right(result.error().orElseThrow().message());
+						}
 					} catch (final JsonParseException e) {
 						return Either.right("Malformed JSON: " + e.getMessage());
 					}

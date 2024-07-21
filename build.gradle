@@ -1,12 +1,9 @@
 plugins {
     id 'eclipse'
     id 'idea'
-    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
-    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'org.spongepowered.mixin' version '0.7+'
+    id 'java-library'
+    id 'net.neoforged.moddev' version '1.0.0'
 }
-
-jarJar.enable()
 
 group = 'com.lovetropics.donations'
 base {
@@ -26,135 +23,90 @@ if (System.getenv('GHA_RELEASE_WORKFLOW')) {
     version = "${mod_version}-${release_type}+${buildnumber}"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-minecraft {
-    mappings channel: 'parchment', version: parchment_version
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        minecraftVersion = minecraft_version
+        mappingsVersion = parchment_version
+    }
+
+    addModdingDependenciesTo sourceSets.test
 
     runs {
         client {
-        	taskName 'ltdonations_client'
-            copyIdeResources = true
-            arg "-mixin.config=ltdonations.mixins.json"
+            client()
 
-            workingDirectory project.file('run')
-
-            property 'forge.logging.console.level', 'info'
-
-            mods {
-                ltdonations {
-                    source sourceSets.main
-                }
-            }
+            programArguments.addAll '--username', 'Dev###'
         }
 
         server {
-        	taskName 'ltdonations_server'
-            copyIdeResources = true
-            arg "-mixin.config=ltdonations.mixins.json"
+            server()
 
-            workingDirectory project.file('run')
-
-            property 'forge.logging.console.level', 'info'
-
-            mods {
-                ltdonations {
-                    source sourceSets.main
-                }
-            }
+            programArgument '--nogui'
         }
-        
+
         data {
-        	taskName 'ltdonations_data'
-            copyIdeResources = true
-            arg "-mixin.config=ltdonations.mixins.json"
+            data()
 
-            workingDirectory project.file('run')
-            
-            environment 'target', 'fmluserdevdata'
+            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+        }
 
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                ltdonations {
-                    source sourceSets.main
-                }
-            }
-            
-			args '--mod', 'ltdonations', '--all', '--output', '"' + rootProject.file('src/generated/resources/') + '"',
-				 '--existing', '"' + sourceSets.main.resources.srcDirs[0] + '"' 
-			
+        configureEach {
+            logLevel = org.slf4j.event.Level.INFO
         }
     }
-}
 
-mixin {
-    add sourceSets.main, "ltdonations.refmap.json"
+    mods {
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.test
+        }
+    }
 }
 
 sourceSets.main.resources {
-	srcDir 'src/generated/resources'
+    srcDir 'src/generated/resources'
 }
 
 repositories {
-	maven { // Registrate
-		url "https://maven.tterrag.com/"
-	}
-	mavenLocal()
+    maven { url = "https://maven.ithundxr.dev/snapshots/" }
+    maven { url = "https://maven.tterrag.com/" }
+    mavenLocal()
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-
-    jarJar(implementation(fg.deobf("com.tterrag.registrate:Registrate:$registrate_version"))) {
-        jarJar.ranged(it, "[$registrate_version,MC1.21)")
+    jarJar(implementation("com.tterrag.registrate:Registrate:$registrate_version")) {
+        version {
+            strictly "[MC1.21-${registrate_version},MC1.22)"
+            prefer "MC1.21-${registrate_version}"
+        }
     }
 
-    jarJar(implementation(fg.deobf("com.lovetropics.lib:LTLib:$ltlib_version")))
-    jarJar(implementation(fg.deobf("eu.pb4:placeholder-api:$placeholder_api_version")))
-
-    if (System.getProperty("idea.sync.active") != "true") {
-        annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    }
+    jarJar(implementation("com.lovetropics.lib:LTLib:$ltlib_version"))
+    jarJar(implementation("eu.pb4:placeholder-api:$placeholder_api_version"))
 }
 
-tasks.jarJar.configure {
-    archiveClassifier = ''
-    finalizedBy 'reobfJarJar'
-}
-
-reobf {
-    jarJar { }
-}
-
-jar {
-    archiveClassifier = 'slim'
-
-    manifest {
-        attributes([
-            "Specification-Title": "ltdonations",
-            "Specification-Vendor": "lovetropics",
-            "Specification-Version": "1", // We are version 1 of ourselves
-            "Implementation-Title": project.name,
-            "Implementation-Version": archiveVersion,
-            "Implementation-Vendor" :"lovetropics",
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "ltdonations.mixins.json"
-        ])
-    }
-}
-
-def resourceTargets = ['META-INF/mods.toml', 'pack.mcmeta']
-def replaceProperties = [
-        mod_version: mod_version,
-]
-
-processResources {
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            mod_version: mod_version,
+    ]
     inputs.properties replaceProperties
-    replaceProperties.put 'project', project
 
-    filesMatching(resourceTargets) {
+    filesMatching(['META-INF/neoforge.mods.toml']) {
         expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
     }
 }

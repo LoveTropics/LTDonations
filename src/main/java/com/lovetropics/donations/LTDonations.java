@@ -12,16 +12,15 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.util.NonNullLazy;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.event.server.ServerStoppingEvent;
-import net.minecraftforge.fml.IExtensionPoint;
-import net.minecraftforge.fml.ModList;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import javax.annotation.Nullable;
 import java.text.NumberFormat;
@@ -36,18 +35,15 @@ public class LTDonations {
 
 	public static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.US);
 
-	private static final ResourceLocation TAB_ID = new ResourceLocation(MODID, "ltdonations");
+	private static final ResourceLocation TAB_ID = ResourceLocation.fromNamespaceAndPath(MODID, "ltdonations");
 
-	private static final NonNullLazy<Registrate> REGISTRATE = NonNullLazy.of(() -> Registrate.create(MODID));
+	private static final Lazy<Registrate> REGISTRATE = Lazy.of(() -> Registrate.create(MODID));
 
 	public static Registrate registrate() {
 		return REGISTRATE.get();
 	}
 
-	public LTDonations() {
-    	// Compatible with all versions that match the semver (excluding the qualifier e.g. "-beta+42")
-    	ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, () -> new IExtensionPoint.DisplayTest(LTDonations::getCompatVersion, (s, v) -> LTDonations.isCompatibleVersion(s)));
-
+	public LTDonations(ModContainer container) {
 		registrate().generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
 				.title(registrate().addLang("itemGroup", TAB_ID, "LTDonations"))
 				.icon(() -> DonationBlock.BLOCK.asStack())
@@ -60,11 +56,11 @@ public class LTDonations {
 		DonationGoalRedstoneBlock.register();
 		DonationLangKeys.init(registrate());
 
-		MinecraftForge.EVENT_BUS.addListener(this::serverStartingEvent);
-		MinecraftForge.EVENT_BUS.addListener(this::serverStoppingEvent);
-		MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+		NeoForge.EVENT_BUS.addListener(this::serverStartingEvent);
+		NeoForge.EVENT_BUS.addListener(this::serverStoppingEvent);
+		NeoForge.EVENT_BUS.addListener(this::registerCommands);
 
-		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, DonationConfigs.COMMON_CONFIG);
+		container.registerConfig(ModConfig.Type.COMMON, DonationConfigs.COMMON_CONFIG);
 
 		DonationPlaceholders.register();
 	}
@@ -75,9 +71,6 @@ public class LTDonations {
     }
     private static String getCompatVersion(String fullVersion) {
     	return QUALIFIER.matcher(fullVersion).replaceAll("");
-    }
-    public static boolean isCompatibleVersion(String version) {
-    	return getCompatVersion().equals(getCompatVersion(version));
     }
 
 	@Nullable

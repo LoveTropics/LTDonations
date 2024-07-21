@@ -1,26 +1,18 @@
 package com.lovetropics.donations;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.GlobalPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.Builder;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.ModConfigSpec.Builder;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@EventBusSubscriber(modid = LTDonations.MODID, bus = Bus.MOD)
+@EventBusSubscriber(modid = LTDonations.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class DonationConfigs {
 
     private static final Builder COMMON_BUILDER = new Builder();
@@ -94,7 +86,7 @@ public class DonationConfigs {
         }
     }
 
-    public static final ForgeConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
+    public static final ModConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
 
     @SubscribeEvent
 	public static void configLoad(ModConfigEvent.Loading event) {

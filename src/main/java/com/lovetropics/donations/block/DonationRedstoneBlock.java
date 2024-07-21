@@ -8,9 +8,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
@@ -26,10 +26,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.generators.BlockModelBuilder;
-import net.minecraftforge.client.model.generators.ConfiguredModel;
+import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
+import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -70,25 +68,23 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 	}
 
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-		if (!pLevel.isClientSide && pHand == InteractionHand.MAIN_HAND) {
-			BlockEntity ent = pLevel.getBlockEntity(pPos);
-			if (ent instanceof DonationRedstoneBlockEntity) {
-				if (pPlayer.isCrouching()) {
-					((DonationRedstoneBlockEntity) ent).pulseLengthDown(pPlayer);
+	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		if (!level.isClientSide) {
+			if (level.getBlockEntity(pos) instanceof DonationRedstoneBlockEntity blockEntity) {
+				if (player.isCrouching()) {
+					blockEntity.pulseLengthDown(player);
 				} else {
-					((DonationRedstoneBlockEntity) ent).pulseLengthUp(pPlayer);
+					blockEntity.pulseLengthUp(player);
 				}
 				return InteractionResult.SUCCESS;
 			}
 		}
-		return super.use(pState, pLevel, pPos, pPlayer, pHand, pHit);
+		return super.useWithoutItem(state, level, pos, player, hitResult);
 	}
 
 	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void appendHoverText(ItemStack stack, BlockGetter worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-		super.appendHoverText(stack, worldIn, tooltip, flagIn);
+	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flagIn) {
+		super.appendHoverText(stack, context, tooltip, flagIn);
 		tooltip.add(Component.translatable(this.getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
 	}
 

@@ -1,15 +1,17 @@
-modLoader="javafml"
-loaderVersion="[36,)"
+modLoader = "javafml"
+loaderVersion = "[2,)"
 issueTrackerURL="https://github.com/LoveTropics/LTDonations/issues"
-license = "All Rights Reserved"
+license = "Mozilla Public License Version 2.0"
 
 [[mods]]
 modId="ltdonations"
 version="${mod_version}"
 displayName="LTDonations"
 displayURL="https://lovetropics.com"
-credits=""
-authors="tterrag, Corosus"
+authors="The Love Tropics Team"
 description='''
 Donation event manager for the LoveTropics livestream.
 '''
+
+[[mixins]]
+config = "ltdonations.mixins.json"
