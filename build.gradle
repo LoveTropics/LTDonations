@@ -86,7 +86,7 @@ dependencies {
     }
 
     jarJar(implementation("com.lovetropics.lib:LTLib:$ltlib_version"))
-    jarJar(implementation("eu.pb4:placeholder-api:$placeholder_api_version"))
+    jarJar(implementation("eu.pb4:placeholder-api-lt:$placeholder_api_version"))
 }
 
 tasks.withType(ProcessResources).configureEach {
