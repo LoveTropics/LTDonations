@@ -49,7 +49,8 @@ public record FlagMonumentData(
 	public record Template(
 			ResourceKey<Level> dimension,
 			BlockPos origin,
-			Map<Block, List<BlockState>> layerPalettes
+			Map<Block, List<BlockState>> layerPalettes,
+			BlockState emptyBlock
 	) {
 		private static Block extrasBlock(String id) {
 			DeferredHolder<Block, Block> holder = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("ltextras", id));
@@ -72,7 +73,8 @@ public record FlagMonumentData(
 		public static final Codec<Template> CODEC = RecordCodecBuilder.create(i -> i.group(
 				Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(Template::dimension),
 				BlockPos.CODEC.fieldOf("origin").forGetter(Template::origin),
-				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).fieldOf("layer_palettes").orElseGet(Template::standardPalette).forGetter(Template::layerPalettes)
+				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).fieldOf("layer_palettes").orElseGet(Template::standardPalette).forGetter(Template::layerPalettes),
+				MoreCodecs.BLOCK_STATE.optionalFieldOf("empty_block", Blocks.AIR.defaultBlockState()).forGetter(Template::emptyBlock)
 		).apply(i, Template::new));
 	}
 
@@ -136,7 +138,7 @@ public record FlagMonumentData(
 
 			layers.add(new LayeredMonument.Layer(
 					sortedBlocksInLayer(targetOrigin, blocksInLayer),
-					Blocks.AIR.defaultBlockState(),
+					template.emptyBlock,
 					template.layerPalettes.get(layerBlock.getBlock())
 			));
 
