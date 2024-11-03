@@ -1,6 +1,5 @@
 package com.lovetropics.donations.monument;
 
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.util.StringRepresentable;
 
@@ -9,7 +8,7 @@ public enum MonumentType implements StringRepresentable {
     WALL("wall", WallMonument.Data.CODEC),
     ;
 
-    public static final Codec<MonumentType> CODEC = StringRepresentable.fromEnum(MonumentType::values);
+    public static final EnumCodec<MonumentType> CODEC = StringRepresentable.fromEnum(MonumentType::values);
 
     private final String name;
     private final MapCodec<? extends MonumentData> codec;

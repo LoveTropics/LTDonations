@@ -204,7 +204,7 @@ public class WallMonument implements Monument {
         public static final MapCodec<Data> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(Data::dimension),
                 BlockBox.CODEC.fieldOf("box").forGetter(Data::box),
-                DonationGroup.CODEC.fieldOf("group").forGetter(Data::group),
+                DonationGroup.CODEC.optionalFieldOf("group", DonationGroup.ALL).forGetter(Data::group),
                 MonumentStyle.CODEC.optionalFieldOf("style", MonumentStyle.NORMAL).forGetter(Data::style)
         ).apply(i, Data::new));
 

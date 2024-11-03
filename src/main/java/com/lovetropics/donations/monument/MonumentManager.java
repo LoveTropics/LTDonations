@@ -90,6 +90,15 @@ public class MonumentManager extends SavedData implements DonationStateListener 
         return false;
     }
 
+    public boolean update(final String id, final MonumentData data) {
+        if (!monuments.containsKey(id) || !pendingMonuments.containsKey(id)) {
+            return false;
+        }
+        pendingMonuments.put(id, data);
+        setDirty();
+        return true;
+    }
+
     public boolean remove(final String id) {
         if (monuments.remove(id) != null | pendingMonuments.remove(id) != null) {
             setDirty();

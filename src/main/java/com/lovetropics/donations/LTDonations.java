@@ -5,7 +5,7 @@ import com.lovetropics.donations.backend.ltts.WebSocketHelper;
 import com.lovetropics.donations.block.DonationBlock;
 import com.lovetropics.donations.block.DonationGoalRedstoneBlock;
 import com.lovetropics.donations.block.DonationRedstoneBlock;
-import com.lovetropics.donations.command.CommandDonation;
+import com.lovetropics.donations.command.LTDonationsCommands;
 import com.tterrag.registrate.Registrate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -18,7 +18,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
@@ -55,10 +54,11 @@ public class LTDonations {
 		DonationRedstoneBlock.register();
 		DonationGoalRedstoneBlock.register();
 		DonationLangKeys.init(registrate());
+		LTDonationsCommands.registerArguments();
 
 		NeoForge.EVENT_BUS.addListener(this::serverStartingEvent);
 		NeoForge.EVENT_BUS.addListener(this::serverStoppingEvent);
-		NeoForge.EVENT_BUS.addListener(this::registerCommands);
+		NeoForge.EVENT_BUS.addListener(LTDonationsCommands::registerCommands);
 
 		container.registerConfig(ModConfig.Type.COMMON, DonationConfigs.COMMON_CONFIG);
 
@@ -76,11 +76,7 @@ public class LTDonations {
 	@Nullable
 	private static WebSocketHelper websocket;
 
-	private void registerCommands(RegisterCommandsEvent event) {
-		CommandDonation.register(event.getDispatcher());
-	}
-
-    private void serverStartingEvent(ServerStartingEvent event) {
+	private void serverStartingEvent(ServerStartingEvent event) {
         final MinecraftServer server = event.getServer();
         DonationHandler.initialize(server);
         websocket = new WebSocketHelper(() -> {

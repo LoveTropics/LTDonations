@@ -230,8 +230,8 @@ public class PillarMonument implements Monument {
 
     public record Data(GlobalPos pos, DonationGroup donationGroup, boolean announce) implements MonumentData {
         public static final MapCodec<Data> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                GlobalPos.CODEC.fieldOf("pos").forGetter(Data::pos),
-                DonationGroup.CODEC.fieldOf("donation_group").forGetter(Data::donationGroup),
+                GlobalPos.MAP_CODEC.forGetter(Data::pos),
+                DonationGroup.CODEC.optionalFieldOf("donation_group", DonationGroup.ALL).forGetter(Data::donationGroup),
                 Codec.BOOL.optionalFieldOf("announce", false).forGetter(Data::announce)
         ).apply(i, Data::new));
 
@@ -240,7 +240,7 @@ public class PillarMonument implements Monument {
         public Monument create(final MinecraftServer server) {
             final ServerLevel level = server.getLevel(pos.dimension());
             if (level == null) {
-                LOGGER.warn("Could not find dimension : " + pos.dimension().location());
+				LOGGER.warn("Could not find dimension : {}", pos.dimension().location());
                 return null;
             }
             final BlockPos origin = pos.pos();
