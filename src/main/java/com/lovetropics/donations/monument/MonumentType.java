@@ -6,6 +6,7 @@ import net.minecraft.util.StringRepresentable;
 public enum MonumentType implements StringRepresentable {
     PILLAR("pillar", PillarMonument.Data.CODEC),
     WALL("wall", WallMonumentData.CODEC),
+    FLAG("flag", FlagMonumentData.CODEC)
     ;
 
     public static final EnumCodec<MonumentType> CODEC = StringRepresentable.fromEnum(MonumentType::values);
