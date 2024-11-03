@@ -50,22 +50,20 @@ public record FlagMonumentData(
 			Map<Block, List<BlockState>> layerPalettes
 	) {
 		private static final Map<Block, List<BlockState>> CONCRETE_PALETTE = Stream.of(
-				List.of(Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA),
-				List.of(Blocks.WHITE_CONCRETE, Blocks.WHITE_GLAZED_TERRACOTTA),
-				List.of(Blocks.BLACK_CONCRETE, Blocks.BLACK_GLAZED_TERRACOTTA),
-				List.of(Blocks.PINK_CONCRETE, Blocks.PINK_GLAZED_TERRACOTTA),
-				List.of(Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA),
-				List.of(Blocks.YELLOW_CONCRETE, Blocks.YELLOW_GLAZED_TERRACOTTA),
-				List.of(Blocks.GREEN_CONCRETE, Blocks.GREEN_GLAZED_TERRACOTTA),
-				List.of(Blocks.LIME_CONCRETE, Blocks.LIME_GLAZED_TERRACOTTA),
+				List.of(Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA),
+				List.of(Blocks.BROWN_CONCRETE, Blocks.BROWN_GLAZED_TERRACOTTA),
 				List.of(Blocks.CYAN_CONCRETE, Blocks.CYAN_GLAZED_TERRACOTTA),
+				List.of(Blocks.GRAY_CONCRETE, Blocks.GRAY_GLAZED_TERRACOTTA),
+				List.of(Blocks.GREEN_CONCRETE, Blocks.GREEN_GLAZED_TERRACOTTA),
 				List.of(Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA),
 				List.of(Blocks.LIGHT_GRAY_CONCRETE, Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA),
-				List.of(Blocks.GRAY_CONCRETE, Blocks.GRAY_GLAZED_TERRACOTTA),
-				List.of(Blocks.BROWN_CONCRETE, Blocks.BROWN_GLAZED_TERRACOTTA),
-				List.of(Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA),
+				List.of(Blocks.LIME_CONCRETE, Blocks.LIME_GLAZED_TERRACOTTA),
+				List.of(Blocks.MAGENTA_CONCRETE, Blocks.MAGENTA_GLAZED_TERRACOTTA),
+				List.of(Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA),
+				List.of(Blocks.PINK_CONCRETE, Blocks.PINK_GLAZED_TERRACOTTA),
 				List.of(Blocks.PURPLE_CONCRETE, Blocks.PURPLE_GLAZED_TERRACOTTA),
-				List.of(Blocks.MAGENTA_CONCRETE, Blocks.MAGENTA_GLAZED_TERRACOTTA)
+				List.of(Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA),
+				List.of(Blocks.YELLOW_CONCRETE, Blocks.YELLOW_GLAZED_TERRACOTTA)
 		).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).toList()));
 
 		public static final Codec<Template> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -74,8 +72,6 @@ public record FlagMonumentData(
 				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).optionalFieldOf("layer_palettes", CONCRETE_PALETTE).forGetter(Template::layerPalettes)
 		).apply(i, Template::new));
 	}
-
-	private static final Direction[] DIRECTIONS = Direction.values();
 
 	@Override
 	@Nullable
@@ -151,11 +147,15 @@ public record FlagMonumentData(
 	}
 
 	private static void enqueueNeighbors(BlockPos.MutableBlockPos mutablePos, long originPos, LongArrayFIFOQueue queue, LongSet visitedBlocks) {
-		for (Direction direction : DIRECTIONS) {
-			mutablePos.set(originPos).move(direction);
-			long neighborPos = mutablePos.asLong();
-			if (visitedBlocks.add(neighborPos)) {
-				queue.enqueue(neighborPos);
+		for (int z = -1; z <= 1; z++) {
+			for (int y = -1; y <= 1; y++) {
+				for (int x = -1; x <= 1; x++) {
+					mutablePos.set(originPos).move(x, y, z);
+					long neighborPos = mutablePos.asLong();
+					if (visitedBlocks.add(neighborPos)) {
+						queue.enqueue(neighborPos);
+					}
+				}
 			}
 		}
 	}
