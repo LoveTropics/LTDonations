@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public record FlagMonumentData(
 		GlobalPos pos,
@@ -47,10 +49,29 @@ public record FlagMonumentData(
 			BlockPos origin,
 			Map<Block, List<BlockState>> layerPalettes
 	) {
+		private static final Map<Block, List<BlockState>> CONCRETE_PALETTE = Stream.of(
+				List.of(Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA),
+				List.of(Blocks.WHITE_CONCRETE, Blocks.WHITE_GLAZED_TERRACOTTA),
+				List.of(Blocks.BLACK_CONCRETE, Blocks.BLACK_GLAZED_TERRACOTTA),
+				List.of(Blocks.PINK_CONCRETE, Blocks.PINK_GLAZED_TERRACOTTA),
+				List.of(Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA),
+				List.of(Blocks.YELLOW_CONCRETE, Blocks.YELLOW_GLAZED_TERRACOTTA),
+				List.of(Blocks.GREEN_CONCRETE, Blocks.GREEN_GLAZED_TERRACOTTA),
+				List.of(Blocks.LIME_CONCRETE, Blocks.LIME_GLAZED_TERRACOTTA),
+				List.of(Blocks.CYAN_CONCRETE, Blocks.CYAN_GLAZED_TERRACOTTA),
+				List.of(Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA),
+				List.of(Blocks.LIGHT_GRAY_CONCRETE, Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA),
+				List.of(Blocks.GRAY_CONCRETE, Blocks.GRAY_GLAZED_TERRACOTTA),
+				List.of(Blocks.BROWN_CONCRETE, Blocks.BROWN_GLAZED_TERRACOTTA),
+				List.of(Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA),
+				List.of(Blocks.PURPLE_CONCRETE, Blocks.PURPLE_GLAZED_TERRACOTTA),
+				List.of(Blocks.MAGENTA_CONCRETE, Blocks.MAGENTA_GLAZED_TERRACOTTA)
+		).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).toList()));
+
 		public static final Codec<Template> CODEC = RecordCodecBuilder.create(i -> i.group(
 				Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(Template::dimension),
 				BlockPos.CODEC.fieldOf("origin").forGetter(Template::origin),
-				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).fieldOf("layer_palettes").forGetter(Template::layerPalettes)
+				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).optionalFieldOf("layer_palettes", CONCRETE_PALETTE).forGetter(Template::layerPalettes)
 		).apply(i, Template::new));
 	}
 
