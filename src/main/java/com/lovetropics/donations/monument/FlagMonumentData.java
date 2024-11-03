@@ -11,16 +11,18 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -49,27 +51,28 @@ public record FlagMonumentData(
 			BlockPos origin,
 			Map<Block, List<BlockState>> layerPalettes
 	) {
-		private static final Map<Block, List<BlockState>> CONCRETE_PALETTE = Stream.of(
-				List.of(Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA),
-				List.of(Blocks.BROWN_CONCRETE, Blocks.BROWN_GLAZED_TERRACOTTA),
-				List.of(Blocks.CYAN_CONCRETE, Blocks.CYAN_GLAZED_TERRACOTTA),
-				List.of(Blocks.GRAY_CONCRETE, Blocks.GRAY_GLAZED_TERRACOTTA),
-				List.of(Blocks.GREEN_CONCRETE, Blocks.GREEN_GLAZED_TERRACOTTA),
-				List.of(Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA),
-				List.of(Blocks.LIGHT_GRAY_CONCRETE, Blocks.LIGHT_GRAY_GLAZED_TERRACOTTA),
-				List.of(Blocks.LIME_CONCRETE, Blocks.LIME_GLAZED_TERRACOTTA),
-				List.of(Blocks.MAGENTA_CONCRETE, Blocks.MAGENTA_GLAZED_TERRACOTTA),
-				List.of(Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA),
-				List.of(Blocks.PINK_CONCRETE, Blocks.PINK_GLAZED_TERRACOTTA),
-				List.of(Blocks.PURPLE_CONCRETE, Blocks.PURPLE_GLAZED_TERRACOTTA),
-				List.of(Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA),
-				List.of(Blocks.YELLOW_CONCRETE, Blocks.YELLOW_GLAZED_TERRACOTTA)
-		).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).toList()));
+		private static Block extrasBlock(String id) {
+			DeferredHolder<Block, Block> holder = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("ltextras", id));
+			return holder.isBound() ? holder.value() : Blocks.AIR;
+		}
+
+		private static Map<Block, List<BlockState>> standardPalette() {
+			return Stream.of(
+					List.of(Blocks.RED_CONCRETE, extrasBlock("imposter_fire_coral_block"), Blocks.REDSTONE_BLOCK),
+					List.of(Blocks.ORANGE_CONCRETE, Blocks.SHROOMLIGHT, Blocks.WAXED_COPPER_BLOCK),
+					List.of(Blocks.YELLOW_CONCRETE, extrasBlock("imposter_horn_coral_block"), Blocks.GOLD_BLOCK),
+					List.of(Blocks.LIME_CONCRETE, extrasBlock("lime_block"), Blocks.EMERALD_BLOCK),
+					List.of(Blocks.LIGHT_BLUE_CONCRETE, Blocks.WARPED_WART_BLOCK, Blocks.DIAMOND_BLOCK),
+					List.of(Blocks.BLUE_CONCRETE, extrasBlock("imposter_tube_coral_block"), Blocks.LAPIS_BLOCK),
+					List.of(Blocks.PURPLE_CONCRETE, Blocks.WARPED_HYPHAE, Blocks.AMETHYST_BLOCK),
+					List.of(Blocks.MAGENTA_CONCRETE, extrasBlock("imposter_bubble_coral_block"), Blocks.PURPUR_BLOCK)
+			).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).toList()));
+		}
 
 		public static final Codec<Template> CODEC = RecordCodecBuilder.create(i -> i.group(
 				Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(Template::dimension),
 				BlockPos.CODEC.fieldOf("origin").forGetter(Template::origin),
-				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).optionalFieldOf("layer_palettes", CONCRETE_PALETTE).forGetter(Template::layerPalettes)
+				Codec.unboundedMap(BuiltInRegistries.BLOCK.byNameCodec(), MoreCodecs.BLOCK_STATE.listOf()).fieldOf("layer_palettes").orElseGet(Template::standardPalette).forGetter(Template::layerPalettes)
 		).apply(i, Template::new));
 	}
 
