@@ -3,6 +3,7 @@ package com.lovetropics.donations.monument;
 import com.lovetropics.donations.DonationGroup;
 import com.lovetropics.lib.BlockBox;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
@@ -19,7 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +35,8 @@ public record WallMonumentData(ResourceKey<Level> dimension, BlockBox box, Donat
 			MonumentStyle.CODEC.optionalFieldOf("style", MonumentStyle.NORMAL).forGetter(WallMonumentData::style)
 	).apply(i, WallMonumentData::new));
 
-	public static final Block BACKGROUND_BLOCK = Blocks.SCULK;
+	private static final int BLOCKS_PER_COLOR = 4;
+	private static final Block BACKGROUND_BLOCK = Blocks.SCULK;
 
 	private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -40,13 +44,21 @@ public record WallMonumentData(ResourceKey<Level> dimension, BlockBox box, Donat
 	@Nullable
 	public Monument create(MinecraftServer server) {
 		ServerLevel level = server.getLevel(dimension);
-		if (level != null) {
-			LongList[] blocksByLayer = scanBlocksByLayer(level, box, style);
-			if (blocksByLayer != null) {
-				return new LayeredMonument(level, blocksByLayer, this);
-			}
+		if (level == null) {
+			return null;
 		}
-		return null;
+		LongList[] blocksByLayer = scanBlocksByLayer(level, box, style);
+		if (blocksByLayer == null) {
+			return null;
+		}
+		List<LayeredMonument.Layer> layers = new ArrayList<>(blocksByLayer.length);
+		for (int layerIndex = 0; layerIndex < blocksByLayer.length; layerIndex++) {
+			LongList blocks = blocksByLayer[layerIndex];
+			List<BlockState> palette = style.palette.get((layerIndex / BLOCKS_PER_COLOR) % style.palette.size());
+			layers.add(new LayeredMonument.Layer(blocks, BACKGROUND_BLOCK.defaultBlockState(), palette));
+		}
+		boolean announceLayer = style == MonumentStyle.NORMAL;
+		return new LayeredMonument(level, layers, group, style.dollarsPerLayer, announceLayer, this);
 	}
 
 	@Nullable
@@ -89,56 +101,39 @@ public record WallMonumentData(ResourceKey<Level> dimension, BlockBox box, Donat
 
 	public enum MonumentStyle implements StringRepresentable {
 		NORMAL("normal", 1000.0, new Block[][]{
-				{
-						Blocks.RED_CONCRETE,
-						Blocks.ORANGE_CONCRETE,
-						Blocks.YELLOW_CONCRETE,
-						Blocks.LIME_CONCRETE,
-						Blocks.GREEN_CONCRETE,
-						Blocks.CYAN_CONCRETE,
-						Blocks.LIGHT_BLUE_CONCRETE,
-						Blocks.BLUE_CONCRETE,
-						Blocks.PURPLE_CONCRETE,
-						Blocks.MAGENTA_CONCRETE,
-						Blocks.PINK_CONCRETE,
-				},
-				{
-						Blocks.RED_GLAZED_TERRACOTTA,
-						Blocks.ORANGE_GLAZED_TERRACOTTA,
-						Blocks.YELLOW_GLAZED_TERRACOTTA,
-						Blocks.LIME_GLAZED_TERRACOTTA,
-						Blocks.GREEN_GLAZED_TERRACOTTA,
-						Blocks.CYAN_GLAZED_TERRACOTTA,
-						Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA,
-						Blocks.BLUE_GLAZED_TERRACOTTA,
-						Blocks.PURPLE_GLAZED_TERRACOTTA,
-						Blocks.MAGENTA_GLAZED_TERRACOTTA,
-						Blocks.PINK_GLAZED_TERRACOTTA,
-				}
+				{Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA},
+				{Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA},
+				{Blocks.YELLOW_CONCRETE, Blocks.YELLOW_GLAZED_TERRACOTTA},
+				{Blocks.LIME_CONCRETE, Blocks.LIME_GLAZED_TERRACOTTA},
+				{Blocks.GREEN_CONCRETE, Blocks.GREEN_GLAZED_TERRACOTTA},
+				{Blocks.CYAN_CONCRETE, Blocks.CYAN_GLAZED_TERRACOTTA},
+				{Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA},
+				{Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA},
+				{Blocks.PURPLE_CONCRETE, Blocks.PURPLE_GLAZED_TERRACOTTA},
+				{Blocks.MAGENTA_CONCRETE, Blocks.MAGENTA_GLAZED_TERRACOTTA},
+				{Blocks.PINK_CONCRETE, Blocks.PINK_GLAZED_TERRACOTTA}
 		}),
 		TEAM_CENTS("team_cents", 500.0, new Block[][]{
-				{Blocks.BLUE_CONCRETE, Blocks.LIGHT_BLUE_CONCRETE},
-				{Blocks.BLUE_GLAZED_TERRACOTTA, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA},
-				{Blocks.DIAMOND_BLOCK, Blocks.LAPIS_BLOCK}
+				{Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA, Blocks.DIAMOND_BLOCK},
+				{Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA, Blocks.LAPIS_BLOCK}
 		}),
 		TEAM_NO_CENTS("team_no_cents", 500.0, new Block[][]{
-				{Blocks.RED_CONCRETE, Blocks.ORANGE_CONCRETE},
-				{Blocks.RED_GLAZED_TERRACOTTA, Blocks.ORANGE_GLAZED_TERRACOTTA},
-				{Blocks.REDSTONE_BLOCK, Blocks.COPPER_BLOCK}
+				{Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA, Blocks.REDSTONE_BLOCK},
+				{Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA, Blocks.WAXED_COPPER_BLOCK}
 		}),
 		;
 
-		public static final EnumCodec<MonumentStyle> CODEC = StringRepresentable.fromEnum(MonumentStyle::values);
+		private static final Codec<MonumentStyle> CODEC = StringRepresentable.fromEnum(MonumentStyle::values);
 
 		private final String name;
 		private final double dollarsPerLayer;
-		private final Block[][] palette;
+		private final List<List<BlockState>> palette;
 		private final Set<Block> replaceableBlocks;
 
 		MonumentStyle(String name, double dollarsPerLayer, Block[][] palette) {
 			this.name = name;
 			this.dollarsPerLayer = dollarsPerLayer;
-			this.palette = palette;
+			this.palette = Arrays.stream(palette).map(blocks -> Arrays.stream(blocks).map(Block::defaultBlockState).toList()).toList();
 
 			replaceableBlocks = Stream.concat(
 					Stream.of(BACKGROUND_BLOCK),
@@ -149,14 +144,6 @@ public record WallMonumentData(ResourceKey<Level> dimension, BlockBox box, Donat
 		@Override
 		public String getSerializedName() {
 			return name;
-		}
-
-		public Block[][] palette() {
-			return palette;
-		}
-
-		public double dollarsPerLayer() {
-			return dollarsPerLayer;
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package com.lovetropics.donations.monument;
 
 import com.lovetropics.donations.DiscordIntegration;
+import com.lovetropics.donations.DonationGroup;
 import com.lovetropics.donations.DonationState;
 import it.unimi.dsi.fastutil.longs.LongList;
 import net.minecraft.ChatFormatting;
@@ -14,22 +15,29 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class LayeredMonument implements Monument {
-    private static final int BLOCKS_PER_COLOR = 4;
+import java.util.List;
 
+public class LayeredMonument implements Monument {
     private static final int PLACE_INTERVAL = SharedConstants.TICKS_PER_SECOND / 2;
 
     private final ServerLevel level;
-    private final LongList[] blocksByLayer;
-    private final WallMonumentData data;
+    private final List<Layer> layers;
+    private final DonationGroup group;
+    private final double dollarsPerLayer;
+    private final boolean announceLayer;
+
+    private final MonumentData data;
 
     private Cursor cursor = Cursor.START;
     private Cursor targetCursor = Cursor.START;
 
-    protected LayeredMonument(ServerLevel level, LongList[] blocksByLayer, WallMonumentData data) {
+    protected LayeredMonument(ServerLevel level, List<Layer> layers, DonationGroup group, double dollarsPerLayer, boolean announceLayer, MonumentData data) {
         this.level = level;
+		this.group = group;
+		this.dollarsPerLayer = dollarsPerLayer;
+		this.announceLayer = announceLayer;
+        this.layers = layers;
         this.data = data;
-        this.blocksByLayer = blocksByLayer;
     }
 
     @Override
@@ -50,10 +58,10 @@ public class LayeredMonument implements Monument {
     private void clear() {
         cursor = Cursor.START;
         BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
-        for (LongList layer : blocksByLayer) {
-            layer.forEach(l -> {
+        for (Layer layer : layers) {
+            layer.blocks.forEach(l -> {
                 BlockPos pos = mutablePos.set(l);
-                level.setBlock(pos, WallMonumentData.BACKGROUND_BLOCK.defaultBlockState(), Block.UPDATE_ALL);
+                level.setBlock(pos, layer.emptyState(), Block.UPDATE_ALL);
             });
         }
     }
@@ -75,16 +83,16 @@ public class LayeredMonument implements Monument {
     }
 
     private void place(Cursor cursor, boolean effects) {
-        LongList blocks = getBlocksByLayer(cursor.layer);
-        BlockPos pos = BlockPos.of(blocks.getLong(cursor.blockInLayer));
-        level.setBlock(pos, getBlockStateForLayer(cursor.layer), Block.UPDATE_ALL);
+        Layer layer = getLayer(cursor.layer);
+		BlockPos pos = BlockPos.of(layer.blocks.getLong(cursor.blockInLayer));
+        level.setBlock(pos, getBlockStateForLayer(cursor, layer), Block.UPDATE_ALL);
         if (effects) {
             MonumentEffects.spawnParticles(level, pos);
         }
     }
 
     private void announceLayer(int layer) {
-        if (data.style() != WallMonumentData.MonumentStyle.NORMAL) {
+        if (!announceLayer) {
             return;
         }
         Component message = Component.literal("The Monument")
@@ -98,29 +106,27 @@ public class LayeredMonument implements Monument {
         DiscordIntegration.send(message.getString());
     }
 
-    private LongList getBlocksByLayer(int layer) {
-        return blocksByLayer[layer % blocksByLayer.length];
+    private BlockState getBlockStateForLayer(Cursor cursor, Layer layer) {
+        int type = cursor.layer / layers.size();
+        return layer.palette.get(type % layer.palette.size());
     }
 
-    private BlockState getBlockStateForLayer(int layer) {
-        int type = layer / blocksByLayer.length;
-        Block[][] palette = data.style().palette();
-        Block[] paletteForType = palette[type % palette.length];
-        return paletteForType[(layer / BLOCKS_PER_COLOR) % paletteForType.length].defaultBlockState();
+    private Layer getLayer(int layer) {
+        return layers.get(layer % layers.size());
     }
 
     private Cursor computeCursor(DonationState totals) {
-        double totalLayers = totals.getAmount(data.group()) / data.style().dollarsPerLayer();
+        double totalLayers = totals.getAmount(group) / dollarsPerLayer;
         int currentLayer = Mth.floor(totalLayers);
         double layerProgress = totalLayers - currentLayer;
 
-        LongList layer = getBlocksByLayer(currentLayer);
+        LongList layer = getLayer(currentLayer).blocks();
         int blockInLayer = Mth.floor(layerProgress * layer.size());
         return new Cursor(currentLayer, blockInLayer);
     }
 
     private Cursor step(Cursor cursor) {
-        LongList blocks = getBlocksByLayer(cursor.layer);
+        LongList blocks = getLayer(cursor.layer).blocks();
         if (cursor.blockInLayer + 1 < blocks.size()) {
             return new Cursor(cursor.layer, cursor.blockInLayer + 1);
         } else {
@@ -131,6 +137,9 @@ public class LayeredMonument implements Monument {
     @Override
     public MonumentData toData() {
         return data;
+    }
+
+    public record Layer(LongList blocks, BlockState emptyState, List<BlockState> palette) {
     }
 
     private record Cursor(int layer, int blockInLayer) implements Comparable<Cursor> {
