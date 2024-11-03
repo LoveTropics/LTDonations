@@ -1,5 +1,6 @@
 package com.lovetropics.donations;
 
+import net.minecraft.util.StringUtil;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.config.ModConfigEvent;
@@ -41,6 +42,10 @@ public class DonationConfigs {
                     .define("websocketUrl", "wss://localhost:443/ws");
 
             COMMON_BUILDER.pop();
+        }
+
+        public boolean shouldConnect() {
+            return !StringUtil.isNullOrEmpty(authKey.get());
         }
     }
 

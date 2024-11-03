@@ -1,6 +1,5 @@
 package com.lovetropics.donations.backend.ltts;
 
-import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.lib.backend.BackendConnection;
@@ -20,7 +19,7 @@ public class WebSocketHelper {
 
     public WebSocketHelper(final Runnable onOpen) {
         final Supplier<URI> address = () -> {
-            if (!Strings.isNullOrEmpty(DonationConfigs.TECH_STACK.authKey.get())) {
+            if (DonationConfigs.TECH_STACK.shouldConnect()) {
                 try {
                     return new URI(DonationConfigs.TECH_STACK.websocketUrl.get());
                 } catch (final URISyntaxException ignored) {

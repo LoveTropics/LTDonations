@@ -93,7 +93,7 @@ public class DonationHandler {
         fetchFullState(server, true);
     }
 
-    private static void applyFullState(final MinecraftServer server, final FullDonationState data, final boolean initial) {
+    public static void applyFullState(final MinecraftServer server, final FullDonationState data, final boolean initial) {
         STATE.apply(data);
         DonationListeners.updateState(server, STATE, initial);
     }

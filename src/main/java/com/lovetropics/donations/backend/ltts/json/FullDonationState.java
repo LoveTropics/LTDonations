@@ -54,4 +54,19 @@ public record FullDonationState(
     ).apply(i, FullDonationState::new));
 
     public static final Codec<FullDonationState> CODEC = MAP_CODEC.codec();
+
+    public static FullDonationState forTotal(double total) {
+        return new FullDonationState(
+                total,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                Instant.EPOCH,
+                ""
+        );
+    }
 }
