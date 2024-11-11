@@ -4,16 +4,17 @@ import com.lovetropics.donations.backend.ltts.json.Donation;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.EnumMap;
 
 public interface DonationState {
     DonationState ZERO = new DonationState() {
         @Override
-        public double getAmount(final DonationGroup group) {
+        public double getAmount(DonationGroup group) {
             return 0.0;
         }
 
         @Override
-        public int getCount(final DonationGroup group) {
+        public int getCount(DonationGroup group) {
             return 0;
         }
 
@@ -29,6 +30,40 @@ public interface DonationState {
             return null;
         }
     };
+
+    static DonationState copyOf(DonationState state) {
+        EnumMap<DonationGroup, Double> amounts = new EnumMap<>(DonationGroup.class);
+        EnumMap<DonationGroup, Integer> counts = new EnumMap<>(DonationGroup.class);
+        for (DonationGroup group : DonationGroup.values()) {
+            amounts.put(group, state.getAmount(group));
+            counts.put(group, state.getCount(group));
+        }
+        Donation lastDonation = state.getLastDonation();
+        LeadingTeam leadingTeam = state.getLeadingTeam();
+        return new DonationState() {
+            @Override
+            public double getAmount(DonationGroup group) {
+                return amounts.get(group);
+            }
+
+            @Override
+            public int getCount(DonationGroup group) {
+                return counts.get(group);
+            }
+
+            @Override
+            @Nullable
+            public Donation getLastDonation() {
+                return lastDonation;
+            }
+
+            @Override
+            @Nullable
+            public LeadingTeam getLeadingTeam() {
+                return leadingTeam;
+            }
+        };
+    }
 
     double getAmount(DonationGroup group);
 

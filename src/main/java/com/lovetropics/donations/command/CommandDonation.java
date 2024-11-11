@@ -3,7 +3,9 @@ package com.lovetropics.donations.command;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.DonationGroup;
 import com.lovetropics.donations.DonationLangKeys;
+import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationListeners;
+import com.lovetropics.donations.DonationState;
 import com.lovetropics.donations.backend.ltts.DonationHandler;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.FullDonationState;
@@ -100,12 +102,20 @@ public class CommandDonation {
             ctx.getSource().sendSuccess(() -> DonationLangKeys.COMMAND_SIMULATE_DONATION.format(name, NumberFormat.getCurrencyInstance().format(amount)), true);
         }
         MinecraftServer server = ctx.getSource().getServer();
+        DonationState oldState = DonationState.copyOf(DonationHandler.state());
         // Not set up with the tech stack, so let simulation actually update our internal state
         if (!DonationConfigs.TECH_STACK.shouldConnect()) {
-			double newTotal = DonationHandler.state().getAmount(DonationGroup.ALL) + amount;
+            double newTotal = oldState.getAmount(DonationGroup.ALL) + amount;
             DonationHandler.applyFullState(server, FullDonationState.forTotal(newTotal), false);
         }
-        DonationListeners.triggerDonation(server, name, amount);
+        DonationListeners.triggerDonation(server, new DonationListener.Details(
+                amount,
+                name,
+                null,
+                0.0,
+                oldState,
+                DonationHandler.state()
+        ));
         return Command.SINGLE_SUCCESS;
     }
 

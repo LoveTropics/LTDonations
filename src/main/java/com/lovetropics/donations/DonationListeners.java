@@ -1,5 +1,7 @@
 package com.lovetropics.donations;
 
+import com.lovetropics.donations.trigger.DonationTriggerConfigs;
+import com.lovetropics.donations.trigger.DonationTriggerHolder;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.ChatFormatting;
 import net.minecraft.server.MinecraftServer;
@@ -14,16 +16,22 @@ public class DonationListeners {
     static {
         LISTENERS.add(DonationListeners::announceDonation);
         STATE_LISTENERS.add(new DonationScoreboard());
+
+        LISTENERS.add((server, details) -> {
+			for (DonationTriggerHolder holder : DonationTriggerConfigs.REGISTRY) {
+				holder.trigger().handleDonation(server, details);
+			}
+		});
     }
 
-    private static void announceDonation(final MinecraftServer server, final String name, final double amount) {
-        if (name.isBlank()) {
+    private static void announceDonation(final MinecraftServer server, final DonationListener.Details details) {
+        if (details.name().isBlank()) {
             return;
         }
         for (final ServerPlayer player : server.getPlayerList().getPlayers()) {
             player.displayClientMessage(DonationLangKeys.NEW_DONATION.format(
-                    ChatFormatting.AQUA + name + ChatFormatting.RESET,
-                    ChatFormatting.GREEN + LTDonations.CURRENCY_FORMAT.format(amount) + ChatFormatting.RESET
+                    ChatFormatting.AQUA + details.name() + ChatFormatting.RESET,
+                    ChatFormatting.GREEN + LTDonations.CURRENCY_FORMAT.format(details.amount()) + ChatFormatting.RESET
             ), false);
         }
     }
@@ -34,9 +42,9 @@ public class DonationListeners {
         }
     }
 
-    public static void triggerDonation(final MinecraftServer server, final String name, final double amount) {
+    public static void triggerDonation(final MinecraftServer server, final DonationListener.Details details) {
         for (final DonationListener listener : LISTENERS) {
-            listener.handleDonation(server, name, amount);
+            listener.handleDonation(server, details);
         }
     }
 

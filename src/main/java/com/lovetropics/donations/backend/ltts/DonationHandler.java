@@ -3,6 +3,7 @@ package com.lovetropics.donations.backend.ltts;
 import com.google.common.base.Strings;
 import com.google.common.collect.Queues;
 import com.lovetropics.donations.DonationGroup;
+import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationListeners;
 import com.lovetropics.donations.DonationState;
 import com.lovetropics.donations.LTDonations;
@@ -53,8 +54,16 @@ public class DonationHandler {
         if (tick >= nextDonationPollTick) {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
+                DonationState oldState = DonationState.copyOf(STATE);
                 applyFullState(server, donation.fullState(), false);
-                DonationListeners.triggerDonation(server, donation.getNameShown(), donation.amount());
+				DonationListeners.triggerDonation(server, new DonationListener.Details(
+						donation.amount(),
+						donation.getNameShown(),
+						null,
+						donation.donorTotal(),
+						oldState,
+						STATE
+				));
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
