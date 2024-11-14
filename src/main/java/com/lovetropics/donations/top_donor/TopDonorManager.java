@@ -3,12 +3,15 @@ package com.lovetropics.donations.top_donor;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
+import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -16,12 +19,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -61,21 +66,35 @@ public final class TopDonorManager {
 
     private void applyToEntity(Entity entity, @Nullable String minecraftName, Component fallbackName, double total, boolean anonymous) {
         CompoundTag data = entity.saveWithoutId(new CompoundTag());
+        ResolvableProfile profile;
         if (anonymous) {
             // We look for the null UUID in the datapack
-            data.putUUID("ProfileID", Util.NIL_UUID);
+            profile = new ResolvableProfile(
+                    Optional.empty(),
+                    Optional.of(Util.NIL_UUID),
+                    new PropertyMap()
+            );
             data.putString("CustomName", Component.Serializer.toJson(fallbackName, entity.registryAccess()));
         } else if (minecraftName != null) {
         	data.remove("CustomName");
         	entity.setCustomName(null);
-        	data.putString("ProfileName", minecraftName);
+            profile = new ResolvableProfile(
+                    Optional.of(minecraftName),
+                    Optional.empty(),
+                    new PropertyMap()
+            );
         } else {
-        	data.putString("ProfileName", "");
+            profile = null;
         	data.putString("CustomName", Component.Serializer.toJson(fallbackName, entity.registryAccess()));
+        }
+        if (profile != null) {
+            data.put("profile", ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, profile).getOrThrow());
+        } else {
+            data.remove("profile");
         }
         Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
                 .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
-        data.putString("NameSuffix", Component.Serializer.toJson(suffix, entity.registryAccess()));
+        data.putString("name_suffix", Component.Serializer.toJson(suffix, entity.registryAccess()));
         data.putBoolean("CustomNameVisible", true);
         entity.load(data);
     }
@@ -83,8 +102,8 @@ public final class TopDonorManager {
     private void clearEntity(Entity entity) {
         CompoundTag data = entity.saveWithoutId(new CompoundTag());
         data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
-        data.putString("ProfileName", "");
-        data.putString("NameSuffix", EMPTY_COMPONENT_STRING);
+        data.remove("profile");
+        data.putString("name_suffix", EMPTY_COMPONENT_STRING);
 
         entity.load(data);
     }
