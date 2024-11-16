@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.longs.LongList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -157,7 +158,17 @@ public record FlagMonumentData(
 		}
 	}
 
+	private static final Direction[] DIRECTIONS = Direction.values();
+
 	private static void enqueueNeighbors(BlockPos.MutableBlockPos mutablePos, long originPos, LongArrayFIFOQueue queue, LongSet visitedBlocks) {
+		// TODO: This is a terrible hack to ensure that the immediately adjacent layers get picked first
+		for (Direction direction : DIRECTIONS) {
+			mutablePos.set(originPos).move(direction);
+			long neighborPos = mutablePos.asLong();
+			if (visitedBlocks.add(neighborPos)) {
+				queue.enqueue(neighborPos);
+			}
+		}
 		for (int z = -1; z <= 1; z++) {
 			for (int y = -1; y <= 1; y++) {
 				for (int x = -1; x <= 1; x++) {
