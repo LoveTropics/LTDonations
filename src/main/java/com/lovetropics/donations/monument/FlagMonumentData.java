@@ -53,7 +53,11 @@ public record FlagMonumentData(
 			BlockState emptyBlock
 	) {
 		private static Block extrasBlock(String id) {
-			DeferredHolder<Block, Block> holder = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath("ltextras", id));
+			return moddedBlock("ltextras", id);
+		}
+
+		private static Block moddedBlock(String namespace, String id) {
+			DeferredHolder<Block, Block> holder = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(namespace, id));
 			return holder.isBound() ? holder.value() : Blocks.AIR;
 		}
 
@@ -66,7 +70,8 @@ public record FlagMonumentData(
 					List.of(Blocks.LIGHT_BLUE_CONCRETE, Blocks.WARPED_WART_BLOCK, Blocks.DIAMOND_BLOCK),
 					List.of(Blocks.BLUE_CONCRETE, extrasBlock("imposter_tube_coral_block"), Blocks.LAPIS_BLOCK),
 					List.of(Blocks.PURPLE_CONCRETE, Blocks.WARPED_HYPHAE, Blocks.AMETHYST_BLOCK),
-					List.of(Blocks.MAGENTA_CONCRETE, extrasBlock("imposter_bubble_coral_block"), Blocks.PURPUR_BLOCK)
+					List.of(Blocks.MAGENTA_CONCRETE, extrasBlock("imposter_bubble_coral_block"), Blocks.PURPUR_BLOCK),
+					List.of(Blocks.PINK_CONCRETE, extrasBlock("imposter_brain_coral_block"), moddedBlock("tropicraft", "zirconium_block"))
 			).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).toList()));
 		}
 
