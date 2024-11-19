@@ -41,7 +41,7 @@ public class WebSocketHelper {
 
             @Override
             public void acceptError(final Throwable cause) {
-                LOGGER.error("Donations websocket closed with error", cause);
+                LOGGER.error("Donations websocket closed with error: {}", cause.getMessage());
             }
 
             @Override
