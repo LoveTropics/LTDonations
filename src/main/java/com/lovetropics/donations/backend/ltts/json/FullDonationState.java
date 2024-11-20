@@ -35,11 +35,6 @@ public record FullDonationState(
             Either::right
     );
 
-    private static final Codec<Instant> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")).xmap(
-            localTime -> localTime.atOffset(ZoneOffset.UTC).toInstant(),
-            instant -> instant.atOffset(ZoneOffset.UTC).toLocalDateTime()
-    );
-
     public static final MapCodec<FullDonationState> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.DOUBLE.optionalFieldOf("total", 0.0).forGetter(FullDonationState::total),
             Codec.INT.optionalFieldOf("team_cents_count", 0).forGetter(FullDonationState::teamCentsCount),
@@ -49,7 +44,7 @@ public record FullDonationState(
             STRINGIFIED_DOUBLE.optionalFieldOf("team_no_cents_total", 0.0).forGetter(FullDonationState::teamNoCentsTotal),
             Codec.LONG.optionalFieldOf("team_cents_lead_time", 0L).forGetter(FullDonationState::teamCentsLeadTime),
             Codec.LONG.optionalFieldOf("team_no_cents_lead_time", 0L).forGetter(FullDonationState::teamNoCentsLeadTime),
-            TIME_CODEC.optionalFieldOf("team_lead_change_timestamp", Instant.EPOCH).forGetter(FullDonationState::teamLeadChangeTimestamp),
+            MoreCodecs.TIME_CODEC.optionalFieldOf("team_lead_change_timestamp", Instant.EPOCH).forGetter(FullDonationState::teamLeadChangeTimestamp),
             Codec.STRING.optionalFieldOf("latest_team", "").forGetter(FullDonationState::latestTeam)
     ).apply(i, FullDonationState::new));
 

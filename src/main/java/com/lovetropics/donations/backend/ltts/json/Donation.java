@@ -20,18 +20,13 @@ public record Donation(
         boolean anonymous,
         FullDonationState fullState
 ) implements Comparable<Donation> {
-    private static final Codec<Instant> TIME_CODEC = MoreCodecs.localDateTime(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")).xmap(
-            localTime -> localTime.atOffset(ZoneOffset.UTC).toInstant(),
-            instant -> instant.atOffset(ZoneOffset.UTC).toLocalDateTime()
-    );
-
     public static final Codec<Donation> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.optionalFieldOf("name", "").forGetter(Donation::name),
             UUIDUtil.AUTHLIB_CODEC.fieldOf("uuid").forGetter(Donation::uuid),
             Codec.DOUBLE.fieldOf("amount").forGetter(Donation::amount),
             Codec.DOUBLE.optionalFieldOf("donor_total", 0.0).forGetter(Donation::donorTotal),
             Codec.STRING.optionalFieldOf("comments", "").forGetter(Donation::comments),
-            TIME_CODEC.optionalFieldOf("payment_time", Instant.EPOCH).forGetter(Donation::paymentTime),
+            MoreCodecs.TIME_CODEC.optionalFieldOf("payment_time", Instant.EPOCH).forGetter(Donation::paymentTime),
             Codec.BOOL.optionalFieldOf("anonymous", true).forGetter(Donation::anonymous),
             FullDonationState.MAP_CODEC.forGetter(Donation::fullState)
     ).apply(i, Donation::new));
