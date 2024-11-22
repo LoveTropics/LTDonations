@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.registries.DeferredHolder;
 
@@ -53,6 +54,12 @@ public record FlagMonumentData(
 			Map<Block, List<BlockState>> layerPalettes,
 			BlockState emptyBlock
 	) {
+		// TODO: Delete this, just fixing old data
+		public Template {
+			layerPalettes = layerPalettes.entrySet().stream()
+					.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(b -> b.trySetValue(LeavesBlock.PERSISTENT, true)).toList()));
+		}
+
 		private static Block extrasBlock(String id) {
 			return moddedBlock("ltextras", id);
 		}
@@ -74,7 +81,7 @@ public record FlagMonumentData(
 					List.of(Blocks.PURPLE_CONCRETE, Blocks.CHERRY_WOOD, Blocks.AMETHYST_BLOCK),
 					List.of(Blocks.MAGENTA_CONCRETE, extrasBlock("imposter_bubble_coral_block"), Blocks.PURPUR_BLOCK),
 					List.of(Blocks.PINK_CONCRETE, Blocks.CHERRY_LEAVES, moddedBlock("tropicraft", "zirconium_block"))
-			).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).toList()));
+			).collect(Collectors.toMap(List::getFirst, blocks -> blocks.stream().map(Block::defaultBlockState).map(state -> state.trySetValue(LeavesBlock.PERSISTENT, true)).toList()));
 		}
 
 		public static final Codec<Template> CODEC = RecordCodecBuilder.create(i -> i.group(
