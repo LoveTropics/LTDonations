@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'java-library'
-    id 'net.neoforged.moddev' version '1.0.0'
+    id 'net.neoforged.moddev' version '2.0.103'
 }
 
 group = 'com.lovetropics.donations'
@@ -10,16 +10,18 @@ base {
     archivesName = 'LTDonations'
 }
 
-ext.buildnumber = 0
+def env = System.getenv()
 
-project.buildnumber = System.getenv('BUILD_NUMBER') ?: 'custom'
-if (System.getenv('GHA_RELEASE_WORKFLOW')) {
+ext.buildnumber = 0
+project.buildnumber = env.BUILD_NUMBER ?: 'custom'
+
+if (env.GHA_RELEASE_WORKFLOW) {
     version = "${mod_version}"
-} else if (System.getenv('GITHUB_RUN_NUMBER')) {
-    project.buildnumber = System.getenv('GITHUB_RUN_NUMBER')
+} else if (env.GITHUB_RUN_NUMBER) {
+    project.buildnumber = env.GITHUB_RUN_NUMBER
     version = "${mod_version}-${release_type}+${buildnumber}-gha"
 } else {
-    project.buildnumber = System.getenv('BUILD_NUMBER') ?: 'custom'
+    project.buildnumber = env.BUILD_NUMBER ?: 'custom'
     version = "${mod_version}-${release_type}+${buildnumber}"
 }
 
@@ -49,13 +51,13 @@ neoForge {
         }
 
         data {
-            data()
+            clientData()
 
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
         }
 
         configureEach {
-            logLevel = org.slf4j.event.Level.INFO
+            logLevel = org.slf4j.event.Level.WARN
         }
     }
 
@@ -72,33 +74,47 @@ sourceSets.main.resources {
 }
 
 repositories {
-    maven { url = "https://maven.ithundxr.dev/snapshots/" }
-    maven { url = "https://maven.tterrag.com/" }
+    maven {
+        url = 'https://maven.gegy.dev/releases'
+        content {
+            includeGroup 'org.lovetropics'
+            includeGroup 'com.tterrag.registrate'
+            includeGroup 'eu.pb4'
+        }
+    }
     mavenLocal()
 }
 
 dependencies {
-    jarJar(implementation("com.tterrag.registrate:Registrate:$registrate_version")) {
+    jarJar(implementation("com.tterrag.registrate:Registrate-LT:MC1.21.8-${registrate_version}")) {
         version {
-            strictly "[MC1.21-${registrate_version},MC1.22)"
-            prefer "MC1.21-${registrate_version}"
+            strictly "[MC1.21.8-${registrate_version},MC1.22)"
+            prefer "MC1.21.8-${registrate_version}"
         }
     }
 
-    jarJar(implementation("com.lovetropics.lib:LTLib:$ltlib_version"))
+    jarJar(implementation("org.lovetropics:LTLib:$ltlib_version"))
     jarJar(implementation("eu.pb4:placeholder-api-lt:$placeholder_api_version"))
 }
 
-tasks.withType(ProcessResources).configureEach {
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
     var replaceProperties = [
-            mod_version: mod_version,
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            neo_version_range      : neo_version_range,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_version            : mod_version,
     ]
     inputs.properties replaceProperties
-
-    filesMatching(['META-INF/neoforge.mods.toml']) {
-        expand replaceProperties
-    }
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
 }
+sourceSets.main.resources.srcDir generateModMetadata
+
+neoForge.ideSyncTask generateModMetadata
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

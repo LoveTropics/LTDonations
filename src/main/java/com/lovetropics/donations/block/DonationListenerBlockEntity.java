@@ -3,21 +3,22 @@ package com.lovetropics.donations.block;
 import com.lovetropics.donations.DonationListener;
 import com.lovetropics.donations.DonationListeners;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nullable;
 
 public class DonationListenerBlockEntity extends BlockEntity {
-	@Nullable
+    private static final double DEFAULT_UPPER_THRESHOLD = Double.MAX_VALUE;
+
+    @Nullable
     private DonationListener activeListener;
 	private double threshold;
-	private double upperThreshold = Double.MAX_VALUE;
+    private double upperThreshold = DEFAULT_UPPER_THRESHOLD;
 
 	private int queued = 0;
     private int randomOffset = 0;
@@ -84,23 +85,21 @@ public class DonationListenerBlockEntity extends BlockEntity {
         }
     }
 
-	@Override
-	public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		this.queued = tag.getInt("queuedDonations");
-		threshold = tag.getDouble("threshold");
-		if (tag.contains("upper_threshold", Tag.TAG_DOUBLE)) {
-			upperThreshold = tag.getDouble("upper_threshold");
-		}
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        queued = input.getIntOr("queuedDonations", 0);
+        threshold = input.getDoubleOr("threshold", 0.0);
+        upperThreshold = input.getDoubleOr("upperThreshold", DEFAULT_UPPER_THRESHOLD);
 	}
 
-	@Override
-	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		tag.putInt("queuedDonations", queued);
-		tag.putDouble("threshold", threshold);
-		if (upperThreshold != Double.MAX_VALUE) {
-			tag.putDouble("upper_threshold", upperThreshold);
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        output.putInt("queuedDonations", queued);
+        output.putDouble("threshold", threshold);
+        if (upperThreshold != DEFAULT_UPPER_THRESHOLD) {
+            output.putDouble("upper_threshold", upperThreshold);
 		}
 	}
 }

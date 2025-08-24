@@ -13,7 +13,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.common.NeoForge;
@@ -25,7 +24,6 @@ import javax.annotation.Nullable;
 import java.text.NumberFormat;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 @Mod(LTDonations.MODID)
 public class LTDonations {
@@ -65,16 +63,12 @@ public class LTDonations {
 		DonationPlaceholders.register();
 	}
 
-    private static final Pattern QUALIFIER = Pattern.compile("-\\w+\\+\\d+");
-    public static String getCompatVersion() {
-    	return getCompatVersion(ModList.get().getModContainerById(MODID).orElseThrow(IllegalStateException::new).getModInfo().getVersion().toString());
-    }
-    private static String getCompatVersion(String fullVersion) {
-    	return QUALIFIER.matcher(fullVersion).replaceAll("");
-    }
-
 	@Nullable
 	private static WebSocketHelper websocket;
+
+	public static ResourceLocation location(String path) {
+		return ResourceLocation.fromNamespaceAndPath(MODID, path);
+	}
 
 	private void serverStartingEvent(ServerStartingEvent event) {
         final MinecraftServer server = event.getServer();

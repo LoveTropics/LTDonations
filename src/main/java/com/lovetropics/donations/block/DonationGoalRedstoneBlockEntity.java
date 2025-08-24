@@ -6,11 +6,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class DonationGoalRedstoneBlockEntity extends BlockEntity {
 
@@ -66,30 +69,30 @@ public class DonationGoalRedstoneBlockEntity extends BlockEntity {
 		}
 	}
 
-	public void pulseLengthUp(Player pPlayer) {
+	public void pulseLengthUp(ServerPlayer player) {
 		donationGoalIndex++;
-		pPlayer.sendSystemMessage(Component.literal("Donation goal trigger set to " + getDonationGoalAmount()));
+		player.sendSystemMessage(Component.literal("Donation goal trigger set to " + getDonationGoalAmount()));
 	}
 
-	public void pulseLengthDown(Player pPlayer) {
+	public void pulseLengthDown(ServerPlayer player) {
 		donationGoalIndex--;
 		if (donationGoalIndex < 0) {
 			donationGoalIndex = 0;
 		}
-		pPlayer.sendSystemMessage(Component.literal("Donation goal trigger set to " + getDonationGoalAmount()));
+		player.sendSystemMessage(Component.literal("Donation goal trigger set to " + getDonationGoalAmount()));
 	}
 
-	@Override
-	public void loadAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		this.donationGoalIndex = tag.getInt("donationGoalIndex");
-		this.lastPoweredState = tag.getBoolean("lastPoweredState");
-	}
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        donationGoalIndex = input.getIntOr("donationGoalIndex", 1);
+        lastPoweredState = input.getBooleanOr("lastPoweredState", false);
+    }
 
-	@Override
-	protected void saveAdditional(final CompoundTag tag, final HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		tag.putInt("donationGoalIndex", this.donationGoalIndex);
-		tag.putBoolean("lastPoweredState", this.lastPoweredState);
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+		output.putInt("donationGoalIndex", this.donationGoalIndex);
+		output.putBoolean("lastPoweredState", this.lastPoweredState);
 	}
 }

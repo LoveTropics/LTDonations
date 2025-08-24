@@ -13,10 +13,11 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.RegistryOps;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -25,10 +26,10 @@ public class MonumentConfigArgument implements ArgumentType<MonumentData> {
 	public static final DynamicCommandExceptionType ERROR_UNKNOWN_TYPE = new DynamicCommandExceptionType(DonationLangKeys.MONUMENT_TYPE_UNKNOWN::format);
 	public static final DynamicCommandExceptionType ERROR_INVALID_CONFIG = new DynamicCommandExceptionType(DonationLangKeys.MONUMENT_CONFIG_INVALID::format);
 
-	private final HolderLookup.Provider registries;
+    private final TagParser<?> tagParser;
 
 	public MonumentConfigArgument(CommandBuildContext buildContext) {
-		registries = buildContext;
+        tagParser = TagParser.create(buildContext.createSerializationContext(NbtOps.INSTANCE));
 	}
 
 	public static MonumentConfigArgument monumentConfig(CommandBuildContext buildContext) {
@@ -41,15 +42,15 @@ public class MonumentConfigArgument implements ArgumentType<MonumentData> {
 
 	@Override
 	public MonumentData parse(StringReader reader) throws CommandSyntaxException {
-		return readMonument(reader, registries);
+		return readMonument(reader);
 	}
 
-	private static MonumentData readMonument(StringReader reader, HolderLookup.Provider registries) throws CommandSyntaxException {
+	private MonumentData readMonument(StringReader reader) throws CommandSyntaxException {
 		MonumentType type = readMonumentType(reader);
-		return readMonument(reader, type, registries);
+		return readMonument(reader, type, tagParser);
 	}
 
-	private static MonumentType readMonumentType(StringReader reader) throws CommandSyntaxException {
+	private MonumentType readMonumentType(StringReader reader) throws CommandSyntaxException {
 		String id = reader.readString();
 		MonumentType type = MonumentType.CODEC.byName(id);
 		if (type == null) {
@@ -58,14 +59,14 @@ public class MonumentConfigArgument implements ArgumentType<MonumentData> {
 		return type;
 	}
 
-	private static MonumentData readMonument(StringReader reader, MonumentType type, HolderLookup.Provider registries) throws CommandSyntaxException {
-		CompoundTag tag;
+	private static <T> MonumentData readMonument(StringReader reader, MonumentType type, TagParser<T> parser) throws CommandSyntaxException {
+		T tag;
 		if (reader.canRead() && reader.peek() == '{') {
-			tag = new TagParser(reader).readStruct();
+            tag = parser.parseAsArgument(reader);
 		} else {
-			tag = new CompoundTag();
+			tag = parser.getOps().emptyMap();
 		}
-		return type.codec().codec().parse(registries.createSerializationContext(NbtOps.INSTANCE), tag)
+		return type.codec().codec().parse(parser.getOps(), tag)
 				.getOrThrow(ERROR_INVALID_CONFIG::create);
 	}
 

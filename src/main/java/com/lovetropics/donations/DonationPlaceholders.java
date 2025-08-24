@@ -68,6 +68,6 @@ public class DonationPlaceholders {
     }
 
     private static ResourceLocation id(final String id) {
-        return ResourceLocation.fromNamespaceAndPath(LTDonations.MODID, id);
+        return LTDonations.location(id);
     }
 }

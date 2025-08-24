@@ -3,16 +3,12 @@ package com.lovetropics.donations.block;
 import com.lovetropics.donations.LTDonations;
 import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import com.tterrag.registrate.util.entry.BlockEntry;
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -26,11 +22,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.client.model.generators.BlockModelBuilder;
-import net.neoforged.neoforge.client.model.generators.ConfiguredModel;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public class DonationGoalRedstoneBlock extends Block implements EntityBlock {
 
@@ -40,26 +32,22 @@ public class DonationGoalRedstoneBlock extends Block implements EntityBlock {
 			.block("donation_goal_redstone", DonationGoalRedstoneBlock::new)
 			.initialProperties(() -> Blocks.BEDROCK)
 			.properties(Properties::noLootTable)
-			.blockstate((ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
-				String name = ctx.getName() + (state.getValue(DonationGoalRedstoneBlock.POWERED) ? "_on" : "_off");
-				BlockModelBuilder model = prov.models().cubeAll(name, prov.modLoc("block/" + name));
-				return ConfiguredModel.builder().modelFile(model).build();
-			}))
+            .blockstate(() -> DonationBlockModels::generateFullPoweredBlock)
 			.lang("Donation Threshold Goal Redstone Emitter")
 			.item()
-				.model((ctx, prov) -> prov.withExistingParent(ctx.getName(), prov.modLoc("block/" + ctx.getName() + "_off")))
+            .model(() -> (ctx, prov) -> prov.generateBlockItem(ctx.get(), "_off"))
 			.build()
 			.blockEntity(DonationGoalRedstoneBlockEntity::new).build()
 
 			.register();
 
-	public static final BlockEntityEntry<DonationGoalRedstoneBlockEntity> ENTITY = BlockEntityEntry.cast(LTDonations.registrate().get("donation_goal_redstone", Registries.BLOCK_ENTITY_TYPE));
+    public static final BlockEntityEntry<DonationGoalRedstoneBlockEntity> ENTITY = BlockEntityEntry.cast(LTDonations.registrate().get("donation_goal_redstone", Registries.BLOCK_ENTITY_TYPE));
 
     public static final void register() {}
 
 	public DonationGoalRedstoneBlock(Properties properties) {
 		super(properties);
-		this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.valueOf(false)));
+		this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, false));
 	}
 
 	@Override
@@ -69,23 +57,17 @@ public class DonationGoalRedstoneBlock extends Block implements EntityBlock {
 
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-		if (!level.isClientSide) {
+		if (player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof DonationGoalRedstoneBlockEntity blockEntity) {
                 if (player.isCrouching()) {
-					blockEntity.pulseLengthDown(player);
+					blockEntity.pulseLengthDown(serverPlayer);
 				} else {
-					blockEntity.pulseLengthUp(player);
+					blockEntity.pulseLengthUp(serverPlayer);
 				}
 				return InteractionResult.SUCCESS;
 			}
 		}
 		return super.useWithoutItem(state, level, pos, player, hitResult);
-	}
-
-	@Override
-	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-		super.appendHoverText(stack, context, tooltip, flag);
-		tooltip.add(Component.translatable(this.getDescriptionId() + ".desc").withStyle(ChatFormatting.GRAY));
 	}
 
 	@Nullable

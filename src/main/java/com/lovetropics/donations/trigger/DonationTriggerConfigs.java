@@ -16,7 +16,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddReloadListenerEvent;
+import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -35,9 +35,9 @@ public class DonationTriggerConfigs {
 	private static final FileToIdConverter LISTER = FileToIdConverter.json("donation_trigger");
 
 	@SubscribeEvent
-	public static void addReloadListener(AddReloadListenerEvent event) {
+	public static void addReloadListener(AddServerReloadListenersEvent event) {
 		RegistryOps<JsonElement> ops = event.getRegistryAccess().createSerializationContext(JsonOps.INSTANCE);
-		event.addListener((stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor) ->
+		event.addListener(LTDonations.location("donation_triggers"), (stage, resourceManager, backgroundExecutor, gameExecutor) ->
 				CompletableFuture.supplyAsync(() -> listTriggers(ops, resourceManager, backgroundExecutor), backgroundExecutor).thenCompose(f -> f)
 						.thenCompose(stage::wait)
 						.thenAcceptAsync(triggers -> {

@@ -13,7 +13,7 @@ public class MonumentEffects {
         final Vec3 center = Vec3.atLowerCornerOf(pos).add(0.5, 0.5, 0.5);
         for (int i = 0; i < 20; i++) {
             final Direction dir = random.nextInt(3) != 0 ? Direction.UP : Direction.from2DDataValue(random.nextInt(4));
-            final Vec3 spawnPos = center.add(Vec3.atLowerCornerOf(dir.getNormal()).scale(0.6f))
+            final Vec3 spawnPos = center.add(dir.getUnitVec3().scale(0.6))
                     .add((random.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepX())),
                             (random.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepY())),
                             (random.nextDouble() - 0.5) * (1 - Math.abs(dir.getStepZ())));

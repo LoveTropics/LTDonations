@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = LTDonations.MODID, bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber(modid = LTDonations.MODID)
 public class DonationHandler {
     private static final Queue<Donation> DONATION_QUEUE = Queues.newPriorityBlockingQueue();
 

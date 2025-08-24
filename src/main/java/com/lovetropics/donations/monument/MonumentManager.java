@@ -4,13 +4,11 @@ import com.lovetropics.donations.DonationState;
 import com.lovetropics.donations.DonationStateListener;
 import com.lovetropics.donations.LTDonations;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.Util;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,31 +16,33 @@ import java.util.stream.Stream;
 
 public class MonumentManager extends SavedData implements DonationStateListener {
     private static final String STORAGE_ID = LTDonations.MODID + "_monuments";
-    private static final Factory<MonumentManager> FACTORY = new Factory<>(MonumentManager::new, MonumentManager::load);
 
-    private static final Codec<Map<String, MonumentData>> CODEC = Codec.unboundedMap(Codec.STRING, MonumentData.CODEC);
+    private static final Codec<MonumentManager> CODEC = RecordCodecBuilder.create(i -> i.group(
+            Codec.unboundedMap(Codec.STRING, MonumentData.CODEC).fieldOf("monuments").forGetter(MonumentManager::packData)
+    ).apply(i, MonumentManager::new));
+
+    private static final SavedDataType<MonumentManager> TYPE = new SavedDataType<>(STORAGE_ID, MonumentManager::new, CODEC);
 
     private final Map<String, Monument> monuments = new Object2ObjectOpenHashMap<>();
     private final Map<String, MonumentData> pendingMonuments = new Object2ObjectOpenHashMap<>();
 
     private DonationState state = DonationState.ZERO;
 
+    public MonumentManager() {
+    }
+
+    private MonumentManager(final Map<String, MonumentData> monuments) {
+        pendingMonuments.putAll(monuments);
+    }
+
     public static MonumentManager get(final MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(FACTORY, STORAGE_ID);
+        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
     }
 
-    private static MonumentManager load(final CompoundTag tag, final HolderLookup.Provider registries) {
-        final MonumentManager manager = new MonumentManager();
-        CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), tag.get("monuments")).result().ifPresent(manager.pendingMonuments::putAll);
-        return manager;
-    }
-
-    @Override
-    public CompoundTag save(final CompoundTag tag, final HolderLookup.Provider registries) {
+    private Map<String, MonumentData> packData() {
         final Map<String, MonumentData> data = monuments.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().toData()));
         data.putAll(pendingMonuments);
-        tag.put("monuments", CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), data).getOrThrow());
-        return tag;
+        return data;
     }
 
     @Override

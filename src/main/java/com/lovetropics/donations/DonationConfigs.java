@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@EventBusSubscriber(modid = LTDonations.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = LTDonations.MODID)
 public class DonationConfigs {
 
     private static final Builder COMMON_BUILDER = new Builder();

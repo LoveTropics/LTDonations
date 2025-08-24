@@ -5,22 +5,24 @@ import com.lovetropics.donations.backend.ltts.DonationRequests;
 import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
@@ -29,10 +31,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public final class TopDonorManager {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private static final String EMPTY_COMPONENT_STRING = Component.Serializer.toJson(CommonComponents.EMPTY, RegistryAccess.EMPTY);
+
+    private static final Component FUTURE_DONATOR = Component.literal("A Future Donator");
+
+    // Note: We look for the null UUID in the datapack
+    private static final UUID ANONYMOUS_PLAYER_ID = Util.NIL_UUID;
 
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
@@ -56,7 +63,7 @@ public final class TopDonorManager {
                 TopDonor donor = topDonors.get(i);
                 List<String> fallbacks = donor.displayNames();
                 String minecraftName = donor.minecraftName().orElse(null);
-                String fallbackName = fallbacks.isEmpty() ? "Anonymous" : fallbacks.get(fallbacks.size() - 1);
+                String fallbackName = fallbacks.isEmpty() ? "Anonymous" : fallbacks.getLast();
                 applyToEntity(entity, minecraftName, Component.literal(fallbackName), donor.total(), donor.isAnonymous());
             } else {
                 clearEntity(entity);
@@ -65,47 +72,65 @@ public final class TopDonorManager {
     }
 
     private void applyToEntity(Entity entity, @Nullable String minecraftName, Component fallbackName, double total, boolean anonymous) {
-        CompoundTag data = entity.saveWithoutId(new CompoundTag());
-        ResolvableProfile profile;
+        ResolvableProfile profile = createProfile(minecraftName, anonymous);
+
+        modifyEntityData(entity, output -> {
+            if (profile != null) {
+                output.store("profile", ResolvableProfile.CODEC, profile);
+            } else {
+                output.discard("profile");
+            }
+            Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
+            output.store("name_suffix", ComponentSerialization.CODEC, suffix);
+        });
+
         if (anonymous) {
-            // We look for the null UUID in the datapack
-            profile = new ResolvableProfile(
+            entity.setCustomName(fallbackName);
+        } else if (minecraftName != null) {
+            entity.setCustomName(null);
+        } else {
+            entity.setCustomName(fallbackName);
+        }
+        entity.setCustomNameVisible(true);
+    }
+
+    @Nullable
+    private static ResolvableProfile createProfile(@Nullable String minecraftName, boolean anonymous) {
+        if (anonymous) {
+            return new ResolvableProfile(
                     Optional.empty(),
-                    Optional.of(Util.NIL_UUID),
+                    Optional.of(ANONYMOUS_PLAYER_ID),
                     new PropertyMap()
             );
-            data.putString("CustomName", Component.Serializer.toJson(fallbackName, entity.registryAccess()));
         } else if (minecraftName != null) {
-        	data.remove("CustomName");
-        	entity.setCustomName(null);
-            profile = new ResolvableProfile(
+            return new ResolvableProfile(
                     Optional.of(minecraftName),
                     Optional.empty(),
                     new PropertyMap()
             );
-        } else {
-            profile = null;
-        	data.putString("CustomName", Component.Serializer.toJson(fallbackName, entity.registryAccess()));
         }
-        if (profile != null) {
-            data.put("profile", ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, profile).getOrThrow());
-        } else {
-            data.remove("profile");
-        }
-        Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
-                .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
-        data.putString("name_suffix", Component.Serializer.toJson(suffix, entity.registryAccess()));
-        data.putBoolean("CustomNameVisible", true);
-        entity.load(data);
+        return null;
     }
 
     private void clearEntity(Entity entity) {
-        CompoundTag data = entity.saveWithoutId(new CompoundTag());
-        data.putString("CustomName", "{\"text\":\"A Future Donator\"}");
-        data.remove("profile");
-        data.putString("name_suffix", EMPTY_COMPONENT_STRING);
+        modifyEntityData(entity, output -> {
+            output.discard("profile");
+            output.store("name_suffix", ComponentSerialization.CODEC, CommonComponents.EMPTY);
+        });
+        entity.setCustomName(FUTURE_DONATOR);
+    }
 
-        entity.load(data);
+    private static void modifyEntityData(Entity entity, Consumer<ValueOutput> modifier) {
+        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+            TagValueOutput output = TagValueOutput.createWithContext(reporter, entity.registryAccess());
+            entity.saveWithoutId(output);
+
+            modifier.accept(output);
+
+            CompoundTag data = output.buildResult();
+            entity.load(TagValueInput.create(reporter, entity.registryAccess(), data));
+        }
     }
 
     @Nullable

@@ -54,12 +54,6 @@ public record FlagMonumentData(
 			Map<Block, List<BlockState>> layerPalettes,
 			BlockState emptyBlock
 	) {
-		// TODO: Delete this, just fixing old data
-		public Template {
-			layerPalettes = layerPalettes.entrySet().stream()
-					.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().stream().map(b -> b.trySetValue(LeavesBlock.PERSISTENT, true)).toList()));
-		}
-
 		private static Block extrasBlock(String id) {
 			return moddedBlock("ltextras", id);
 		}

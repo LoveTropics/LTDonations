@@ -4,10 +4,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
 
@@ -54,31 +57,31 @@ public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
 		}
 	}
 
-	public void pulseLengthUp(Player pPlayer) {
+	public void pulseLengthUp(ServerPlayer player) {
 		pulseLengthIndex++;
 		if (pulseLengthIndex >= pulseLengths.length) {
 			pulseLengthIndex = 0;
 		}
-		pPlayer.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
+		player.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
 	}
 
-	public void pulseLengthDown(Player pPlayer) {
+	public void pulseLengthDown(ServerPlayer player) {
 		pulseLengthIndex--;
 		if (pulseLengthIndex < 0) {
 			pulseLengthIndex = pulseLengths.length-1;
 		}
-		pPlayer.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
+		player.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
 	}
 
-	@Override
-	public void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
-		this.pulseLengthIndex = tag.getInt("pulseLengthIndex");
-	}
+    @Override
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        pulseLengthIndex = input.getIntOr("pulseLengthIndex", 19);
+    }
 
-	@Override
-	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		tag.putInt("pulseLengthIndex", this.pulseLengthIndex);
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+		output.putInt("pulseLengthIndex", this.pulseLengthIndex);
 	}
 }
