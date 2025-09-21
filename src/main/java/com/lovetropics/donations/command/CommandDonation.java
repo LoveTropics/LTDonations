@@ -41,52 +41,52 @@ public class CommandDonation {
 
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext buildContext) {
         dispatcher.register(
-            literal("donation").requires(s -> s.hasPermission(Commands.LEVEL_GAMEMASTERS))
-            .then(literal("simulate")
-                    .executes(ctx -> simulate(ctx, "Nigel Winthorpe", 42))
-                    .then(argument("name", string())
-                            .executes(ctx -> simulate(ctx, getString(ctx, "name"), 42))
-                            .then(argument("amount", DoubleArgumentType.doubleArg(0, 100_000))
-                                    .executes(ctx -> simulate(ctx, getString(ctx, "name"), DoubleArgumentType.getDouble(ctx, "amount"))))))
-            .then(literal("fireworks")
-                    .executes(CommandDonation::fireworks))
-            .then(literal("pendingevents").executes(ctx -> {
-            	try {
-                    List<WhitelistEvent> events = DonationRequests.get().getUnprocessedEvents();
-                    ctx.getSource().sendSuccess(() -> Component.literal(events.toString()), true);
-            	} catch (Exception e) {
-            		return 0;
-            	}
-            	return Command.SINGLE_SUCCESS;
-            }))
-            .then(literal("test").then(literal("whitelist").executes(ctx -> {
-            	DonationRequests.get().fakeWhitelist();
-            	return Command.SINGLE_SUCCESS;
-            })).then(literal("blacklist").executes(ctx -> {
-            	DonationRequests.get().fakeBlacklist();
-            	return Command.SINGLE_SUCCESS;
-            })))
-                    .then(literal("monument")
-                            .then(literal("add")
-                                    .then(argument("id", word())
-                                            .then(argument("monument", monumentConfig(buildContext))
-                                                    .executes(context -> addMonument(context, getString(context, "id"), getMonumentConfig(context, "monument")))
-                                            )
-                                    )
-                            )
-                            .then(literal("update")
-                                    .then(argument("id", word()).suggests(suggestMonuments())
-                                            .then(argument("monument", monumentConfig(buildContext))
-                                                    .executes(context -> updateMonument(context, getString(context, "id"), getMonumentConfig(context, "monument")))
-                                            )
-                                    )
-                            )
-                            .then(literal("remove")
-                                    .then(argument("id", word()).suggests(suggestMonuments())
-                                            .executes(ctx -> removeMonument(ctx, getString(ctx, "id")))
-                                    )
-                            )
-                    )
+                literal("donation").requires(s -> s.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                        .then(literal("simulate")
+                                .executes(ctx -> simulate(ctx, "Nigel Winthorpe", 42))
+                                .then(argument("name", string())
+                                        .executes(ctx -> simulate(ctx, getString(ctx, "name"), 42))
+                                        .then(argument("amount", DoubleArgumentType.doubleArg(0, 100_000))
+                                                .executes(ctx -> simulate(ctx, getString(ctx, "name"), DoubleArgumentType.getDouble(ctx, "amount"))))))
+                        .then(literal("fireworks")
+                                .executes(CommandDonation::fireworks))
+                        .then(literal("pendingevents").executes(ctx -> {
+                            try {
+                                List<WhitelistEvent> events = DonationRequests.get().getUnprocessedEvents();
+                                ctx.getSource().sendSuccess(() -> Component.literal(events.toString()), true);
+                            } catch (Exception e) {
+                                return 0;
+                            }
+                            return Command.SINGLE_SUCCESS;
+                        }))
+                        .then(literal("test").then(literal("whitelist").executes(ctx -> {
+                            DonationRequests.get().fakeWhitelist();
+                            return Command.SINGLE_SUCCESS;
+                        })).then(literal("blacklist").executes(ctx -> {
+                            DonationRequests.get().fakeBlacklist();
+                            return Command.SINGLE_SUCCESS;
+                        })))
+                        .then(literal("monument")
+                                .then(literal("add")
+                                        .then(argument("id", word())
+                                                .then(argument("monument", monumentConfig(buildContext))
+                                                        .executes(context -> addMonument(context, getString(context, "id"), getMonumentConfig(context, "monument")))
+                                                )
+                                        )
+                                )
+                                .then(literal("update")
+                                        .then(argument("id", word()).suggests(suggestMonuments())
+                                                .then(argument("monument", monumentConfig(buildContext))
+                                                        .executes(context -> updateMonument(context, getString(context, "id"), getMonumentConfig(context, "monument")))
+                                                )
+                                        )
+                                )
+                                .then(literal("remove")
+                                        .then(argument("id", word()).suggests(suggestMonuments())
+                                                .executes(ctx -> removeMonument(ctx, getString(ctx, "id")))
+                                        )
+                                )
+                        )
         );
     }
 

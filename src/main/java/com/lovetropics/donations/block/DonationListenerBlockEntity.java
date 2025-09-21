@@ -17,68 +17,68 @@ public class DonationListenerBlockEntity extends BlockEntity {
 
     @Nullable
     private DonationListener activeListener;
-	private double threshold;
+    private double threshold;
     private double upperThreshold = DEFAULT_UPPER_THRESHOLD;
 
-	private int queued = 0;
+    private int queued = 0;
     private int randomOffset = 0;
 
-	public int getQueued() {
-		return queued;
-	}
+    public int getQueued() {
+        return queued;
+    }
 
-	public void setQueued(int queued) {
-		this.queued = queued;
-	}
+    public void setQueued(int queued) {
+        this.queued = queued;
+    }
 
-	public int getRandomOffset() {
-		return randomOffset;
-	}
+    public int getRandomOffset() {
+        return randomOffset;
+    }
 
-	public void setRandomOffset(int randomOffset) {
-		this.randomOffset = randomOffset;
-	}
+    public void setRandomOffset(int randomOffset) {
+        this.randomOffset = randomOffset;
+    }
 
-	public DonationListenerBlockEntity(BlockEntityType<? extends DonationListenerBlockEntity> type, BlockPos pos, BlockState state) {
-		super(type, pos, state);
-	}
+    public DonationListenerBlockEntity(BlockEntityType<? extends DonationListenerBlockEntity> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
 
-	@Override
-	public void setLevel(final Level level) {
-		super.setLevel(level);
-		randomOffset = level.random.nextInt(20);
-	}
+    @Override
+    public void setLevel(final Level level) {
+        super.setLevel(level);
+        randomOffset = level.random.nextInt(20);
+    }
 
-	public void monitorListener() {
-		if (this.activeListener == null) {
-			DonationListener listener = (server, details) -> this.triggerDonation(details.amount());
-			DonationListeners.register(listener);
-			this.activeListener = listener;
-		}
-	}
+    public void monitorListener() {
+        if (this.activeListener == null) {
+            DonationListener listener = (server, details) -> this.triggerDonation(details.amount());
+            DonationListeners.register(listener);
+            this.activeListener = listener;
+        }
+    }
 
-	@Override
-	public void setRemoved() {
-	    super.setRemoved();
-		unregisterListener();
-	}
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        unregisterListener();
+    }
 
-	@Override
-	public void onChunkUnloaded() {
-		super.onChunkUnloaded();
-		unregisterListener();
-	}
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        unregisterListener();
+    }
 
-	private void unregisterListener() {
-		DonationListeners.unregister(activeListener);
-		activeListener = null;
-	}
+    private void unregisterListener() {
+        DonationListeners.unregister(activeListener);
+        activeListener = null;
+    }
 
-	@SuppressWarnings("deprecation")
+    @SuppressWarnings("deprecation")
     public void triggerDonation(double amount) {
-		if (amount < threshold || amount > upperThreshold) {
-			return;
-		}
+        if (amount < threshold || amount > upperThreshold) {
+            return;
+        }
         if (level.hasChunkAt(getBlockPos())) {
             queued++;
             setChanged();
@@ -91,7 +91,7 @@ public class DonationListenerBlockEntity extends BlockEntity {
         queued = input.getIntOr("queuedDonations", 0);
         threshold = input.getDoubleOr("threshold", 0.0);
         upperThreshold = input.getDoubleOr("upperThreshold", DEFAULT_UPPER_THRESHOLD);
-	}
+    }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
@@ -100,6 +100,6 @@ public class DonationListenerBlockEntity extends BlockEntity {
         output.putDouble("threshold", threshold);
         if (upperThreshold != DEFAULT_UPPER_THRESHOLD) {
             output.putDouble("upper_threshold", upperThreshold);
-		}
-	}
+        }
+    }
 }

@@ -33,9 +33,9 @@ public class LayeredMonument implements Monument {
 
     protected LayeredMonument(ServerLevel level, List<Layer> layers, DonationGroup group, double dollarsPerLayer, boolean announceLayer, MonumentData data) {
         this.level = level;
-		this.group = group;
-		this.dollarsPerLayer = dollarsPerLayer;
-		this.announceLayer = announceLayer;
+        this.group = group;
+        this.dollarsPerLayer = dollarsPerLayer;
+        this.announceLayer = announceLayer;
         this.layers = layers;
         this.data = data;
     }
@@ -84,7 +84,7 @@ public class LayeredMonument implements Monument {
 
     private void place(Cursor cursor, boolean effects) {
         Layer layer = getLayer(cursor.layer);
-		BlockPos pos = BlockPos.of(layer.blocks.getLong(cursor.blockInLayer));
+        BlockPos pos = BlockPos.of(layer.blocks.getLong(cursor.blockInLayer));
         level.setBlock(pos, getBlockStateForLayer(cursor, layer), Block.UPDATE_ALL);
         if (effects) {
             MonumentEffects.spawnParticles(level, pos);

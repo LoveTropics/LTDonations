@@ -4,7 +4,6 @@ import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
 import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 
 public enum DonationLangKeys {
     COMMAND_SIMULATE_DONATION("command", "donation.simulate", "Simulating donation for name %s and amount %s"),
@@ -20,8 +19,7 @@ public enum DonationLangKeys {
     TEAM_CENTS("donation_group", "team_cents", "Team Cents"),
     TEAM_NO_CENTS("donation_group", "team_no_cents", "Team No Cents"),
     TEAM_NICE("donation_group", "team_nice", "Team Nice"),
-    TIME_MINUTES("time", "minutes", "%s minutes")
-    ;
+    TIME_MINUTES("time", "minutes", "%s minutes");
 
     private final String key;
     private final String value;

@@ -18,10 +18,10 @@ public class DonationListeners {
         STATE_LISTENERS.add(new DonationScoreboard());
 
         LISTENERS.add((server, details) -> {
-			for (DonationTriggerHolder holder : DonationTriggerConfigs.REGISTRY) {
-				holder.trigger().handleDonation(server, details);
-			}
-		});
+            for (DonationTriggerHolder holder : DonationTriggerConfigs.REGISTRY) {
+                holder.trigger().handleDonation(server, details);
+            }
+        });
     }
 
     private static void announceDonation(final MinecraftServer server, final DonationListener.Details details) {

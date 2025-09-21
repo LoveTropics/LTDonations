@@ -1,11 +1,8 @@
 package com.lovetropics.donations.block;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -14,64 +11,63 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
 
-	private int countdown = 0;
-	private int pulseLengthIndex = 19;
-	private int pulseLengths[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400};
+    private int countdown = 0;
+    private int pulseLengthIndex = 19;
+    private int pulseLengths[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380, 400};
 
-	public DonationRedstoneBlockEntity(BlockEntityType<? extends DonationRedstoneBlockEntity> type, BlockPos pos, BlockState state) {
-		super(type, pos, state);
-	}
+    public DonationRedstoneBlockEntity(BlockEntityType<? extends DonationRedstoneBlockEntity> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
 
-	@Override
-	public void setLevel(final Level level) {
-		super.setLevel(level);
-		setRandomOffset(0);
-	}
+    @Override
+    public void setLevel(final Level level) {
+        super.setLevel(level);
+        setRandomOffset(0);
+    }
 
-	public static void tick(Level level, BlockPos pos, BlockState state, DonationRedstoneBlockEntity entity) {
-		if (!level.isClientSide) {
-			entity.monitorListener();
+    public static void tick(Level level, BlockPos pos, BlockState state, DonationRedstoneBlockEntity entity) {
+        if (!level.isClientSide) {
+            entity.monitorListener();
 
-			if (entity.countdown > 0) {
-				entity.countdown--;
+            if (entity.countdown > 0) {
+                entity.countdown--;
 
-				if (entity.countdown == 0) {
-					entity.setPoweredState(false);
-				}
-			}
+                if (entity.countdown == 0) {
+                    entity.setPoweredState(false);
+                }
+            }
 
-			if (entity.getQueued() > 0 && (entity.getRandomOffset() == 0 || level.getGameTime() % 20 == entity.getRandomOffset()) && entity.countdown <= 0) {
-				entity.setPoweredState(true);
-				entity.countdown = entity.pulseLengths[entity.pulseLengthIndex];
-				entity.setQueued(entity.getQueued()-1);
-				entity.setChanged();
-			}
-		}
-	}
+            if (entity.getQueued() > 0 && (entity.getRandomOffset() == 0 || level.getGameTime() % 20 == entity.getRandomOffset()) && entity.countdown <= 0) {
+                entity.setPoweredState(true);
+                entity.countdown = entity.pulseLengths[entity.pulseLengthIndex];
+                entity.setQueued(entity.getQueued() - 1);
+                entity.setChanged();
+            }
+        }
+    }
 
-	public void setPoweredState(boolean state) {
-		BlockState blockState = level.getBlockState(this.getBlockPos());
-		if (blockState.getBlock() instanceof DonationRedstoneBlock) {
-			((DonationRedstoneBlock) blockState.getBlock()).setPoweredState(this.getBlockState(), level, this.getBlockPos(), state);
+    public void setPoweredState(boolean state) {
+        BlockState blockState = level.getBlockState(this.getBlockPos());
+        if (blockState.getBlock() instanceof DonationRedstoneBlock) {
+            ((DonationRedstoneBlock) blockState.getBlock()).setPoweredState(this.getBlockState(), level, this.getBlockPos(), state);
+        }
+    }
 
-		}
-	}
+    public void pulseLengthUp(ServerPlayer player) {
+        pulseLengthIndex++;
+        if (pulseLengthIndex >= pulseLengths.length) {
+            pulseLengthIndex = 0;
+        }
+        player.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
+    }
 
-	public void pulseLengthUp(ServerPlayer player) {
-		pulseLengthIndex++;
-		if (pulseLengthIndex >= pulseLengths.length) {
-			pulseLengthIndex = 0;
-		}
-		player.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
-	}
-
-	public void pulseLengthDown(ServerPlayer player) {
-		pulseLengthIndex--;
-		if (pulseLengthIndex < 0) {
-			pulseLengthIndex = pulseLengths.length-1;
-		}
-		player.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
-	}
+    public void pulseLengthDown(ServerPlayer player) {
+        pulseLengthIndex--;
+        if (pulseLengthIndex < 0) {
+            pulseLengthIndex = pulseLengths.length - 1;
+        }
+        player.sendSystemMessage(Component.literal("Set pulse length to " + pulseLengths[pulseLengthIndex]));
+    }
 
     @Override
     protected void loadAdditional(ValueInput input) {
@@ -82,6 +78,6 @@ public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
-		output.putInt("pulseLengthIndex", this.pulseLengthIndex);
-	}
+        output.putInt("pulseLengthIndex", this.pulseLengthIndex);
+    }
 }

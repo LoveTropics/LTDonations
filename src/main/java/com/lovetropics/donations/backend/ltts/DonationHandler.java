@@ -56,14 +56,14 @@ public class DonationHandler {
             if (donation != null) {
                 DonationState oldState = DonationState.copyOf(STATE);
                 applyFullState(server, donation.fullState(), false);
-				DonationListeners.triggerDonation(server, new DonationListener.Details(
-						donation.amount(),
-						donation.getNameShown(),
-						null,
-						donation.donorTotal(),
-						oldState,
-						STATE
-				));
+                DonationListeners.triggerDonation(server, new DonationListener.Details(
+                        donation.amount(),
+                        donation.getNameShown(),
+                        null,
+                        donation.donorTotal(),
+                        oldState,
+                        STATE
+                ));
                 nextDonationPollTick = tick + TICKS_BEFORE_POLL;
             }
         }
@@ -140,7 +140,8 @@ public class DonationHandler {
             if (!Strings.isNullOrEmpty(state.latestTeam())) {
                 leadingTeam = switch (state.latestTeam().toLowerCase(Locale.ROOT)) {
                     case "team_cents" -> new LeadingTeam(DonationGroup.TEAM_CENTS, state.teamLeadChangeTimestamp());
-                    case "team_no_cents" -> new LeadingTeam(DonationGroup.TEAM_NO_CENTS, state.teamLeadChangeTimestamp());
+                    case "team_no_cents" ->
+                            new LeadingTeam(DonationGroup.TEAM_NO_CENTS, state.teamLeadChangeTimestamp());
                     default -> leadingTeam;
                 };
             } else {

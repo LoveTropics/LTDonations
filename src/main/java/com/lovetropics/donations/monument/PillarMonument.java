@@ -29,7 +29,13 @@ import net.neoforged.neoforge.common.Tags;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class PillarMonument implements Monument {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -58,7 +64,9 @@ public class PillarMonument implements Monument {
         allPositions.sort(Comparator.<BlockPos>comparingDouble(p -> Math.max(Math.abs(p.getX()), Math.abs(p.getZ()))) // Sort by "shell"
                 // Then by angle
                 .thenComparingDouble(p -> {
-                    if (p.equals(BlockPos.ZERO)) return -1;
+                    if (p.equals(BlockPos.ZERO)) {
+                        return -1;
+                    }
 
                     final Vec3 v1 = Vec3.atLowerCornerOf(p);
                     final Vec3 v2 = new Vec3(-1.0, 0.0, 0.0);
@@ -69,7 +77,9 @@ public class PillarMonument implements Monument {
                     double angle = Math.atan2(cross.length(), dot);
 
                     final double test = new Vec3(0.0, 1.0, .0).dot(cross);
-                    if (test < 0.0) angle = -angle + (Math.PI * 2);
+                    if (test < 0.0) {
+                        angle = -angle + (Math.PI * 2);
+                    }
                     return angle;
                 }));
 
@@ -240,7 +250,7 @@ public class PillarMonument implements Monument {
         public Monument create(final MinecraftServer server) {
             final ServerLevel level = server.getLevel(pos.dimension());
             if (level == null) {
-				LOGGER.warn("Could not find dimension : {}", pos.dimension().location());
+                LOGGER.warn("Could not find dimension : {}", pos.dimension().location());
                 return null;
             }
             final BlockPos origin = pos.pos();

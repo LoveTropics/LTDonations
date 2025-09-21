@@ -74,7 +74,7 @@ public class DonationConfigs {
         }
 
         public UUID[] getTopDonorUuids() {
-            if(this.active.get()) {
+            if (this.active.get()) {
                 List<? extends String> uuidStrings = this.topDonorUuidsConfig.get();
                 List<UUID> uuids = new ArrayList<>(uuidStrings.size());
                 for (String string : uuidStrings) {
@@ -94,15 +94,15 @@ public class DonationConfigs {
     public static final ModConfigSpec COMMON_CONFIG = COMMON_BUILDER.build();
 
     @SubscribeEvent
-	public static void configLoad(ModConfigEvent.Loading event) {
-		parseConfigs();
-	}
+    public static void configLoad(ModConfigEvent.Loading event) {
+        parseConfigs();
+    }
 
-	@SubscribeEvent
-	public static void configReload(ModConfigEvent.Reloading event) {
-		parseConfigs();
-	}
+    @SubscribeEvent
+    public static void configReload(ModConfigEvent.Reloading event) {
+        parseConfigs();
+    }
 
-	public static void parseConfigs() {
-	}
+    public static void parseConfigs() {
+    }
 }
