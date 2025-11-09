@@ -1,9 +1,9 @@
 package com.lovetropics.donations.backend.ltts.json;
 
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.util.ExtraCodecs;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -24,7 +24,7 @@ public record Donation(
             Codec.DOUBLE.fieldOf("amount").forGetter(Donation::amount),
             Codec.DOUBLE.optionalFieldOf("donor_total", 0.0).forGetter(Donation::donorTotal),
             Codec.STRING.optionalFieldOf("comments", "").forGetter(Donation::comments),
-            MoreCodecs.TIME_CODEC.optionalFieldOf("payment_time", Instant.EPOCH).forGetter(Donation::paymentTime),
+            ExtraCodecs.INSTANT_ISO8601.optionalFieldOf("payment_time", Instant.EPOCH).forGetter(Donation::paymentTime),
             Codec.BOOL.optionalFieldOf("anonymous", true).forGetter(Donation::anonymous),
             FullDonationState.MAP_CODEC.forGetter(Donation::fullState)
     ).apply(i, Donation::new));

@@ -6,6 +6,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.ExtraCodecs;
 
 import java.time.Instant;
 
@@ -42,7 +43,7 @@ public record FullDonationState(
             STRINGIFIED_DOUBLE.optionalFieldOf("team_no_cents_total", 0.0).forGetter(FullDonationState::teamNoCentsTotal),
             Codec.LONG.optionalFieldOf("team_cents_lead_time", 0L).forGetter(FullDonationState::teamCentsLeadTime),
             Codec.LONG.optionalFieldOf("team_no_cents_lead_time", 0L).forGetter(FullDonationState::teamNoCentsLeadTime),
-            MoreCodecs.TIME_CODEC.optionalFieldOf("team_lead_change_timestamp", Instant.EPOCH).forGetter(FullDonationState::teamLeadChangeTimestamp),
+            ExtraCodecs.INSTANT_ISO8601.optionalFieldOf("team_lead_change_timestamp", Instant.EPOCH).forGetter(FullDonationState::teamLeadChangeTimestamp),
             Codec.STRING.optionalFieldOf("latest_team", "").forGetter(FullDonationState::latestTeam)
     ).apply(i, FullDonationState::new));
 
