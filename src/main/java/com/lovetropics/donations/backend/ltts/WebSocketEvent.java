@@ -20,10 +20,14 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -33,6 +37,7 @@ public class WebSocketEvent<T> {
     private static final Gson GSON = new Gson();
 
     private static final Map<String, WebSocketEvent<?>> EVENTS = new HashMap<>();
+    private static final Set<String> SUBSCRIPTIONS = new HashSet<>();
 
     public static final WebSocketEvent<Donation> DONATION = register("donation", Donation.CODEC)
             .on(EventAction.create, DonationHandler::queueDonation);
@@ -67,6 +72,9 @@ public class WebSocketEvent<T> {
     private static <T> WebSocketEvent<T> register(String key, Codec<T> type) {
         WebSocketEvent<T> ret = new WebSocketEvent<>(type);
         EVENTS.put(key, ret);
+        for (EventAction crud : EventAction.values()) {
+            SUBSCRIPTIONS.add(crud.name() + "_" + key);
+        }
         return ret;
     }
 
@@ -107,5 +115,9 @@ public class WebSocketEvent<T> {
         if (event != null) {
             event.act(data.crud, data.payload);
         }
+    }
+
+    public static Collection<String> subscriptions() {
+        return Collections.unmodifiableCollection(SUBSCRIPTIONS);
     }
 }

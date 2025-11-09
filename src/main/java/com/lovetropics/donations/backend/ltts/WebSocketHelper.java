@@ -3,6 +3,7 @@ package com.lovetropics.donations.backend.ltts;
 import com.google.gson.JsonObject;
 import com.lovetropics.donations.DonationConfigs;
 import com.lovetropics.lib.backend.BackendConnection;
+import com.lovetropics.lib.backend.BackendConnectionConfig;
 import com.lovetropics.lib.backend.BackendProxy;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
@@ -10,7 +11,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.function.Supplier;
 
 public class WebSocketHelper {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -18,17 +18,7 @@ public class WebSocketHelper {
     private final BackendProxy proxy;
 
     public WebSocketHelper(final Runnable onOpen) {
-        final Supplier<URI> address = () -> {
-            if (DonationConfigs.TECH_STACK.shouldConnect()) {
-                try {
-                    return new URI(DonationConfigs.TECH_STACK.websocketUrl.get());
-                } catch (final URISyntaxException ignored) {
-                }
-            }
-            return null;
-        };
-
-        proxy = new BackendProxy(address, new BackendConnection.Handler() {
+        proxy = new BackendProxy(new BackendConnection.Handler() {
             @Override
             public void acceptOpened() {
                 onOpen.run();
@@ -51,7 +41,29 @@ public class WebSocketHelper {
         });
     }
 
+    @Nullable
+    private static BackendConnectionConfig connectionConfig() {
+        DonationConfigs.CategoryTechStack techStack = DonationConfigs.TECH_STACK;
+        if (!techStack.shouldConnect()) {
+            return null;
+        }
+
+        try {
+            BackendConnectionConfig config = BackendConnectionConfig.of(new URI(techStack.websocketUrl.get()));
+            String token = techStack.authKey.get();
+            if (!token.isBlank()) {
+                config = config.withToken(token);
+            }
+            return config.withSubscriptions(WebSocketEvent.subscriptions());
+        } catch (URISyntaxException e) {
+            LOGGER.warn("Malformed URI", e);
+        }
+
+        return null;
+    }
+
     public void tick() {
+        proxy.connectWith(connectionConfig());
         proxy.tick();
     }
 }
