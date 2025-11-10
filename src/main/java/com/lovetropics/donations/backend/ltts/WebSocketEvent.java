@@ -1,14 +1,10 @@
 package com.lovetropics.donations.backend.ltts;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 import com.lovetropics.donations.backend.ltts.json.Donation;
-import com.lovetropics.donations.backend.ltts.json.EventAction;
-import com.lovetropics.donations.backend.ltts.json.WebSocketEventData;
 import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
+import com.lovetropics.lib.techstack.Crud;
+import com.lovetropics.lib.techstack.TechstackEventSubscriber;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.CommonComponents;
@@ -20,31 +16,22 @@ import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class WebSocketEvent<T> {
-
-    private static final Gson GSON = new Gson();
-
     private static final Map<String, WebSocketEvent<?>> EVENTS = new HashMap<>();
-    private static final Set<String> SUBSCRIPTIONS = new HashSet<>();
 
     public static final WebSocketEvent<Donation> DONATION = register("donation", Donation.CODEC)
-            .on(EventAction.create, DonationHandler::queueDonation);
+            .on(Crud.CREATE, DonationHandler::queueDonation);
 
     private static final Function<MinecraftServer, CommandSourceStack> DUMMY_SOURCE = server -> new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, server.getLevel(Level.OVERWORLD), 2, "DumbCodeFix", CommonComponents.EMPTY, server, null);
     public static final WebSocketEvent<WhitelistEvent> WHITELIST = register("whitelist", WhitelistEvent.CODEC)
-            .on(EventAction.create, e -> {
+            .on(Crud.CREATE, e -> {
                 if (!e.name().matches("[a-zA-z0-9_]+")) {
                     System.out.println("YEET: " + e.name());
                     return;
@@ -72,35 +59,24 @@ public class WebSocketEvent<T> {
     private static <T> WebSocketEvent<T> register(String key, Codec<T> type) {
         WebSocketEvent<T> ret = new WebSocketEvent<>(type);
         EVENTS.put(key, ret);
-        for (EventAction crud : EventAction.values()) {
-            SUBSCRIPTIONS.add(crud.name() + "_" + key);
-        }
         return ret;
     }
 
     private final Codec<T> codec;
-    private final EnumMap<EventAction, Consumer<T>> actions = new EnumMap<>(EventAction.class);
+    private final EnumMap<Crud, Consumer<T>> actions = new EnumMap<>(Crud.class);
 
     private WebSocketEvent(Codec<T> codec) {
         this.codec = codec;
     }
 
-    private WebSocketEvent<T> on(EventAction action, Consumer<T> callback) {
+    private WebSocketEvent<T> on(Crud action, Consumer<T> callback) {
         if (this.actions.putIfAbsent(action, callback) != null) {
             throw new IllegalArgumentException("Cannot add duplicate event action handler for " + action + " on event " + codec);
         }
         return this;
     }
 
-    private T parse(JsonObject payload) throws JsonSyntaxException {
-        return codec.parse(JsonOps.INSTANCE, payload).getOrThrow(JsonSyntaxException::new);
-    }
-
-    private void act(EventAction action, JsonObject payload) {
-        act(action, parse(payload));
-    }
-
-    public void act(EventAction action, T payload) {
+    public void act(Crud action, T payload) {
         Consumer<T> callback = actions.get(action);
         if (callback == null) {
             throw new IllegalArgumentException("Unhandled event action " + action + " on event " + codec);
@@ -108,16 +84,15 @@ public class WebSocketEvent<T> {
         callback.accept(payload);
     }
 
-    public static void handleEvent(JsonObject json) {
-        WebSocketEventData data = GSON.fromJson(json, WebSocketEventData.class);
-        WebSocketEvent<?> event = EVENTS.get(data.type.toLowerCase(Locale.ROOT));
-        // Discard unknown events
-        if (event != null) {
-            event.act(data.crud, data.payload);
-        }
+    public static void addSubscribersTo(TechstackEventSubscriber.Builder subscriber) {
+        EVENTS.forEach((id, event) -> {
+            addSubscribersTo(subscriber, id, event);
+        });
     }
 
-    public static Collection<String> subscriptions() {
-        return Collections.unmodifiableCollection(SUBSCRIPTIONS);
+    private static <T> void addSubscribersTo(TechstackEventSubscriber.Builder subscriber, String id, WebSocketEvent<T> event) {
+        event.actions.forEach((crud, handler) ->
+                subscriber.subscribe(crud, id, event.codec, handler)
+        );
     }
 }

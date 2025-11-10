@@ -95,14 +95,19 @@ public class DonationConfigs {
 
     @SubscribeEvent
     public static void configLoad(ModConfigEvent.Loading event) {
-        parseConfigs();
+        if (event.getConfig().getSpec() == COMMON_CONFIG) {
+            onCommonConfigLoad();
+        }
     }
 
     @SubscribeEvent
     public static void configReload(ModConfigEvent.Reloading event) {
-        parseConfigs();
+        if (event.getConfig().getSpec() == COMMON_CONFIG) {
+            onCommonConfigLoad();
+        }
     }
 
-    public static void parseConfigs() {
+    public static void onCommonConfigLoad() {
+        LTDonations.websocket().updateConfig(TECH_STACK.websocketUrl.get(), TECH_STACK.authKey.get());
     }
 }

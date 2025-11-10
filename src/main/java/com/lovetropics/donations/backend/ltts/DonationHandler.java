@@ -8,10 +8,10 @@ import com.lovetropics.donations.DonationListeners;
 import com.lovetropics.donations.DonationState;
 import com.lovetropics.donations.LTDonations;
 import com.lovetropics.donations.backend.ltts.json.Donation;
-import com.lovetropics.donations.backend.ltts.json.EventAction;
 import com.lovetropics.donations.backend.ltts.json.FullDonationState;
 import com.lovetropics.donations.monument.MonumentManager;
 import com.lovetropics.donations.top_donor.TopDonorManager;
+import com.lovetropics.lib.techstack.Crud;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -49,8 +49,6 @@ public class DonationHandler {
         final MinecraftServer server = event.getServer();
         final int tick = server.getTickCount();
 
-        LTDonations.websocket().tick();
-
         if (tick >= nextDonationPollTick) {
             final Donation donation = DONATION_QUEUE.poll();
             if (donation != null) {
@@ -80,14 +78,14 @@ public class DonationHandler {
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
         if (tick % (SharedConstants.TICKS_PER_MINUTE * 5) == 0) {
             CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
-                    .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
+                    .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(Crud.CREATE, e)), server);
         }
     }
 
     public static void fetchFullState(final MinecraftServer server, final boolean initial) {
         final DonationRequests startupRequests = DonationRequests.get();
         CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
-                .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(EventAction.create, e)), server);
+                .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(Crud.CREATE, e)), server);
         CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
                 .thenAcceptAsync(total -> applyFullState(server, total, initial), server);
     }
