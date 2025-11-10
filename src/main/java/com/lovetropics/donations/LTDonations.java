@@ -78,14 +78,16 @@ public class LTDonations {
             // Note: there's still a potential race condition here where we receive the total with outdated information as an event comes in at the same time
             DonationHandler.fetchFullState(server, false);
         });
+        websocket.updateConfig(DonationConfigs.TECH_STACK.websocketUrl.get(), DonationConfigs.TECH_STACK.authKey.get());
     }
 
     private void serverStoppingEvent(final ServerStoppingEvent event) {
         DonationHandler.close(event.getServer());
     }
 
+    @Nullable
     public static WebSocketHelper websocket() {
-        return Objects.requireNonNull(websocket, "Websocket has not been initialized");
+        return websocket;
     }
 
     public static DonationState state() {

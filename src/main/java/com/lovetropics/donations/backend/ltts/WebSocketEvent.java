@@ -5,6 +5,7 @@ import com.lovetropics.donations.backend.ltts.json.WhitelistEvent;
 import com.lovetropics.lib.techstack.Crud;
 import com.lovetropics.lib.techstack.TechstackEventSubscriber;
 import com.mojang.serialization.Codec;
+import net.minecraft.Util;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.CommonComponents;
@@ -37,7 +38,7 @@ public class WebSocketEvent<T> {
                     return;
                 }
                 MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-                CompletableFuture.supplyAsync(() -> server.getProfileCache().get(e.name()))
+                CompletableFuture.supplyAsync(() -> server.getProfileCache().get(e.name()), Util.backgroundExecutor())
                         .thenAcceptAsync(profile -> {
                             if (profile.isEmpty()) {
                                 return;
@@ -53,7 +54,7 @@ public class WebSocketEvent<T> {
                                 server.kickUnlistedPlayers(DUMMY_SOURCE.apply(server));
                             }
                         }, server)
-                        .thenRunAsync(() -> DonationRequests.get().ackWhitelist(e.name(), e.type()));
+                        .thenRunAsync(() -> DonationRequests.get().ackWhitelist(e.name(), e.type()), Util.ioPool());
             });
 
     private static <T> WebSocketEvent<T> register(String key, Codec<T> type) {

@@ -1,5 +1,6 @@
 package com.lovetropics.donations;
 
+import com.lovetropics.donations.backend.ltts.WebSocketHelper;
 import net.minecraft.util.StringUtil;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -108,6 +109,9 @@ public class DonationConfigs {
     }
 
     public static void onCommonConfigLoad() {
-        LTDonations.websocket().updateConfig(TECH_STACK.websocketUrl.get(), TECH_STACK.authKey.get());
+        WebSocketHelper websocket = LTDonations.websocket();
+        if (websocket != null) {
+            websocket.updateConfig(TECH_STACK.websocketUrl.get(), TECH_STACK.authKey.get());
+        }
     }
 }
