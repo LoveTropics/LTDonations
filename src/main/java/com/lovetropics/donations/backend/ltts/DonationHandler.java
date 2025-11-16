@@ -13,6 +13,7 @@ import com.lovetropics.donations.monument.MonumentManager;
 import com.lovetropics.donations.top_donor.TopDonorManager;
 import com.lovetropics.lib.techstack.Crud;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -77,16 +78,16 @@ public class DonationHandler {
 
         // FIXME TEMP ASK FOR MISSED WHITELISTS EVERY 5 MINUTES
         if (tick % (SharedConstants.TICKS_PER_MINUTE * 5) == 0) {
-            CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents())
+            CompletableFuture.supplyAsync(() -> DonationRequests.get().getUnprocessedEvents(), Util.nonCriticalIoPool())
                     .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(Crud.CREATE, e)), server);
         }
     }
 
     public static void fetchFullState(final MinecraftServer server, final boolean initial) {
         final DonationRequests startupRequests = DonationRequests.get();
-        CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents)
+        CompletableFuture.supplyAsync(startupRequests::getUnprocessedEvents, Util.nonCriticalIoPool())
                 .thenAcceptAsync(events -> events.forEach(e -> WebSocketEvent.WHITELIST.act(Crud.CREATE, e)), server);
-        CompletableFuture.supplyAsync(startupRequests::getTotalDonations)
+        CompletableFuture.supplyAsync(startupRequests::getTotalDonations, Util.nonCriticalIoPool())
                 .thenAcceptAsync(total -> applyFullState(server, total, initial), server);
     }
 

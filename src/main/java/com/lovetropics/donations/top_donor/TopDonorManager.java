@@ -44,7 +44,7 @@ public final class TopDonorManager {
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
 
-        CompletableFuture.supplyAsync(() -> DonationRequests.get().getTopDonors(topDonorUuids.length))
+        CompletableFuture.supplyAsync(() -> DonationRequests.get().getTopDonors(topDonorUuids.length), Util.nonCriticalIoPool())
                 .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer());
     }
 
