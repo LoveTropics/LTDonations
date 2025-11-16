@@ -19,8 +19,23 @@ public class DonationConfigs {
 
     private static final Builder COMMON_BUILDER = new Builder();
 
+    public static final CategoryWhitelist WHITELIST = new CategoryWhitelist();
     public static final CategoryTechStack TECH_STACK = new CategoryTechStack();
     public static final CategoryTopDonors TOP_DONORS = new CategoryTopDonors();
+
+    public static final class CategoryWhitelist {
+        public final ConfigValue<String> role;
+
+        private CategoryWhitelist() {
+            COMMON_BUILDER.comment("Whitelist behavior").push("whitelist");
+
+            role = COMMON_BUILDER
+                    .comment("Role to add to players who have donated and should be whitelisted")
+                    .define("role", "");
+
+            COMMON_BUILDER.pop();
+        }
+    }
 
     public static final class CategoryTechStack {
         public final ConfigValue<String> authKey;
