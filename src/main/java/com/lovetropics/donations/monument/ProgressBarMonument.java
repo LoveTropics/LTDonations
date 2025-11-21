@@ -38,10 +38,11 @@ public class ProgressBarMonument implements Monument {
 
     private final int length;
     private final Direction.Axis axis;
+    private final Direction.AxisDirection axisDirection;
 
     private int lastFilledBlocks = -1;
 
-    protected ProgressBarMonument(ServerLevel level, BlockBox box, List<BlockState> blocks, BlockState emptyBlock, DonationGroup group, double dollarsInBar, MonumentData data) {
+    protected ProgressBarMonument(ServerLevel level, BlockBox box, Direction direction, List<BlockState> blocks, BlockState emptyBlock, DonationGroup group, double dollarsInBar, MonumentData data) {
         this.level = level;
         this.box = box;
         this.blocks = blocks;
@@ -50,9 +51,9 @@ public class ProgressBarMonument implements Monument {
         this.dollarsInBar = dollarsInBar;
         this.data = data;
 
-        BlockPos size = box.size();
-        axis = size.getX() > size.getZ() ? Direction.Axis.X : Direction.Axis.Z;
-        length = size.get(axis);
+        axis = direction.getAxis();
+        axisDirection = direction.getAxisDirection();
+        length = box.size().get(axis);
     }
 
     @Override
@@ -67,7 +68,12 @@ public class ProgressBarMonument implements Monument {
             return;
         }
         for (BlockPos pos : box) {
-            int index = pos.get(axis) - box.min().get(axis);
+            int index;
+            if (axisDirection == Direction.AxisDirection.POSITIVE) {
+                index = pos.get(axis) - box.min().get(axis);
+            } else {
+                index = box.max().get(axis) - pos.get(axis);
+            }
             if (index >= filledBlocks) {
                 level.setBlockAndUpdate(pos, emptyBlock);
             } else {
@@ -82,7 +88,7 @@ public class ProgressBarMonument implements Monument {
         return data;
     }
 
-    public record Data(ResourceKey<Level> dimension, BlockBox box, List<BlockState> blocks, BlockState emptyBlock, DonationGroup donationGroup, double dollarsInBar) implements MonumentData {
+    public record Data(ResourceKey<Level> dimension, BlockBox box, List<BlockState> blocks, BlockState emptyBlock, DonationGroup donationGroup, double dollarsInBar, Direction direction) implements MonumentData {
         private static final List<BlockState> DEFAULT_BLOCKS = Stream.of(
                 Blocks.RED_CONCRETE_POWDER,
                 Blocks.ORANGE_CONCRETE_POWDER,
@@ -99,7 +105,9 @@ public class ProgressBarMonument implements Monument {
                 ExtraCodecs.nonEmptyList(MoreCodecs.BLOCK_STATE.listOf()).optionalFieldOf("blocks", DEFAULT_BLOCKS).forGetter(Data::blocks),
                 MoreCodecs.BLOCK_STATE.optionalFieldOf("empty_block", Blocks.BLACK_CONCRETE.defaultBlockState()).forGetter(Data::emptyBlock),
                 DonationGroup.CODEC.optionalFieldOf("donation_group", DonationGroup.ALL).forGetter(Data::donationGroup),
-                Codec.DOUBLE.optionalFieldOf("dollars_in_bar", 1000.0).forGetter(Data::dollarsInBar)
+                Codec.DOUBLE.optionalFieldOf("dollars_in_bar", 1000.0).forGetter(Data::dollarsInBar),
+                // TODO lol, remove that default
+                Direction.CODEC.fieldOf("direction").orElse(Direction.WEST).forGetter(Data::direction)
         ).apply(i, Data::new));
 
         @Override
@@ -110,7 +118,7 @@ public class ProgressBarMonument implements Monument {
                 LOGGER.warn("Could not find dimension: {}", dimension.location());
                 return null;
             }
-            return new ProgressBarMonument(level, box, blocks, emptyBlock, donationGroup, dollarsInBar, this);
+            return new ProgressBarMonument(level, box, direction, blocks, emptyBlock, donationGroup, dollarsInBar, this);
         }
 
         @Override

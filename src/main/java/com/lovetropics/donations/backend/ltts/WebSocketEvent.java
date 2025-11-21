@@ -66,7 +66,7 @@ public class WebSocketEvent<T> {
                         LOGGER.info("Adding {} role to {} ({})", role, profile.get().getName(), profile.get().getId());
                         PermissionsApi.modifier().addRoleTo(profile.get().getId(), role);
                     } else if (event.type() == WhitelistEvent.Type.BLACKLIST) {
-                        LOGGER.info("Removing {} role to {} ({})", role, profile.get().getName(), profile.get().getId());
+                        LOGGER.info("Removing {} role from {} ({})", role, profile.get().getName(), profile.get().getId());
                         PermissionsApi.modifier().removeRoleFrom(profile.get().getId(), role);
                     }
                     Util.nonCriticalIoPool().execute(() ->

@@ -1,0 +1,20 @@
+{
+  "block.ltdonations.donation": "Spende",
+  "block.ltdonations.donation_goal_redstone": "Spendenlimitzielredstonesender",
+  "block.ltdonations.donation_redstone": "Spendenredstonesender",
+  "command.ltdonations.donation.added_monument": "Ein Monument mit ID '%s' wurde erstellt",
+  "command.ltdonations.donation.monument_already_exists": "Es gibt bereits in Monument mit der ID '%s'",
+  "command.ltdonations.donation.monument_config_invalid": "Die Monument-Konfiguration ist fehlerhaft: %s",
+  "command.ltdonations.donation.monument_does_not_exist": "Es gibt kein Monument mit der ID '%s'",
+  "command.ltdonations.donation.monument_type_unknown": "Es gibt keinen Monument-Typ mit der ID '%s'",
+  "command.ltdonations.donation.removed_monument": "Ein Monument mit der ID '%s' wurde entfernt",
+  "command.ltdonations.donation.simulate": "Spende für Name %s und Wert %s wird simuliert",
+  "command.ltdonations.donation.updated_monument": "Das Monument mit der ID '%s' wurde aktualisiert",
+  "donation_group.ltdonations.all": "Global",
+  "donation_group.ltdonations.team_cents": "Team Cents",
+  "donation_group.ltdonations.team_nice": "Team Nett",
+  "donation_group.ltdonations.team_no_cents": "Team Keine Cents",
+  "itemGroup.ltdonations.ltdonations": "LTDonations",
+  "notification.ltdonations.donation.new": "%s hat %s gespendet!",
+  "time.ltdonations.minutes": "%s Minuten"
+}
