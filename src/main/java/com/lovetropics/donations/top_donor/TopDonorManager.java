@@ -126,10 +126,14 @@ public final class TopDonorManager {
     @Nullable
     private Entity findEntity(UUID entityId) {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server == null) {
+            LOGGER.error("Failed to find server");
+            return null;
+        }
         ServerLevel world = this.getWorld(server);
         Entity entity = world.getEntity(entityId);
         if (entity == null) {
-            LOGGER.error("Failed to find entity: " + entityId);
+            LOGGER.error("Failed to find entity: {}", entityId);
             return null;
         }
         return entity;
@@ -140,7 +144,7 @@ public final class TopDonorManager {
         ResourceKey<Level> dimensionType = ResourceKey.create(Registries.DIMENSION, dimensionId);
         ServerLevel world = server.getLevel(dimensionType);
         if (world == null) {
-            LOGGER.error("Failed to find dimension : " + DonationConfigs.TOP_DONORS.dimension.get());
+            LOGGER.error("Failed to find dimension : {}", DonationConfigs.TOP_DONORS.dimension.get());
             world = server.overworld();
         }
         return world;

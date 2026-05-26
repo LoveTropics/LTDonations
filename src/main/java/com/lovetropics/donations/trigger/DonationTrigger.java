@@ -1,17 +1,17 @@
 package com.lovetropics.donations.trigger;
 
 import com.lovetropics.donations.DonationListener;
-import com.lovetropics.lib.codec.MoreCodecs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ExtraCodecs;
 
 import java.util.List;
 
 public record DonationTrigger(
         List<Entry> entries
 ) implements DonationListener {
-    public static final Codec<DonationTrigger> CODEC = MoreCodecs.listOrUnit(Entry.CODEC).xmap(DonationTrigger::new, DonationTrigger::entries);
+    public static final Codec<DonationTrigger> CODEC = ExtraCodecs.compactListCodec(Entry.CODEC).xmap(DonationTrigger::new, DonationTrigger::entries);
 
     @Override
     public void handleDonation(MinecraftServer server, Details details) {

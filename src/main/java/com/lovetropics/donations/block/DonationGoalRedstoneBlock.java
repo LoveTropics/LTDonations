@@ -105,13 +105,13 @@ public class DonationGoalRedstoneBlock extends Block implements EntityBlock {
     }
 
     public BlockState setPoweredState(BlockState pState, Level pLevel, BlockPos pPos, boolean state) {
-        pLevel.setBlock(pPos, pState.setValue(POWERED, Boolean.valueOf(state)), 3);
+        pLevel.setBlock(pPos, pState.setValue(POWERED, state), 3);
         pLevel.updateNeighborsAt(pPos, this);
         return pState;
     }
 
     public boolean isPowered(BlockState pState, Level pLevel, BlockPos pPos) {
-        return pState.getValue(POWERED).booleanValue();
+        return pState.getValue(POWERED);
     }
 
     public BlockState toggle(BlockState pState, Level pLevel, BlockPos pPos) {

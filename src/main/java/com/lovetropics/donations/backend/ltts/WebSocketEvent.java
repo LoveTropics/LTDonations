@@ -114,9 +114,7 @@ public class WebSocketEvent<T> {
     }
 
     public static void addSubscribersTo(TechstackEventSubscriber.Builder subscriber) {
-        EVENTS.forEach((id, event) -> {
-            addSubscribersTo(subscriber, id, event);
-        });
+        EVENTS.forEach((id, event) -> addSubscribersTo(subscriber, id, event));
     }
 
     private static <T> void addSubscribersTo(TechstackEventSubscriber.Builder subscriber, String id, WebSocketEvent<T> event) {

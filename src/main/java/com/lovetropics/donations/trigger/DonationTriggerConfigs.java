@@ -31,7 +31,7 @@ import java.util.concurrent.Executor;
 public class DonationTriggerConfigs {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final CodecRegistry<Identifier, DonationTriggerHolder> REGISTRY = CodecRegistry.resourceLocationKeys();
+    public static final CodecRegistry<Identifier, DonationTriggerHolder> REGISTRY = CodecRegistry.idKeys();
     private static final FileToIdConverter LISTER = FileToIdConverter.json("donation_trigger");
 
     @SubscribeEvent

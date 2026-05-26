@@ -48,7 +48,7 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
 
     public DonationRedstoneBlock(Properties properties) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.valueOf(false)));
+        this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.FALSE));
     }
 
     @Override
@@ -105,7 +105,7 @@ public class DonationRedstoneBlock extends Block implements EntityBlock {
     }
 
     public BlockState setPoweredState(BlockState pState, Level pLevel, BlockPos pPos, boolean state) {
-        pLevel.setBlock(pPos, pState.setValue(POWERED, Boolean.valueOf(state)), 3);
+        pLevel.setBlock(pPos, pState.setValue(POWERED, state), 3);
         pLevel.updateNeighborsAt(pPos, this);
         return pState;
     }
