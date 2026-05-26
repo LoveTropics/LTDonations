@@ -131,7 +131,7 @@ public class PillarMonument implements Monument {
         final BlockPos second = origin.above(GLASS_SEARCH_VERT).west(GLASS_SEARCH_HORIZ).south(GLASS_SEARCH_HORIZ);
         final Map<ChunkPos, LevelChunk> chunkCache = new HashMap<>();
         BlockPos.betweenClosedStream(first, second).forEach(pos -> {
-            final LevelChunk chunk = chunkCache.computeIfAbsent(new ChunkPos(pos), p -> level.getChunk(p.x, p.z));
+            final LevelChunk chunk = chunkCache.computeIfAbsent(ChunkPos.containing(pos), p -> level.getChunk(p.x(), p.z()));
             if (chunk.getBlockState(pos).is(Tags.Blocks.GLASS_BLOCKS_TINTED)) {
                 nearbyGlass.add(pos.immutable());
             }
@@ -226,7 +226,7 @@ public class PillarMonument implements Monument {
                         .append(Component.literal("LEVEL " + (layer + 1) + "!")
                                 .setStyle(Style.EMPTY.withUnderlined(true))));
 
-        level.players().forEach(p -> p.displayClientMessage(message, false));
+        level.players().forEach(p -> p.sendSystemMessage(message));
         DiscordIntegration.send(message.getString());
     }
 
@@ -250,7 +250,7 @@ public class PillarMonument implements Monument {
         public Monument create(final MinecraftServer server) {
             final ServerLevel level = server.getLevel(pos.dimension());
             if (level == null) {
-                LOGGER.warn("Could not find dimension : {}", pos.dimension().location());
+                LOGGER.warn("Could not find dimension : {}", pos.dimension().identifier());
                 return null;
             }
             final BlockPos origin = pos.pos();

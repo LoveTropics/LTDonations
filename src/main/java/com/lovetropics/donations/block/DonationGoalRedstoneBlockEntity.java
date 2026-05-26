@@ -38,7 +38,7 @@ public class DonationGoalRedstoneBlockEntity extends BlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, DonationGoalRedstoneBlockEntity entity) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
 
             if (entity.getRandomOffset() == 0 || level.getGameTime() % 20 == 0) {
                 if (LTDonations.state().getAmount(DonationGroup.ALL) >= entity.getDonationGoalAmount()) {

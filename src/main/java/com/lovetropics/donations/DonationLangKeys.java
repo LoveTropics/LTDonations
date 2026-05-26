@@ -2,8 +2,8 @@ package com.lovetropics.donations;
 
 import com.tterrag.registrate.Registrate;
 import com.tterrag.registrate.providers.ProviderType;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 
 public enum DonationLangKeys {
     COMMAND_SIMULATE_DONATION("command", "donation.simulate", "Simulating donation for name %s and amount %s"),

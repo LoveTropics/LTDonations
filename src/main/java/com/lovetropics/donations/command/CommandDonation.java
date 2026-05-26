@@ -41,7 +41,7 @@ public class CommandDonation {
 
     public static void register(final CommandDispatcher<CommandSourceStack> dispatcher, final CommandBuildContext buildContext) {
         dispatcher.register(
-                literal("donation").requires(s -> s.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                literal("donation").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                         .then(literal("simulate")
                                 .executes(ctx -> simulate(ctx, "Nigel Winthorpe", 42))
                                 .then(argument("name", string())

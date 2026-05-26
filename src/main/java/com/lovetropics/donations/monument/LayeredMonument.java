@@ -102,7 +102,7 @@ public class LayeredMonument implements Monument {
                         .append(Component.literal("LEVEL " + (layer + 1) + "!")
                                 .setStyle(Style.EMPTY.withUnderlined(true))));
 
-        level.players().forEach(p -> p.displayClientMessage(message, false));
+        level.players().forEach(p -> p.sendSystemMessage(message, false));
         DiscordIntegration.send(message.getString());
     }
 

@@ -1,9 +1,3 @@
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-@FieldsAreNonnullByDefault
+@org.jspecify.annotations.NullMarked
+
 package com.lovetropics.donations.trigger;
-
-import com.mojang.blaze3d.FieldsAreNonnullByDefault;
-import com.mojang.blaze3d.MethodsReturnNonnullByDefault;
-
-import javax.annotation.ParametersAreNonnullByDefault;

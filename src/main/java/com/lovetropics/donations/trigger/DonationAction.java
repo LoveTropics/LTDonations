@@ -6,12 +6,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.Util;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -59,11 +59,11 @@ public interface DonationAction {
     }
 
     record RunFunction(
-            ResourceLocation functionId,
+            Identifier functionId,
             boolean asDonor
     ) implements DonationAction {
         public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-                ResourceLocation.CODEC.fieldOf("function").forGetter(RunFunction::functionId),
+                Identifier.CODEC.fieldOf("function").forGetter(RunFunction::functionId),
                 Codec.BOOL.optionalFieldOf("as_donor", false).forGetter(RunFunction::asDonor)
         ).apply(i, RunFunction::new));
 

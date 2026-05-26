@@ -26,7 +26,7 @@ public class DonationRedstoneBlockEntity extends DonationListenerBlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, DonationRedstoneBlockEntity entity) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             entity.monitorListener();
 
             if (entity.countdown > 0) {

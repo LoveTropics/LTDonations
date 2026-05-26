@@ -15,8 +15,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -59,7 +59,7 @@ public record FlagMonumentData(
         }
 
         private static Block moddedBlock(String namespace, String id) {
-            DeferredHolder<Block, Block> holder = DeferredHolder.create(Registries.BLOCK, ResourceLocation.fromNamespaceAndPath(namespace, id));
+            DeferredHolder<Block, Block> holder = DeferredHolder.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(namespace, id));
             return holder.isBound() ? holder.value() : Blocks.AIR;
         }
 

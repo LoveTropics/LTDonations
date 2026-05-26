@@ -1,6 +1,6 @@
 package com.lovetropics.donations.trigger;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-public record DonationTriggerHolder(ResourceLocation id, DonationTrigger trigger) {
+public record DonationTriggerHolder(Identifier id, DonationTrigger trigger) {
 }

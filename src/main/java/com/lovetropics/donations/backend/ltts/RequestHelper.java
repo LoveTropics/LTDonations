@@ -1,5 +1,6 @@
 package com.lovetropics.donations.backend.ltts;
 
+import com.google.common.net.HttpHeaders;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
@@ -9,8 +10,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.Util;
-import org.apache.http.HttpHeaders;
+import net.minecraft.util.Util;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;

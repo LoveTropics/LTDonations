@@ -1,7 +1,7 @@
 {
   "required": true,
   "package": "com.lovetropics.donations.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_25",
   "refmap": "ltdonations.refmap.json",
   "mixins": [
   ],

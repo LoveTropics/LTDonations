@@ -8,8 +8,8 @@ import com.lovetropics.donations.block.DonationRedstoneBlock;
 import com.lovetropics.donations.command.LTDonationsCommands;
 import com.tterrag.registrate.Registrate;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.fml.ModContainer;
@@ -23,7 +23,6 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 import javax.annotation.Nullable;
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.Objects;
 
 @Mod(LTDonations.MODID)
 public class LTDonations {
@@ -32,7 +31,7 @@ public class LTDonations {
 
     public static final NumberFormat CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(Locale.US);
 
-    private static final ResourceLocation TAB_ID = ResourceLocation.fromNamespaceAndPath(MODID, "ltdonations");
+    private static final Identifier TAB_ID = Identifier.fromNamespaceAndPath(MODID, "ltdonations");
 
     private static final Lazy<Registrate> REGISTRATE = Lazy.of(() -> Registrate.create(MODID));
 
@@ -43,7 +42,7 @@ public class LTDonations {
     public LTDonations(ModContainer container) {
         registrate().generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTDonations"))
-                        .icon(() -> DonationBlock.BLOCK.asStack())
+                        .icon(DonationBlock.BLOCK::asStack)
                         .build()
                 ).build()
                 .defaultCreativeTab(ResourceKey.create(Registries.CREATIVE_MODE_TAB, TAB_ID));
@@ -66,8 +65,8 @@ public class LTDonations {
     @Nullable
     private static WebSocketHelper websocket;
 
-    public static ResourceLocation location(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MODID, path);
+    public static Identifier location(String path) {
+        return Identifier.fromNamespaceAndPath(MODID, path);
     }
 
     private void serverStartingEvent(ServerStartingEvent event) {

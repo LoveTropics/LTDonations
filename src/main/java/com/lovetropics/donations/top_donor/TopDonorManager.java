@@ -6,17 +6,17 @@ import com.lovetropics.donations.backend.ltts.json.TopDonor;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.Level;
@@ -98,17 +98,9 @@ public final class TopDonorManager {
     @Nullable
     private static ResolvableProfile createProfile(@Nullable String minecraftName, boolean anonymous) {
         if (anonymous) {
-            return new ResolvableProfile(
-                    Optional.empty(),
-                    Optional.of(ANONYMOUS_PLAYER_ID),
-                    new PropertyMap()
-            );
+            return ResolvableProfile.createUnresolved(ANONYMOUS_PLAYER_ID);
         } else if (minecraftName != null) {
-            return new ResolvableProfile(
-                    Optional.of(minecraftName),
-                    Optional.empty(),
-                    new PropertyMap()
-            );
+            return ResolvableProfile.createUnresolved(minecraftName);
         }
         return null;
     }
@@ -146,7 +138,7 @@ public final class TopDonorManager {
     }
 
     private ServerLevel getWorld(MinecraftServer server) {
-        ResourceLocation dimensionId = ResourceLocation.parse(DonationConfigs.TOP_DONORS.dimension.get());
+        Identifier dimensionId = Identifier.parse(DonationConfigs.TOP_DONORS.dimension.get());
         ResourceKey<Level> dimensionType = ResourceKey.create(Registries.DIMENSION, dimensionId);
         ServerLevel world = server.getLevel(dimensionType);
         if (world == null) {

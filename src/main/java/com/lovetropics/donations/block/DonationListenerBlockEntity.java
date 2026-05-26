@@ -46,7 +46,7 @@ public class DonationListenerBlockEntity extends BlockEntity {
     @Override
     public void setLevel(final Level level) {
         super.setLevel(level);
-        randomOffset = level.random.nextInt(20);
+        randomOffset = level.getRandom().nextInt(20);
     }
 
     public void monitorListener() {

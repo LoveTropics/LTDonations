@@ -18,7 +18,7 @@ public class DonationBlockEntity extends DonationListenerBlockEntity {
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, DonationBlockEntity entity) {
-        if (!level.isClientSide) {
+        if (!level.isClientSide()) {
             entity.monitorListener();
             if (entity.getQueued() > 0 && level.getGameTime() % 20 == entity.getRandomOffset()) {
                 BlockPos fireworkPos = pos.above();

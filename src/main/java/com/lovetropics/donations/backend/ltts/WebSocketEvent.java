@@ -8,11 +8,12 @@ import com.lovetropics.lib.permission.role.Role;
 import com.lovetropics.lib.techstack.Crud;
 import com.lovetropics.lib.techstack.TechstackEventSubscriber;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.response.NameAndId;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import net.minecraft.Util;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.StringUtil;
+import net.minecraft.util.Util;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.slf4j.Logger;
 
@@ -38,16 +39,16 @@ public class WebSocketEvent<T> {
                     return;
                 }
                 MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
-                CompletableFuture<Optional<GameProfile>> profileFuture;
+                CompletableFuture<Optional<NameAndId>> profileFuture;
                 if (event.profileId().isPresent()) {
                     profileFuture = CompletableFuture.completedFuture(Optional.of(
-                            new GameProfile(event.profileId().get(), event.profileName())
+                            new NameAndId(event.profileId().get(), event.profileName())
                     ));
                 } else {
                     // The techstack might fail its player name lookup - but we'll retry until it's successful
                     // TODO: Eventually we should ensure that the techstack never fails and only sends fully formed whitelist events
                     profileFuture = CompletableFuture.supplyAsync(
-                            () -> server != null ? server.getProfileCache().get(event.profileName()) : Optional.empty(),
+                            () -> server != null ? server.services().profileRepository().findProfileByName(event.profileName()) : Optional.empty(),
                             Util.nonCriticalIoPool()
                     );
                 }
@@ -63,11 +64,11 @@ public class WebSocketEvent<T> {
                         return;
                     }
                     if (event.type() == WhitelistEvent.Type.WHITELIST) {
-                        LOGGER.info("Adding {} role to {} ({})", role, profile.get().getName(), profile.get().getId());
-                        PermissionsApi.modifier().addRoleTo(profile.get().getId(), role);
+                        LOGGER.info("Adding {} role to {} ({})", role, profile.get().name(), profile.get().id());
+                        PermissionsApi.modifier().addRoleTo(profile.get().id(), role);
                     } else if (event.type() == WhitelistEvent.Type.BLACKLIST) {
-                        LOGGER.info("Removing {} role from {} ({})", role, profile.get().getName(), profile.get().getId());
-                        PermissionsApi.modifier().removeRoleFrom(profile.get().getId(), role);
+                        LOGGER.info("Removing {} role from {} ({})", role, profile.get().name(), profile.get().id());
+                        PermissionsApi.modifier().removeRoleFrom(profile.get().id(), role);
                     }
                     Util.nonCriticalIoPool().execute(() ->
                             DonationRequests.get().ackWhitelist(event.profileName(), event.type())

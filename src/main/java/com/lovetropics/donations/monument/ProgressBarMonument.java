@@ -115,7 +115,7 @@ public class ProgressBarMonument implements Monument {
         public Monument create(MinecraftServer server) {
             ServerLevel level = server.getLevel(dimension);
             if (level == null) {
-                LOGGER.warn("Could not find dimension: {}", dimension.location());
+                LOGGER.warn("Could not find dimension: {}", dimension.identifier());
                 return null;
             }
             return new ProgressBarMonument(level, box, direction, blocks, emptyBlock, donationGroup, dollarsInBar, this);

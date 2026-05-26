@@ -6,6 +6,7 @@ import com.lovetropics.donations.LTDonations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class MonumentManager extends SavedData implements DonationStateListener {
-    private static final String STORAGE_ID = LTDonations.MODID + "_monuments";
+    private static final Identifier STORAGE_ID = LTDonations.location("monuments");
 
     private static final Codec<MonumentManager> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.unboundedMap(Codec.STRING, MonumentData.CODEC).fieldOf("monuments").forGetter(MonumentManager::packData)
