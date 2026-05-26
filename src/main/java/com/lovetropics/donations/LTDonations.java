@@ -20,7 +20,8 @@ import net.neoforged.neoforge.common.util.Lazy;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import java.text.NumberFormat;
 import java.util.Locale;
 

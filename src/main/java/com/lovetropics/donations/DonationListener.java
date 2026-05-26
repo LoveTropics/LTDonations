@@ -2,7 +2,8 @@ package com.lovetropics.donations;
 
 import net.minecraft.server.MinecraftServer;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import java.util.UUID;
 
 public interface DonationListener {

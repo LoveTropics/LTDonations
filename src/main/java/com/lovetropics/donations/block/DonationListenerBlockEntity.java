@@ -10,7 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class DonationListenerBlockEntity extends BlockEntity {
     private static final double DEFAULT_UPPER_THRESHOLD = Double.MAX_VALUE;

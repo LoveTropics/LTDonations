@@ -2,7 +2,8 @@ package com.lovetropics.donations;
 
 import com.lovetropics.donations.backend.ltts.json.Donation;
 
-import javax.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
+
 import java.time.Instant;
 import java.util.EnumMap;
 

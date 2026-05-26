@@ -11,9 +11,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.util.Util;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -40,8 +40,7 @@ public final class RequestHelper {
         this.token = token;
     }
 
-    @Nullable
-    private HttpRequest.Builder requestBuilder(String endpoint) {
+    private HttpRequest.@Nullable Builder requestBuilder(String endpoint) {
         final String baseUrl = this.baseUrl.get();
         final String token = this.token.get();
         if (baseUrl.isEmpty() || token.isEmpty()) {

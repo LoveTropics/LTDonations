@@ -2,9 +2,9 @@ package com.lovetropics.donations.backend.ltts;
 
 import com.lovetropics.lib.techstack.TechstackEventSubscriber;
 import com.mojang.logging.LogUtils;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
