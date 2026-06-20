@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -101,25 +102,25 @@ public record WallMonumentData(ResourceKey<Level> dimension, BlockBox box, Donat
 
     public enum MonumentStyle implements StringRepresentable {
         NORMAL("normal", 1000.0, new Block[][]{
-                {Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA},
-                {Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA},
-                {Blocks.YELLOW_CONCRETE, Blocks.YELLOW_GLAZED_TERRACOTTA},
-                {Blocks.LIME_CONCRETE, Blocks.LIME_GLAZED_TERRACOTTA},
-                {Blocks.GREEN_CONCRETE, Blocks.GREEN_GLAZED_TERRACOTTA},
-                {Blocks.CYAN_CONCRETE, Blocks.CYAN_GLAZED_TERRACOTTA},
-                {Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA},
-                {Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA},
-                {Blocks.PURPLE_CONCRETE, Blocks.PURPLE_GLAZED_TERRACOTTA},
-                {Blocks.MAGENTA_CONCRETE, Blocks.MAGENTA_GLAZED_TERRACOTTA},
-                {Blocks.PINK_CONCRETE, Blocks.PINK_GLAZED_TERRACOTTA}
+                {Blocks.CONCRETE.red(), Blocks.GLAZED_TERRACOTTA.red()},
+                {Blocks.CONCRETE.orange(), Blocks.GLAZED_TERRACOTTA.orange()},
+                {Blocks.CONCRETE.yellow(), Blocks.GLAZED_TERRACOTTA.yellow()},
+                {Blocks.CONCRETE.lime(), Blocks.GLAZED_TERRACOTTA.lime()},
+                {Blocks.CONCRETE.green(), Blocks.GLAZED_TERRACOTTA.green()},
+                {Blocks.CONCRETE.cyan(), Blocks.GLAZED_TERRACOTTA.cyan()},
+                {Blocks.CONCRETE.lightBlue(), Blocks.GLAZED_TERRACOTTA.lightBlue()},
+                {Blocks.CONCRETE.blue(), Blocks.GLAZED_TERRACOTTA.blue()},
+                {Blocks.CONCRETE.purple(), Blocks.GLAZED_TERRACOTTA.purple()},
+                {Blocks.CONCRETE.magenta(), Blocks.GLAZED_TERRACOTTA.magenta()},
+                {Blocks.CONCRETE.pink(), Blocks.GLAZED_TERRACOTTA.pink()},
         }),
         TEAM_CENTS("team_cents", 500.0, new Block[][]{
-                {Blocks.BLUE_CONCRETE, Blocks.BLUE_GLAZED_TERRACOTTA, Blocks.DIAMOND_BLOCK},
-                {Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_GLAZED_TERRACOTTA, Blocks.LAPIS_BLOCK}
+                {Blocks.CONCRETE.blue(), Blocks.GLAZED_TERRACOTTA.blue(), Blocks.DIAMOND_BLOCK},
+                {Blocks.CONCRETE.lightBlue(), Blocks.GLAZED_TERRACOTTA.lightBlue(), Blocks.LAPIS_BLOCK}
         }),
         TEAM_NO_CENTS("team_no_cents", 500.0, new Block[][]{
-                {Blocks.RED_CONCRETE, Blocks.RED_GLAZED_TERRACOTTA, Blocks.REDSTONE_BLOCK},
-                {Blocks.ORANGE_CONCRETE, Blocks.ORANGE_GLAZED_TERRACOTTA, Blocks.WAXED_COPPER_BLOCK}
+                {Blocks.CONCRETE.red(), Blocks.GLAZED_TERRACOTTA.red(), Blocks.REDSTONE_BLOCK},
+                {Blocks.CONCRETE.orange(), Blocks.GLAZED_TERRACOTTA.orange(), Blocks.COPPER_BLOCK.waxed().unaffected()}
         }),
         ;
 

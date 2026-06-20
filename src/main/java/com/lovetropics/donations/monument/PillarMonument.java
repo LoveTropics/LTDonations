@@ -91,13 +91,13 @@ public class PillarMonument implements Monument {
     }
 
     private static final Block[][] BLOCKS = new Block[][]{
-            {Blocks.RED_CONCRETE, Blocks.RED_STAINED_GLASS},
-            {Blocks.ORANGE_CONCRETE, Blocks.ORANGE_STAINED_GLASS},
-            {Blocks.YELLOW_CONCRETE, Blocks.YELLOW_STAINED_GLASS},
-            {Blocks.LIME_CONCRETE, Blocks.LIME_STAINED_GLASS},
-            {Blocks.LIGHT_BLUE_CONCRETE, Blocks.LIGHT_BLUE_STAINED_GLASS},
-            {Blocks.BLUE_CONCRETE, Blocks.BLUE_STAINED_GLASS},
-            {Blocks.PURPLE_CONCRETE, Blocks.PURPLE_STAINED_GLASS},
+            {Blocks.CONCRETE.red(), Blocks.STAINED_GLASS.red()},
+            {Blocks.CONCRETE.orange(), Blocks.STAINED_GLASS.orange()},
+            {Blocks.CONCRETE.yellow(), Blocks.STAINED_GLASS.yellow()},
+            {Blocks.CONCRETE.lime(), Blocks.STAINED_GLASS.lime()},
+            {Blocks.CONCRETE.lightBlue(), Blocks.STAINED_GLASS.lightBlue()},
+            {Blocks.CONCRETE.blue(), Blocks.STAINED_GLASS.blue()},
+            {Blocks.CONCRETE.purple(), Blocks.STAINED_GLASS.purple()},
     };
     private static final ChatFormatting[] COLORS = new ChatFormatting[]{
             ChatFormatting.RED,

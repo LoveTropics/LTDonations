@@ -90,20 +90,20 @@ public class ProgressBarMonument implements Monument {
 
     public record Data(ResourceKey<Level> dimension, BlockBox box, List<BlockState> blocks, BlockState emptyBlock, DonationGroup donationGroup, double dollarsInBar, Direction direction) implements MonumentData {
         private static final List<BlockState> DEFAULT_BLOCKS = Stream.of(
-                Blocks.RED_CONCRETE_POWDER,
-                Blocks.ORANGE_CONCRETE_POWDER,
-                Blocks.YELLOW_CONCRETE_POWDER,
-                Blocks.LIME_CONCRETE_POWDER,
-                Blocks.LIGHT_BLUE_CONCRETE_POWDER,
-                Blocks.PURPLE_CONCRETE_POWDER,
-                Blocks.MAGENTA_CONCRETE_POWDER
+                Blocks.CONCRETE_POWDER.red(),
+                Blocks.CONCRETE_POWDER.orange(),
+                Blocks.CONCRETE_POWDER.yellow(),
+                Blocks.CONCRETE_POWDER.lime(),
+                Blocks.CONCRETE_POWDER.lightBlue(),
+                Blocks.CONCRETE_POWDER.purple(),
+                Blocks.CONCRETE_POWDER.magenta()
         ).map(Block::defaultBlockState).toList();
 
         public static final MapCodec<Data> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(Data::dimension),
                 BlockBox.CODEC.fieldOf("box").forGetter(Data::box),
                 ExtraCodecs.nonEmptyList(MoreCodecs.BLOCK_STATE.listOf()).optionalFieldOf("blocks", DEFAULT_BLOCKS).forGetter(Data::blocks),
-                MoreCodecs.BLOCK_STATE.optionalFieldOf("empty_block", Blocks.BLACK_CONCRETE.defaultBlockState()).forGetter(Data::emptyBlock),
+                MoreCodecs.BLOCK_STATE.optionalFieldOf("empty_block", Blocks.CONCRETE.black().defaultBlockState()).forGetter(Data::emptyBlock),
                 DonationGroup.CODEC.optionalFieldOf("donation_group", DonationGroup.ALL).forGetter(Data::donationGroup),
                 Codec.DOUBLE.optionalFieldOf("dollars_in_bar", 1000.0).forGetter(Data::dollarsInBar),
                 // TODO lol, remove that default
