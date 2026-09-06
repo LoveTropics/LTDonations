@@ -6,10 +6,18 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.FunctionInstantiationException;
+import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.functions.InstantiatedFunction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Util;
 import org.jspecify.annotations.Nullable;
@@ -60,10 +68,12 @@ public interface DonationAction {
 
     record RunFunction(
             Identifier functionId,
+            Optional<CompoundTag> arguments,
             boolean asDonor
     ) implements DonationAction {
         public static final MapCodec<RunFunction> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("function").forGetter(RunFunction::functionId),
+                TagParser.LENIENT_CODEC.optionalFieldOf("arguments").forGetter(RunFunction::arguments),
                 Codec.BOOL.optionalFieldOf("as_donor", false).forGetter(RunFunction::asDonor)
         ).apply(i, RunFunction::new));
 
@@ -75,7 +85,20 @@ public interface DonationAction {
                 return;
             }
             CommandSourceStack source = createExecutionSource(server, details.donorPlayerId());
-            server.getFunctions().execute(function.get(), source);
+            execute(server, source, function.get());
+        }
+
+        private void execute(MinecraftServer server, CommandSourceStack source, CommandFunction<CommandSourceStack> functionIn) {
+            ServerFunctionManager functionManager = server.getFunctions();
+            try {
+                InstantiatedFunction<CommandSourceStack> function = functionIn.instantiate(arguments.orElse(null), functionManager.getDispatcher());
+                Commands.executeCommandInContext(
+                        source, context -> ExecutionContext.queueInitialFunctionCall(context, function, source, CommandResultCallback.EMPTY)
+                );
+            } catch (FunctionInstantiationException _) {
+            } catch (Exception e) {
+                LOGGER.warn("Failed to execute function {}", functionIn.id(), e);
+            }
         }
 
         private CommandSourceStack createExecutionSource(MinecraftServer server, @Nullable UUID donorPlayerId) {
