@@ -10,7 +10,7 @@ displayName = "LTDonations"
 displayURL = "https://lovetropics.org"
 authors = "The Love Tropics Team"
 description = '''
-Donation event manager for the LoveTropics livestream.
+Donation event manager for the Love Tropics livestream.
 '''
 
 [[mixins]]
