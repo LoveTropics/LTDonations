@@ -13,9 +13,6 @@ description = '''
 Donation event manager for the LoveTropics livestream.
 '''
 
-[[mixins]]
-config = "ltdonations.mixins.json"
-
 [[dependencies.${ mod_id }]]
 modId = "neoforge"
 type = "required"
