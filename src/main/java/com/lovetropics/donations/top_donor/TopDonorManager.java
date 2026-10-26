@@ -43,7 +43,11 @@ public final class TopDonorManager {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
 
         CompletableFuture.supplyAsync(() -> DonationRequests.get().getTopDonors(topDonorUuids.length), Util.nonCriticalIoPool())
-                .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer());
+                .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer())
+                .exceptionally(throwable -> {
+                    LOGGER.warn("Failed to update top donors", throwable);
+                    return null;
+                });
     }
 
     private void applyTopDonors(List<TopDonor> topDonors) {
