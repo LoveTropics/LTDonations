@@ -67,12 +67,12 @@ public final class TopDonorManager {
             ));
         }
 
-        CompletableFuture<Optional<ResolvableProfile>> profileFuture = donor.minecraftName()
-                .map(name -> CompletableFuture.supplyAsync(
-                        () -> services.profileResolver().fetchByName(name).map(ResolvableProfile::createResolved),
+        CompletableFuture<Optional<ResolvableProfile>> profileFuture = donor.minecraftUuid()
+                .map(id -> CompletableFuture.supplyAsync(
+                        () -> services.profileResolver().fetchById(id).map(ResolvableProfile::createResolved),
                         Util.nonCriticalIoPool()
                 ).exceptionally(throwable -> {
-                    LOGGER.warn("Failed to resolve top donor profile: {}", donor.minecraftName(), throwable);
+                    LOGGER.warn("Failed to resolve top donor profile: {} ({})", donor.minecraftName(), donor.minecraftUuid(), throwable);
                     return Optional.empty();
                 }))
                 .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
