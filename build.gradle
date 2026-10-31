@@ -6,7 +6,7 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.141'
 }
 
-group = 'com.lovetropics.donations'
+group = 'org.lovetropics'
 base {
     archivesName = 'LTDonations'
 }
