@@ -13,6 +13,7 @@ import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.Services;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.Util;
@@ -27,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -42,15 +44,44 @@ public final class TopDonorManager {
     public void pollTopDonors() {
         UUID[] topDonorUuids = DonationConfigs.TOP_DONORS.getTopDonorUuids();
 
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         CompletableFuture.supplyAsync(() -> DonationRequests.get().getTopDonors(topDonorUuids.length), Util.nonCriticalIoPool())
-                .thenAcceptAsync(this::applyTopDonors, ServerLifecycleHooks.getCurrentServer())
+                .thenCompose(topDonors ->
+                        Util.sequence(topDonors.stream()
+                                .map(topDonor -> resolveTopDonor(server.services(), topDonor))
+                                .toList())
+                )
+                .thenAcceptAsync(this::applyTopDonors, server)
                 .exceptionally(throwable -> {
                     LOGGER.warn("Failed to update top donors", throwable);
                     return null;
                 });
     }
 
-    private void applyTopDonors(List<TopDonor> topDonors) {
+    private static CompletableFuture<ResolvedTopDonor> resolveTopDonor(Services services, TopDonor donor) {
+        if (donor.isAnonymous()) {
+            return CompletableFuture.completedFuture(new ResolvedTopDonor(
+                    "Anonymous",
+                    donor.total(),
+                    ResolvableProfile.createUnresolved(ANONYMOUS_PLAYER_ID)
+            ));
+        }
+
+        CompletableFuture<Optional<ResolvableProfile>> profileFuture = donor.minecraftName()
+                .map(name -> CompletableFuture.supplyAsync(
+                        () -> services.profileResolver().fetchByName(name).map(ResolvableProfile::createResolved),
+                        Util.nonCriticalIoPool()
+                ))
+                .orElseGet(() -> CompletableFuture.completedFuture(Optional.empty()));
+
+        return profileFuture.thenApply(profile -> {
+            String fallbackName = donor.displayNames().isEmpty() ? "Anonymous" : donor.displayNames().getLast();
+            String minecraftName = donor.minecraftName().orElse(fallbackName);
+            return new ResolvedTopDonor(minecraftName, donor.total(), profile.orElse(null));
+        });
+    }
+
+    private void applyTopDonors(List<ResolvedTopDonor> topDonors) {
         UUID[] entityIds = DonationConfigs.TOP_DONORS.getTopDonorUuids();
         LOGGER.debug("Applying {} top donators to {} entities", topDonors.size(), entityIds.length);
 
@@ -62,49 +93,27 @@ public final class TopDonorManager {
             }
 
             if (i < topDonors.size()) {
-                TopDonor donor = topDonors.get(i);
-                List<String> fallbacks = donor.displayNames();
-                String minecraftName = donor.minecraftName().orElse(null);
-                String fallbackName = fallbacks.isEmpty() ? "Anonymous" : fallbacks.getLast();
-                applyToEntity(entity, minecraftName, Component.literal(fallbackName), donor.total(), donor.isAnonymous());
+                applyToEntity(entity, topDonors.get(i));
             } else {
                 clearEntity(entity);
             }
         }
     }
 
-    private void applyToEntity(Entity entity, @Nullable String minecraftName, Component fallbackName, double total, boolean anonymous) {
-        ResolvableProfile profile = createProfile(minecraftName, anonymous);
-
+    private void applyToEntity(Entity entity, ResolvedTopDonor donor) {
         modifyEntityData(entity, output -> {
-            if (profile != null) {
-                output.store("profile", ResolvableProfile.CODEC, profile);
+            if (donor.profile != null) {
+                output.store("profile", ResolvableProfile.CODEC, donor.profile);
             } else {
                 output.discard("profile");
             }
             Component suffix = Component.literal(" - ").withStyle(ChatFormatting.GRAY)
-                    .append(Component.literal(String.format("$%.2f", total)).withStyle(ChatFormatting.GREEN));
+                    .append(Component.literal(String.format("$%.2f", donor.total)).withStyle(ChatFormatting.GREEN));
             output.store("name_suffix", ComponentSerialization.CODEC, suffix);
         });
 
-        if (anonymous) {
-            entity.setCustomName(fallbackName);
-        } else if (minecraftName != null) {
-            entity.setCustomName(null);
-        } else {
-            entity.setCustomName(fallbackName);
-        }
+        entity.setCustomName(Component.literal(donor.name));
         entity.setCustomNameVisible(true);
-    }
-
-    @Nullable
-    private static ResolvableProfile createProfile(@Nullable String minecraftName, boolean anonymous) {
-        if (anonymous) {
-            return ResolvableProfile.createUnresolved(ANONYMOUS_PLAYER_ID);
-        } else if (minecraftName != null) {
-            return ResolvableProfile.createUnresolved(minecraftName);
-        }
-        return null;
     }
 
     private void clearEntity(Entity entity) {
@@ -152,5 +161,12 @@ public final class TopDonorManager {
             world = server.overworld();
         }
         return world;
+    }
+
+    private record ResolvedTopDonor(
+            String name,
+            double total,
+            @Nullable ResolvableProfile profile
+    ) {
     }
 }
