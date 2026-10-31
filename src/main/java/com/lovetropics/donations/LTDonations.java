@@ -59,7 +59,6 @@ public class LTDonations {
     }
 
     public LTDonations(ModContainer container) {
-        LogUtils.getLogger().info("AAAAAA");
         registrate().generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTDonations"))
                         .icon(DonationBlock.BLOCK::asStack)
