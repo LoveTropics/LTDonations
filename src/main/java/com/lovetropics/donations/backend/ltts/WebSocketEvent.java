@@ -7,11 +7,10 @@ import com.lovetropics.lib.permission.PermissionsApi;
 import com.lovetropics.lib.permission.role.Role;
 import com.lovetropics.lib.techstack.Crud;
 import com.lovetropics.lib.techstack.TechstackEventSubscriber;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.yggdrasil.response.NameAndId;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.util.StringUtil;
 import net.minecraft.util.Util;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
@@ -48,7 +47,7 @@ public class WebSocketEvent<T> {
                     // The techstack might fail its player name lookup - but we'll retry until it's successful
                     // TODO: Eventually we should ensure that the techstack never fails and only sends fully formed whitelist events
                     profileFuture = CompletableFuture.supplyAsync(
-                            () -> server != null ? server.services().profileRepository().findProfileByName(event.profileName()) : Optional.empty(),
+                            () -> server != null ? server.services().profileResolver().fetchByName(event.profileName()).map(NameAndId::new) : Optional.empty(),
                             Util.nonCriticalIoPool()
                     );
                 }
