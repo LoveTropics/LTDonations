@@ -6,18 +6,21 @@ import com.lovetropics.donations.DonationState;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.advancements.predicates.MinMaxBounds;
+import net.minecraft.resources.Identifier;
 
 import java.util.Optional;
 
 public record DonationPredicate(
         MinMaxBounds.Doubles amount,
         Optional<Total> totalExceeded,
-        Optional<Double> donorTotalExceeded
+        Optional<Double> donorTotalExceeded,
+        Optional<Identifier> dimension
 ) {
     public static final Codec<DonationPredicate> CODEC = RecordCodecBuilder.create(i -> i.group(
             MinMaxBounds.Doubles.CODEC.optionalFieldOf("amount", MinMaxBounds.Doubles.ANY).forGetter(DonationPredicate::amount),
             Total.CODEC.optionalFieldOf("total_exceeded").forGetter(DonationPredicate::totalExceeded),
-            Codec.DOUBLE.optionalFieldOf("donor_total_exceeded").forGetter(DonationPredicate::donorTotalExceeded)
+            Codec.DOUBLE.optionalFieldOf("donor_total_exceeded").forGetter(DonationPredicate::donorTotalExceeded),
+            Identifier.CODEC.optionalFieldOf("dimension").forGetter(DonationPredicate::dimension)
     ).apply(i, DonationPredicate::new));
 
     public boolean test(DonationListener.Details details) {

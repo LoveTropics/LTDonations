@@ -6,24 +6,42 @@ import com.lovetropics.donations.block.DonationBlock;
 import com.lovetropics.donations.block.DonationGoalRedstoneBlock;
 import com.lovetropics.donations.block.DonationRedstoneBlock;
 import com.lovetropics.donations.command.LTDonationsCommands;
+import com.mojang.logging.LogUtils;
 import com.tterrag.registrate.Registrate;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackSelectionConfig;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.PathPackResources;
+import net.minecraft.server.packs.repository.Pack;
+import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.server.packs.repository.RepositorySource;
 import net.minecraft.world.item.CreativeModeTab;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.Lazy;
+import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
 
 import org.jspecify.annotations.Nullable;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 @Mod(LTDonations.MODID)
 public class LTDonations {
@@ -41,6 +59,7 @@ public class LTDonations {
     }
 
     public LTDonations(ModContainer container) {
+        LogUtils.getLogger().info("AAAAAA");
         registrate().generic(TAB_ID.getPath(), Registries.CREATIVE_MODE_TAB, () -> CreativeModeTab.builder()
                         .title(registrate().addLang("itemGroup", TAB_ID, "LTDonations"))
                         .icon(DonationBlock.BLOCK::asStack)
@@ -93,4 +112,5 @@ public class LTDonations {
     public static DonationState state() {
         return DonationHandler.state();
     }
+
 }

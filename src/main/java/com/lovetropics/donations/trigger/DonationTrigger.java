@@ -17,7 +17,7 @@ public record DonationTrigger(
     public void handleDonation(MinecraftServer server, Details details) {
         for (Entry entry : entries) {
             if (entry.predicate.test(details)) {
-                entry.action.execute(server, details);
+                entry.action.execute(server, details, entry.predicate);
                 return;
             }
         }
