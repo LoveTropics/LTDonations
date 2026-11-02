@@ -157,12 +157,12 @@ public interface DonationAction {
                         .set(DataComponents.CUSTOM_NAME, Component.literal(details.name()))
                         .build());
                 StackedHat hat = new StackedHat(ItemStackTemplate.fromNonEmptyStack(stack), (float) width, (float) height, 1.0f);
-                List<StackedHat> playersHats = StackedHat.getPlayersHats(player);
+                List<StackedHat> playersHats = StackedHat.getEntityHats(player);
                 if (playersHats.size() >= maxHats) {
                     playersHats.removeFirst();
                 }
                 playersHats.add(hat);
-                StackedHat.setPlayersHats(player, playersHats);
+                StackedHat.setEntityHats(player, playersHats);
             });
         }
 
