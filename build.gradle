@@ -70,6 +70,12 @@ repositories {
         }
     }
     maven {
+        url = 'https://maven.lovetropics.org/snapshots'
+        content {
+            includeGroup 'org.lovetropics'
+        }
+    }
+    maven {
         url = 'https://maven.gegy.dev/releases'
         content {
             includeGroup 'com.tterrag.registrate'
@@ -88,6 +94,10 @@ dependencies {
 
     jarJar(implementation("org.lovetropics:LTLib:$ltlib_version"))
     jarJar(implementation("eu.pb4:placeholder-api-lt:$placeholder_api_version"))
+
+    runtimeOnly ("org.lovetropics:LTExtras:$ltextras_version") {
+        transitive = false
+    }
 }
 
 var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {

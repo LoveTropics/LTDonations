@@ -2,8 +2,10 @@ package com.lovetropics.donations;
 
 import com.lovetropics.donations.trigger.DonationTriggerConfigs;
 import com.lovetropics.donations.trigger.DonationTriggerHolder;
+import com.lovetropics.lib.text.ChatHighlighter;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -28,11 +30,16 @@ public class DonationListeners {
         if (details.name().isBlank()) {
             return;
         }
+        final Component message = ChatHighlighter.highlight(
+                DonationLangKeys.NEW_DONATION.format(
+                        ChatFormatting.AQUA + details.name() + ChatFormatting.RESET,
+                        ChatFormatting.GREEN + LTDonations.CURRENCY_FORMAT.format(details.amount()) + ChatFormatting.RESET
+                ),
+                0xa0ffaa00,
+                0x60519e45
+        );
         for (final ServerPlayer player : server.getPlayerList().getPlayers()) {
-            player.sendSystemMessage(DonationLangKeys.NEW_DONATION.format(
-                    ChatFormatting.AQUA + details.name() + ChatFormatting.RESET,
-                    ChatFormatting.GREEN + LTDonations.CURRENCY_FORMAT.format(details.amount()) + ChatFormatting.RESET
-            ), false);
+            player.sendSystemMessage(message, false);
         }
     }
 
