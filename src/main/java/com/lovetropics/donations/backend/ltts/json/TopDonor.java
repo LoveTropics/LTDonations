@@ -13,7 +13,7 @@ public record TopDonor(UUID uuid, Optional<String> minecraftName, Optional<UUID>
     public static final Codec<TopDonor> CODEC = RecordCodecBuilder.create(i -> i.group(
             UUIDUtil.STRING_CODEC.fieldOf("uuid").forGetter(TopDonor::uuid),
             Codec.STRING.optionalFieldOf("minecraft_name").forGetter(TopDonor::minecraftName),
-            UUIDUtil.AUTHLIB_CODEC.optionalFieldOf("minecraft_uuid").forGetter(TopDonor::minecraftUuid),
+            UUIDUtil.STRING_CODEC.optionalFieldOf("minecraft_uuid").forGetter(TopDonor::minecraftUuid),
             Codec.STRING.listOf().optionalFieldOf("display_names", List.of()).forGetter(TopDonor::displayNames),
             Codec.DOUBLE.fieldOf("total").forGetter(TopDonor::total)
     ).apply(i, TopDonor::new));

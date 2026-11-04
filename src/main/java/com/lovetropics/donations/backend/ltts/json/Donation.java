@@ -20,7 +20,7 @@ public record Donation(
 ) implements Comparable<Donation> {
     public static final Codec<Donation> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.STRING.optionalFieldOf("name", "").forGetter(Donation::name),
-            UUIDUtil.AUTHLIB_CODEC.fieldOf("uuid").forGetter(Donation::uuid),
+            UUIDUtil.STRING_CODEC.fieldOf("uuid").forGetter(Donation::uuid),
             Codec.DOUBLE.fieldOf("amount").forGetter(Donation::amount),
             Codec.DOUBLE.optionalFieldOf("donor_total", 0.0).forGetter(Donation::donorTotal),
             Codec.STRING.optionalFieldOf("comments", "").forGetter(Donation::comments),
