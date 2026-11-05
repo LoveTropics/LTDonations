@@ -50,38 +50,40 @@ public class PillarMonument implements Monument {
 
     private static final List<BlockPos> LAYER_POSITIONS;
 
+
     static {
         final List<BlockPos> allPositions = new ArrayList<>(ImmutableList.<BlockPos>builder()
-                .addAll(range(-3, -1, -3, 1))
-                .addAll(range(-2, -2, -2, 2))
-                .addAll(range(-1, -3, -1, 3))
-                .addAll(range(0, -3, 0, 3))
-                .addAll(range(1, -3, 1, 3))
-                .addAll(range(2, -2, 2, 2))
                 .addAll(range(3, -1, 3, 1))
+                .addAll(range(2, -2, 2, 2))
+                .addAll(range(1, -3, 1, 3))
+                .addAll(range(0, -3, 0, 3))
+                .addAll(range(-1, -3, -1, 3))
+                .addAll(range(-2, -2, -2, 2))
+                .addAll(range(-3, -1, -3, 1))
                 .build());
 
-        allPositions.sort(Comparator.<BlockPos>comparingDouble(p -> Math.max(Math.abs(p.getX()), Math.abs(p.getZ()))) // Sort by "shell"
-                // Then by angle
-                .thenComparingDouble(p -> {
-                    if (p.equals(BlockPos.ZERO)) {
-                        return -1;
-                    }
-
-                    final Vec3 v1 = Vec3.atLowerCornerOf(p);
-                    final Vec3 v2 = new Vec3(-1.0, 0.0, 0.0);
-
-                    final Vec3 cross = v1.cross(v2);
-                    final double dot = v1.dot(v2);
-
-                    double angle = Math.atan2(cross.length(), dot);
-
-                    final double test = new Vec3(0.0, 1.0, .0).dot(cross);
-                    if (test < 0.0) {
-                        angle = -angle + (Math.PI * 2);
-                    }
-                    return angle;
-                }));
+        //Rip the "fun" shaped pillar
+//        allPositions.sort(Comparator.<BlockPos>comparingDouble(p -> Math.max(Math.abs(p.getX()), Math.abs(p.getZ()))) // Sort by "shell"
+//                // Then by angle
+//                .thenComparingDouble(p -> {
+//                    if (p.equals(BlockPos.ZERO)) {
+//                        return -1;
+//                    }
+//
+//                    final Vec3 v1 = Vec3.atLowerCornerOf(p);
+//                    final Vec3 v2 = new Vec3(-1.0, 0.0, 0.0);
+//
+//                    final Vec3 cross = v1.cross(v2);
+//                    final double dot = v1.dot(v2);
+//
+//                    double angle = Math.atan2(cross.length(), dot);
+//
+//                    final double test = new Vec3(0.0, 1.0, .0).dot(cross);
+//                    if (test < 0.0) {
+//                        angle = -angle + (Math.PI * 2);
+//                    }
+//                    return angle;
+//                }));
 
         LAYER_POSITIONS = List.copyOf(allPositions);
     }
