@@ -225,7 +225,7 @@ public class PillarMonument implements Monument {
         }
         final Component message = Component.literal("The Monument")
                 .withStyle(ChatFormatting.BOLD, color)
-                .append(Component.literal(" has grown to ")
+                .append(Component.literal(" has expanded to ")
                         .setStyle(Style.EMPTY.withBold(false).withColor(ChatFormatting.WHITE))
                         .append(Component.literal("LEVEL " + (layer + 1) + "!")
                                 .setStyle(Style.EMPTY.withUnderlined(true))));
