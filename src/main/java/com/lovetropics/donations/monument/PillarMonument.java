@@ -53,13 +53,15 @@ public class PillarMonument implements Monument {
 
     static {
         final List<BlockPos> allPositions = new ArrayList<>(ImmutableList.<BlockPos>builder()
+                .add(new BlockPos(4, 0, 0))
                 .addAll(range(3, -1, 3, 1))
                 .addAll(range(2, -2, 2, 2))
                 .addAll(range(1, -3, 1, 3))
-                .addAll(range(0, -3, 0, 3))
+                .addAll(range(0, -4, 0, 4))
                 .addAll(range(-1, -3, -1, 3))
                 .addAll(range(-2, -2, -2, 2))
                 .addAll(range(-3, -1, -3, 1))
+                .add(new BlockPos(-4, 0, 0))
                 .build());
 
         //Rip the "fun" shaped pillar
