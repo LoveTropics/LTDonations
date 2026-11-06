@@ -11,9 +11,9 @@
   "command.ltdonations.donation.simulate": "Simulation d'un don pour le nom %s et le montant %s",
   "command.ltdonations.donation.updated_monument": "Le monument avec l'ID \"%s\" a été mis à jour",
   "donation_group.ltdonations.all": "Général",
-  "donation_group.ltdonations.team_cents": "Équipe Cents",
-  "donation_group.ltdonations.team_nice": "Équipe Nice",
-  "donation_group.ltdonations.team_no_cents": "Équipe No Cents",
+  "donation_group.ltdonations.team_cents": "Team Cents",
+  "donation_group.ltdonations.team_nice": "Team Nice",
+  "donation_group.ltdonations.team_no_cents": "Team No Cents",
   "itemGroup.ltdonations.ltdonations": "LTDonations",
   "notification.ltdonations.donation.new": "%s a fait un don de %s !",
   "time.ltdonations.minutes": "%s minutes"
