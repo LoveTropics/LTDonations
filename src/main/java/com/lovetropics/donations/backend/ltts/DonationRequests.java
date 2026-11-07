@@ -68,6 +68,9 @@ public class DonationRequests {
     }
 
     public List<TopDonor> getTopDonors(final int count) {
+        if (count <= 0) {
+            return List.of();
+        }
         return requests.get("donors/top/" + count + "?separate_anonymous=true", TOP_DONORS_CODEC).orThrow();
     }
 }
